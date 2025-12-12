@@ -2,7 +2,7 @@ import SwiftUI
 import MusicKit
 
 struct MusicPlaylistsView: View {
-    @StateObject private var musicManager = MusicManager()
+    @EnvironmentObject var musicManager: MusicManager
     
     // ✅ État pour gérer la navigation
     @State private var selectedPlaylist: Playlist?
@@ -51,12 +51,7 @@ struct MusicPlaylistsView: View {
         .navigationDestination(item: $selectedPlaylist) { playlist in
             PlaylistDetailView(playlist: playlist)
         }
-        .task {
-            await musicManager.requestAuthorization()
-            if musicManager.authorizationStatus == .authorized {
-                await musicManager.loadPlaylists()
-            }
-        }
+
 #endif
     }
     
@@ -116,6 +111,9 @@ struct MusicPlaylistsView: View {
                 }
             }
             .padding()
+        }
+        .refreshable {
+            await musicManager.loadPlaylists()
         }
     }
     

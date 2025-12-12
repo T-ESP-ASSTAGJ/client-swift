@@ -5,7 +5,6 @@
 //  Created by REVERSS on 06/12/2025.
 //
 
-
 import Foundation
 import MusicKit
 import Combine
@@ -17,17 +16,31 @@ final class MusicManager: ObservableObject {
     @Published var tracks: [Track] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
-
+    
+    // ✅ NOUVEAU: Vérifie le statut actuel SANS demander l'autorisation
+    func checkAuthorizationStatus() async -> MusicAuthorization.Status {
+        let status = MusicAuthorization.currentStatus
+        authorizationStatus = status
+        return status
+    }
+    
+    // ✅ Demande l'autorisation (avec prompt si notDetermined)
     func requestAuthorization() async {
         let status = await MusicAuthorization.request()
         authorizationStatus = status
-
+        
         if status == .authorized {
             await loadPlaylists()
         }
     }
-
+    
     func loadPlaylists() async {
+        // ✅ Ne charge que si autorisé
+        guard authorizationStatus == .authorized else {
+            print("⚠️ Pas autorisé, skip loadPlaylists")
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -64,5 +77,3 @@ final class MusicManager: ObservableObject {
         }
     }
 }
-
-

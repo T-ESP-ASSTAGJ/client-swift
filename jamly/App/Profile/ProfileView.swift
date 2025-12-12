@@ -12,6 +12,7 @@ enum FollowViews: Identifiable {
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
+    @EnvironmentObject var musicManager: MusicManager
     
     @State private var selectedTab: ProfileTab = .posts
     @State private var selectedFollowView: FollowViews? = nil
@@ -137,6 +138,7 @@ struct ProfileView: View {
             }
             .navigationDestination(isPresented: $showMusicPlaylists) {
                 MusicPlaylistsView()
+                    .environmentObject(musicManager)
             }
             .navigationDestination(item: $selectedFollowView) { view in
                 switch view {

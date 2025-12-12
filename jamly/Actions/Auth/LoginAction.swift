@@ -1,5 +1,5 @@
 //
-//  AuthLoginResponse.swift
+//  AuthLogin.swift
 //  jamly
 //
 //  Created by REVERSS on 06/12/2025.

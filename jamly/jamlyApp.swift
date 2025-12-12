@@ -2,12 +2,15 @@ import SwiftUI
 import SwiftData
 import Foundation
 import Combine
+import MusicKit
 
 @main
 struct jamlyApp: App {
     @StateObject private var userStore = UserStore()
     @StateObject private var authManager: AuthManager
     @State private var isLoading = true
+    
+    @StateObject private var musicManager = MusicManager()
     
     init() {
         let userStore = UserStore()
@@ -28,16 +31,37 @@ struct jamlyApp: App {
                     RootView()
                         .environmentObject(authManager)
                         .environmentObject(userStore)
+                        .environmentObject(musicManager)
                 }
             }
             .task {
                 await userStore.initialize()
+                
+                // ✅ Charge les playlists EN ARRIÈRE-PLAN seulement si déjà autorisé
+                Task.detached(priority: .background) {
+                    await loadMusicIfAuthorized()
+                }
+                
                 // Délai minimum pour voir le splash screen
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 2 secondes
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 seconde
                 withAnimation(.easeInOut(duration: 0.5)) {
                     isLoading = false
                 }
             }
+        }
+    }
+    
+    // ✅ Charge la musique seulement si déjà autorisé (pas de prompt)
+    private func loadMusicIfAuthorized() async {
+        // Vérifie le statut actuel SANS demander l'autorisation
+        let currentStatus = await musicManager.checkAuthorizationStatus()
+        
+        // Si déjà autorisé, charge les playlists en arrière-plan
+        if currentStatus == .authorized {
+            print("🎵 Apple Music déjà autorisé, chargement des playlists...")
+            await musicManager.loadPlaylists()
+        } else {
+            print("🎵 Apple Music pas encore autorisé, skip le chargement")
         }
     }
 }

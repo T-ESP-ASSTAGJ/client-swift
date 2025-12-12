@@ -5,7 +5,6 @@
 //  Created by REVERSS on 07/12/2025.
 //
 
-
 struct User: Codable {
     let id: Int
     let username: String
