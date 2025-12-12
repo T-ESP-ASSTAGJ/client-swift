@@ -23,7 +23,7 @@ struct APIResponse<T> {
 final class APIClient {
     static let shared = APIClient()
     
-    private let baseURL = URL(string: "http://192.168.1.16:80/api")!
+    private let baseURL = URL(string: "http://10.68.246.227:80/api")!
     private let session: URLSession
     private let secureStore: SecureStore
     

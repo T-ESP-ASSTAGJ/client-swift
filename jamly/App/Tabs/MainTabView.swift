@@ -31,7 +31,7 @@ struct MainTabView: View {
                     
                 case .create:
                     NavigationStack {
-                        CreateView()
+                        CreatePostView()
                     }
                     
                 case .chats:
@@ -51,18 +51,6 @@ struct MainTabView: View {
             TabBar(selectedTab: $selectedTab)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
-    }
-}
-
-struct CreateView: View {
-    var body: some View {
-        VStack {
-            Text("Create Content")
-                .font(.largeTitle)
-                .foregroundColor(.white)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("Create")
     }
 }
 
