@@ -13,6 +13,8 @@ class UserStore: ObservableObject {
     // MARK: - Published Properties
     @Published var user: User?
     @Published var token: String?
+    @Published var feed: [Post] = []
+    @Published var isLoadingFeed: Bool = false
     @Published var isAuthenticated: Bool = false {
         didSet {
             print("🔐 UserStore.isAuthenticated changed to: \(isAuthenticated)")
@@ -84,6 +86,18 @@ class UserStore: ObservableObject {
         } catch {
             self.error = .unknown
         }
+    }
+    
+    func loadFeed(page: Int = 1) async {
+        isLoadingFeed = true
+        do {
+            let response = try await FeedAction.getPublicFeed(page: page)
+            feed = response.value.feed
+        } catch {
+            print("Error loading feed: \(error)")
+            feed = []
+        }
+        isLoadingFeed = false
     }
     
     /// Définit le token et sauvegarde en SecureStore
