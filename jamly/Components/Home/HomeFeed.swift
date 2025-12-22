@@ -1,8 +1,11 @@
 import SwiftUI
 
 struct HomeFeed: View {
-    @State private var currentIndex: Int? = 0
     let posts: [JamPost] = JamPost.mock
+    
+    @State private var currentIndex: Int? = 0
+    
+    @EnvironmentObject private var userStore: UserStore
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -16,6 +19,9 @@ struct HomeFeed: View {
                     }
                 }
                 .scrollTargetLayout()
+            }
+            .refreshable {
+                await userStore.loadFeed()
             }
             .scrollIndicators(.hidden)
             .scrollPosition(id: $currentIndex)

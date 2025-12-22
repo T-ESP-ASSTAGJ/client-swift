@@ -40,6 +40,11 @@ struct jamlyApp: App {
                 // ✅ Charge les playlists EN ARRIÈRE-PLAN seulement si déjà autorisé
                 Task.detached(priority: .background) {
                     await loadMusicIfAuthorized()
+                    
+                }
+            
+                Task {
+                    await userStore.loadFeed()
                 }
                 
                 // Délai minimum pour voir le splash screen
