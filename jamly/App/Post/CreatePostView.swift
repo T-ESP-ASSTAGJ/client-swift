@@ -189,8 +189,6 @@ struct CreatePostView: View {
         }
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
-            
-            print("TAP GESTURE")
         }
         .navigationTitle("Nouveau post")
         .navigationBarTitleDisplayMode(.inline)

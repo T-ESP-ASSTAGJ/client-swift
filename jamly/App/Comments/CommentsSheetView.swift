@@ -7,12 +7,17 @@
 
 import SwiftUI
 
-struct CommentsSheet: View {
+struct CommentsSheetView: View {
     let post: JamPost
+    
+    @EnvironmentObject private var userStore: UserStore
+    
     @Environment(\.dismiss) private var dismiss
+    
     @State private var comments: [CommentType] = CommentType.mockComments
     @State private var newCommentText: String = ""
     @State private var isLoading: Bool = false
+    
     @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
@@ -21,6 +26,7 @@ struct CommentsSheet: View {
                 postHeader
                 
                 Divider()
+                    .padding(.top, 20)
                 
                 ScrollView {
                     LazyVStack(spacing: 12) {
@@ -28,7 +34,7 @@ struct CommentsSheet: View {
                             emptyStateView
                         } else {
                             ForEach(comments) { comment in
-                                CommentView(comment: comment)
+                                Comment(comment: comment)
                                     .padding(.horizontal)
                             }
                         }
@@ -40,7 +46,10 @@ struct CommentsSheet: View {
                 
                 commentInputSection
             }
-            .navigationTitle("Comments")
+            .onTapGesture {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
+            }
+            .navigationTitle("\($comments.count) comments")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -82,7 +91,7 @@ struct CommentsSheet: View {
             
             Spacer()
         }
-        .padding()
+        .padding(.horizontal)
         .background(Color(.systemBackground))
     }
     
@@ -113,7 +122,7 @@ struct CommentsSheet: View {
             TextField("Write a comment...", text: $newCommentText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .padding(12)
-                .background(Color(.systemGray6))
+                .background(Color(.systemGray4))
                 .cornerRadius(20)
                 .focused($isTextFieldFocused)
                 .lineLimit(1...5)
@@ -146,6 +155,8 @@ struct CommentsSheet: View {
     }
     
     private func sendComment() async {
+        guard let user = userStore.user else { return }
+        
         let trimmedText = newCommentText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else { return }
         
@@ -158,9 +169,9 @@ struct CommentsSheet: View {
         let newComment = CommentType(
             id: comments.count + 1,
             user: User(
-                id: 0,
-                username: "Me",
-                email: "me@test.fr",
+                id: user.id,  // ✅ user est garanti non-nil ici
+                username: user.username,
+                email: user.email,
                 profilePicture: nil
             ),
             content: trimmedText,
@@ -179,6 +190,6 @@ struct CommentsSheet: View {
 
 // MARK: - Preview
 #Preview {
-    CommentsSheet(post: JamPost.mock[0])
+    CommentsSheetView(post: JamPost.mock[0])
         .preferredColorScheme(.dark)
 }

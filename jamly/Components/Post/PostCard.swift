@@ -161,7 +161,7 @@ struct PostCard: View {
             .padding(.vertical, 15)
         }
         .sheet(isPresented: $showCommentsSheet) {
-            CommentsSheet(post: post)
+            CommentsSheetView(post: post)
         }
     }
 

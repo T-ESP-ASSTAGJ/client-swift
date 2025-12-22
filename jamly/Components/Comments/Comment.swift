@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CommentView: View {
+struct Comment: View {
     let comment: CommentType
     
     @State private var isLiked = false
@@ -122,25 +122,4 @@ struct CommentView: View {
             return seconds <= 5 ? "Right now" : "\(seconds) seconds ago"
         }
     }
-}
-
-
-// MARK: - Preview
-
-#Preview("Single Comment") {
-    CommentView(
-        comment: CommentType(
-            id: 1,
-            user: User(
-                id: 1,
-                username: "testuser",
-                email: "test@test.fr",
-                profilePicture:"https://fastly.picsum.photos/id/426/200/200.jpg?hmac=5auPuax0L2lXSIX0eJ2Qxa3HzmGUHCrGDPIEMAWgw7o"
-            ),
-            content: "Hello, world!",
-            createdAt: "2025-12-12T14:30:00Z"
-        )
-    )
-    .padding()
-    .preferredColorScheme(ColorScheme.dark)
 }
