@@ -50,6 +50,11 @@
 		76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */; };
 		76BB5C482EE4F699007B92EB /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 76BB5C472EE4F699007B92EB /* Inject */; };
 		76D554372EEC2CB600244164 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D554362EEC2CB600244164 /* Header.swift */; };
+		7919EE392EF87C4B00C3C63A /* CommentsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7919EE382EF87C4B00C3C63A /* CommentsSheet.swift */; };
+		7933238A2EF80A230040755F /* CommentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* CommentView.swift */; };
+		7933238F2EF80C970040755F /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7933238E2EF80C950040755F /* Comment.swift */; };
+		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
+		793323972EF840E90040755F /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323962EF840E90040755F /* PostCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,6 +122,11 @@
 		76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicManager.swift; sourceTree = "<group>"; };
 		76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlaylistsView.swift; sourceTree = "<group>"; };
 		76D554362EEC2CB600244164 /* Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
+		7919EE382EF87C4B00C3C63A /* CommentsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsSheet.swift; sourceTree = "<group>"; };
+		793323892EF80A230040755F /* CommentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentView.swift; sourceTree = "<group>"; };
+		7933238E2EF80C950040755F /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
+		793323962EF840E90040755F /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -244,6 +254,7 @@
 		761C504C2EE3ACA20053AD1F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				79A162DE2EEC745F004CBDCF /* Comments */,
 				76D554362EEC2CB600244164 /* Header.swift */,
 				76883EDD2EE50055006A3955 /* TabBar */,
 				76883EE02EE5005C006A3955 /* Post */,
@@ -370,6 +381,8 @@
 				7642FF732EE783BF0063DE3A /* MusicPickerView.swift */,
 				7642FF712EE783BA0063DE3A /* ImagePicker.swift */,
 				76883EDF2EE5005C006A3955 /* PostCard.swift */,
+				793323942EF840D80040755F /* PostView.swift */,
+				793323962EF840E90040755F /* PostCardView.swift */,
 			);
 			path = Post;
 			sourceTree = "<group>";
@@ -427,6 +440,7 @@
 		76A2D3BE2EE4B22800AA6F6E /* App */ = {
 			isa = PBXGroup;
 			children = (
+				79A162DA2EEC7275004CBDCF /* Comments */,
 				76385AC92EE76A56000B0320 /* Post */,
 				762D6ADF2EE6FB9E0022C539 /* Chats */,
 				76C6771A2EE4DF88009F4D80 /* Discover */,
@@ -461,6 +475,31 @@
 				763EF3C32EE614C00096A522 /* DiscoverView.swift */,
 			);
 			path = Discover;
+			sourceTree = "<group>";
+		};
+		79A162DA2EEC7275004CBDCF /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				79A162DB2EEC73F5004CBDCF /* models */,
+			);
+			path = Comments;
+			sourceTree = "<group>";
+		};
+		79A162DB2EEC73F5004CBDCF /* models */ = {
+			isa = PBXGroup;
+			children = (
+				7933238E2EF80C950040755F /* Comment.swift */,
+				7919EE382EF87C4B00C3C63A /* CommentsSheet.swift */,
+			);
+			path = models;
+			sourceTree = "<group>";
+		};
+		79A162DE2EEC745F004CBDCF /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				793323892EF80A230040755F /* CommentView.swift */,
+			);
+			path = Comments;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -629,6 +668,7 @@
 				76385AC32EE76651000B0320 /* PostAction.swift in Sources */,
 				761C50632EE458880053AD1F /* AuthManager.swift in Sources */,
 				761C505E2EE458450053AD1F /* APIClient.swift in Sources */,
+				7933238F2EF80C970040755F /* Comment.swift in Sources */,
 				761C505C2EE458420053AD1F /* APIError.swift in Sources */,
 				76883EEC2EE501AC006A3955 /* UserStore.swift in Sources */,
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
@@ -636,15 +676,19 @@
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */,
+				793323972EF840E90040755F /* PostCardView.swift in Sources */,
 				76883EDE2EE50055006A3955 /* TabBar.swift in Sources */,
 				763EF3C42EE614C00096A522 /* DiscoverView.swift in Sources */,
 				7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */,
+				7933238A2EF80A230040755F /* CommentView.swift in Sources */,
 				76883EEA2EE501A7006A3955 /* SecureStore.swift in Sources */,
 				761C50402EE3ABFC0053AD1F /* HomeView.swift in Sources */,
 				761C50552EE447BD0053AD1F /* MainTabView.swift in Sources */,
 				763EF3B72EE5E53F0096A522 /* ValidatorSchemas.swift in Sources */,
 				76883EE82EE50107006A3955 /* User.swift in Sources */,
 				76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */,
+				7919EE392EF87C4B00C3C63A /* CommentsSheet.swift in Sources */,
+				793323952EF840D80040755F /* PostView.swift in Sources */,
 				76883EE12EE5005C006A3955 /* PostCard.swift in Sources */,
 				76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */,
 				761C508B2EE47C350053AD1F /* ProfileView.swift in Sources */,
