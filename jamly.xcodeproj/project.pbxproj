@@ -32,6 +32,7 @@
 		763EF3C42EE614C00096A522 /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763EF3C32EE614C00096A522 /* DiscoverView.swift */; };
 		7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF712EE783BA0063DE3A /* ImagePicker.swift */; };
 		7642FF742EE783BF0063DE3A /* MusicPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF732EE783BF0063DE3A /* MusicPickerView.swift */; };
+		7661BD262EFA02F000855C37 /* JamPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7661BD242EFA02F000855C37 /* JamPost.swift */; };
 		766998A02EE4EA9600A73250 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7669989F2EE4EA9600A73250 /* PlaylistDetailView.swift */; };
 		76883ED82EE50047006A3955 /* UserAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883ED62EE50047006A3955 /* UserAction.swift */; };
 		76883EDB2EE5004E006A3955 /* LoginAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883ED92EE5004E006A3955 /* LoginAction.swift */; };
@@ -50,6 +51,11 @@
 		76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */; };
 		76BB5C482EE4F699007B92EB /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 76BB5C472EE4F699007B92EB /* Inject */; };
 		76D554372EEC2CB600244164 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D554362EEC2CB600244164 /* Header.swift */; };
+		7919EE392EF87C4B00C3C63A /* CommentsSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */; };
+		7933238A2EF80A230040755F /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* Comment.swift */; };
+		7933238F2EF80C970040755F /* CommentMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7933238E2EF80C950040755F /* CommentMock.swift */; };
+		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
+		793323972EF840E90040755F /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323962EF840E90040755F /* PostCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +104,7 @@
 		763EF3C32EE614C00096A522 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		7642FF712EE783BA0063DE3A /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7642FF732EE783BF0063DE3A /* MusicPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPickerView.swift; sourceTree = "<group>"; };
+		7661BD242EFA02F000855C37 /* JamPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JamPost.swift; sourceTree = "<group>"; };
 		7669989F2EE4EA9600A73250 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
 		76883ED62EE50047006A3955 /* UserAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAction.swift; sourceTree = "<group>"; };
 		76883ED92EE5004E006A3955 /* LoginAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAction.swift; sourceTree = "<group>"; };
@@ -117,6 +124,11 @@
 		76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicManager.swift; sourceTree = "<group>"; };
 		76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlaylistsView.swift; sourceTree = "<group>"; };
 		76D554362EEC2CB600244164 /* Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
+		7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsSheetView.swift; sourceTree = "<group>"; };
+		793323892EF80A230040755F /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		7933238E2EF80C950040755F /* CommentMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentMock.swift; sourceTree = "<group>"; };
+		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
+		793323962EF840E90040755F /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -128,11 +140,6 @@
 		761C50082EE392D70053AD1F /* jamlyUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = jamlyUITests;
-			sourceTree = "<group>";
-		};
-		761C504A2EE3AC760053AD1F /* models */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = models;
 			sourceTree = "<group>";
 		};
 		761C506C2EE45A500053AD1F /* model */ = {
@@ -196,7 +203,7 @@
 		761C50342EE3ABFC0053AD1F /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				761C504A2EE3AC760053AD1F /* models */,
+				7661BD252EFA02F000855C37 /* models */,
 				761C50362EE3ABFC0053AD1F /* HomeView.swift */,
 			);
 			path = Home;
@@ -244,6 +251,7 @@
 		761C504C2EE3ACA20053AD1F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				79A162DE2EEC745F004CBDCF /* Comments */,
 				76D554362EEC2CB600244164 /* Header.swift */,
 				76883EDD2EE50055006A3955 /* TabBar */,
 				76883EE02EE5005C006A3955 /* Post */,
@@ -340,6 +348,14 @@
 			path = Schemas;
 			sourceTree = "<group>";
 		};
+		7661BD252EFA02F000855C37 /* models */ = {
+			isa = PBXGroup;
+			children = (
+				7661BD242EFA02F000855C37 /* JamPost.swift */,
+			);
+			path = models;
+			sourceTree = "<group>";
+		};
 		76883ED72EE50047006A3955 /* Users */ = {
 			isa = PBXGroup;
 			children = (
@@ -370,6 +386,8 @@
 				7642FF732EE783BF0063DE3A /* MusicPickerView.swift */,
 				7642FF712EE783BA0063DE3A /* ImagePicker.swift */,
 				76883EDF2EE5005C006A3955 /* PostCard.swift */,
+				793323942EF840D80040755F /* PostView.swift */,
+				793323962EF840E90040755F /* PostCardView.swift */,
 			);
 			path = Post;
 			sourceTree = "<group>";
@@ -427,6 +445,7 @@
 		76A2D3BE2EE4B22800AA6F6E /* App */ = {
 			isa = PBXGroup;
 			children = (
+				79A162DA2EEC7275004CBDCF /* Comments */,
 				76385AC92EE76A56000B0320 /* Post */,
 				762D6ADF2EE6FB9E0022C539 /* Chats */,
 				76C6771A2EE4DF88009F4D80 /* Discover */,
@@ -463,6 +482,31 @@
 			path = Discover;
 			sourceTree = "<group>";
 		};
+		79A162DA2EEC7275004CBDCF /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				79A162DB2EEC73F5004CBDCF /* models */,
+				7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */,
+			);
+			path = Comments;
+			sourceTree = "<group>";
+		};
+		79A162DB2EEC73F5004CBDCF /* models */ = {
+			isa = PBXGroup;
+			children = (
+				7933238E2EF80C950040755F /* CommentMock.swift */,
+			);
+			path = models;
+			sourceTree = "<group>";
+		};
+		79A162DE2EEC745F004CBDCF /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				793323892EF80A230040755F /* Comment.swift */,
+			);
+			path = Comments;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -479,7 +523,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				761C504A2EE3AC760053AD1F /* models */,
 				761C506C2EE45A500053AD1F /* model */,
 				762D6AE32EE7092E0022C539 /* Follows */,
 			);
@@ -629,6 +672,7 @@
 				76385AC32EE76651000B0320 /* PostAction.swift in Sources */,
 				761C50632EE458880053AD1F /* AuthManager.swift in Sources */,
 				761C505E2EE458450053AD1F /* APIClient.swift in Sources */,
+				7933238F2EF80C970040755F /* CommentMock.swift in Sources */,
 				761C505C2EE458420053AD1F /* APIError.swift in Sources */,
 				76883EEC2EE501AC006A3955 /* UserStore.swift in Sources */,
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
@@ -636,15 +680,19 @@
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */,
+				793323972EF840E90040755F /* PostCardView.swift in Sources */,
 				76883EDE2EE50055006A3955 /* TabBar.swift in Sources */,
 				763EF3C42EE614C00096A522 /* DiscoverView.swift in Sources */,
 				7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */,
+				7933238A2EF80A230040755F /* Comment.swift in Sources */,
 				76883EEA2EE501A7006A3955 /* SecureStore.swift in Sources */,
 				761C50402EE3ABFC0053AD1F /* HomeView.swift in Sources */,
 				761C50552EE447BD0053AD1F /* MainTabView.swift in Sources */,
 				763EF3B72EE5E53F0096A522 /* ValidatorSchemas.swift in Sources */,
 				76883EE82EE50107006A3955 /* User.swift in Sources */,
 				76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */,
+				7919EE392EF87C4B00C3C63A /* CommentsSheetView.swift in Sources */,
+				793323952EF840D80040755F /* PostView.swift in Sources */,
 				76883EE12EE5005C006A3955 /* PostCard.swift in Sources */,
 				76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */,
 				761C508B2EE47C350053AD1F /* ProfileView.swift in Sources */,
@@ -652,6 +700,7 @@
 				761C50422EE3ABFC0053AD1F /* jamlyApp.swift in Sources */,
 				76883ED82EE50047006A3955 /* UserAction.swift in Sources */,
 				76204DCC2EE78A8B004C9C93 /* CreatePostView.swift in Sources */,
+				7661BD262EFA02F000855C37 /* JamPost.swift in Sources */,
 				76883EE42EE50062006A3955 /* HomeFeed.swift in Sources */,
 				7642FF742EE783BF0063DE3A /* MusicPickerView.swift in Sources */,
 				76883EDB2EE5004E006A3955 /* LoginAction.swift in Sources */,
