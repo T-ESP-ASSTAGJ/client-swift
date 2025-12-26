@@ -13,6 +13,7 @@ struct PostCard: View {
     @State private var coverUIImage: UIImage?
     @State private var avatarUIImage: UIImage?
     @State private var isSwapped = false
+    @State private var showCommentsSheet: Bool = false
 
     var body: some View {
         VStack(alignment: .center) {
@@ -108,7 +109,9 @@ struct PostCard: View {
                         }
                         
                         VStack {
-                            Button(action: {}) {
+                            Button(action: {
+                                showCommentsSheet = true
+                            }) {
                                 VStack(spacing: 5) {
                                     Image(systemName: "text.bubble")
                                         .font(.system(size: 20, weight: .semibold))
@@ -156,6 +159,9 @@ struct PostCard: View {
             }
             .padding(.horizontal, 25)
             .padding(.vertical, 15)
+        }
+        .sheet(isPresented: $showCommentsSheet) {
+            CommentsSheetView(post: post)
         }
     }
 

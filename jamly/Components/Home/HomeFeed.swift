@@ -40,4 +40,5 @@ enum FeedSegment {
 
 #Preview {
     HomeFeed()
+        .preferredColorScheme(ColorScheme.dark)
 }
