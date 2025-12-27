@@ -2,14 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Jamly need access to Apple Music so you can add music to your posts.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Jamly would like to display your location on your posts.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Jamly need access to your photo library to select photos for your posts.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Jamly need access to your camera to take photos for your post.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Poppins-Light.ttf</string>

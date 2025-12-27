@@ -115,3 +115,16 @@ struct AuthenticationFlow: View {
         }
     }
 }
+
+#Preview {
+    let userStore = UserStore()
+    let authManager = AuthManager(userStore: userStore)
+    let musicManager = MusicManager()
+    
+    return RootView()
+        .environmentObject(authManager)
+        .environmentObject(userStore)
+        .environmentObject(musicManager)
+        .preferredColorScheme(.dark)
+}
+
