@@ -5,7 +5,7 @@
 ._*
 
 # Xcode - User settings
-xcuserdata/
+jamly.xcodeproj/xcuserdata/
 *.xcuserstate
 
 # Build artifacts
