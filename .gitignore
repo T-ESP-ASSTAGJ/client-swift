@@ -1,2 +1,29 @@
-.DS_STORE
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode - User settings
 xcuserdata/
+*.xcuserstate
+
+# Build artifacts
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# CocoaPods (si utilisé)
+Pods/
+
+# Temporary files
+*.swp
+*~
+.DS_Store
+EOF

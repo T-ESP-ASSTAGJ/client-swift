@@ -20,6 +20,7 @@ struct Post: Codable {
     let track: Track
     let photoUrl: String
     let location: String
+    // let createdAt: String
     
     struct User: Codable {
         let id: Int

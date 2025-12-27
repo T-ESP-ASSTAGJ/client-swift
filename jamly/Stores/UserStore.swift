@@ -15,13 +15,12 @@ class UserStore: ObservableObject {
     @Published var token: String?
     @Published var feed: [Post] = []
     @Published var isLoadingFeed: Bool = false
-    @Published var isAuthenticated: Bool = false {
-        didSet {
-            print("🔐 UserStore.isAuthenticated changed to: \(isAuthenticated)")
-        }
-    }
+    @Published var isAuthenticated: Bool = false
     @Published var isLoading = false
     @Published var error: AppError?
+    
+    // Track de la tâche de chargement du feed
+    private var feedLoadTask: Task<Void, Never>?
     
     // MARK: - Dependencies
     private let apiService: APIClient
@@ -32,8 +31,6 @@ class UserStore: ObservableObject {
         apiService: APIClient? = nil,
         secureStore: SecureStore? = nil
     ) {
-        print("🔐 UserStore init - Checking token...")
-        
         // Resolve dependencies
         self.secureStore = secureStore ?? .shared
         self.apiService = apiService ?? .shared
@@ -43,9 +40,6 @@ class UserStore: ObservableObject {
         
         if self.token != nil {
             self.isAuthenticated = true
-            print("🔐 Token found, user authenticated")
-        } else {
-            print("🔐 No token found")
         }
         
         // Observer les notifications d'erreur 401
@@ -71,7 +65,7 @@ class UserStore: ObservableObject {
         do {
             user = try await UserActions.fetchMe().value
             
-            print("😁 CurrentUser: \(String(describing: user))")
+            print("😀 CurrentUser: \(String(describing: user))")
         } catch let apiError as APIError {
             switch apiError {
             case .unauthorized:
@@ -88,16 +82,59 @@ class UserStore: ObservableObject {
         }
     }
     
-    func loadFeed(page: Int = 1) async {
-        isLoadingFeed = true
-        do {
-            let response = try await FeedAction.getPublicFeed(page: page)
-            feed = response.value.feed
-        } catch {
-            print("Error loading feed: \(error)")
-            feed = []
+    func loadFeed(page: Int = 1, forceRefresh: Bool = false, mode: String = "public") async {
+        // ✅ Annule la tâche précédente si elle existe
+        feedLoadTask?.cancel()
+        
+        // Si déjà en cours de chargement et pas de force refresh, ignore
+        guard !isLoadingFeed || forceRefresh else {
+            print("⏭️ Feed déjà en cours de chargement, skip")
+            return
         }
-        isLoadingFeed = false
+        
+        feedLoadTask = Task { @MainActor in
+            isLoadingFeed = true
+            
+            do {
+                if(mode == "public") {
+                    let response = try await FeedAction.getPublicFeed(page: page)
+                    
+                    // ✅ Vérifie que la tâche n'a pas été annulée
+                    guard !Task.isCancelled else {
+                        print("❌ Public feed load cancelled")
+                        return
+                    }
+                    
+                    print("ℹ️ Public feed: \(response.value.count) post found !")
+                    feed = response.value
+                }else if(mode == "private") {
+                    let response = try await FeedAction.getPrivateFeed(page: page)
+                    
+                    // ✅ Vérifie que la tâche n'a pas été annulée
+                    guard !Task.isCancelled else {
+                        print("❌ Private feed load cancelled")
+                        return
+                    }
+                    
+                    print("ℹ️ Private feed: \(response.value.count) post found !")
+                    feed = response.value
+                }
+                
+            } catch {
+                // Ignore l'erreur si c'est juste une annulation
+                guard !Task.isCancelled else {
+                    print("❌ Feed load cancelled (error)")
+                    return
+                }
+                
+                print("❌ Error loading feed: \(error)")
+                feed = []
+            }
+            
+            isLoadingFeed = false
+        }
+        
+        await feedLoadTask?.value
     }
     
     /// Définit le token et sauvegarde en SecureStore
@@ -122,7 +159,11 @@ class UserStore: ObservableObject {
         user = nil
         token = nil
         isAuthenticated = false
+        feed = []
         secureStore.delete()
+        
+        // Annule toute tâche en cours
+        feedLoadTask?.cancel()
     }
     
     /// Initialise le store au démarrage (restaure le token)

@@ -16,22 +16,41 @@
 import SwiftUI
 
 struct Header: View {
-    @State private var selectedSegment: FeedSegment = .discovery
+    @EnvironmentObject private var userStore: UserStore
+    
+    @Binding var selectedSegment: FeedSegment
     
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
                 // Avatar + badge notifs
                 ZStack(alignment: .topTrailing) {
-                    Circle()
-                        .fill(Color.gray)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Image("avatar1")
+                    if let user = userStore.user, let profilePicture = user.profilePicture {
+                        AsyncImage(url: URL(string: profilePicture)) { image in
+                            image
                                 .resizable()
                                 .scaledToFill()
+                                .frame(width: 36, height: 36)
                                 .clipShape(Circle())
-                        )
+                        } placeholder: {
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 36, height: 36)
+                                .overlay {
+                                    ProgressView()
+                                }
+                        }
+                    } else {
+                        // ✅ Pas d'user OU pas de photo
+                        Circle()
+                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                            .frame(width: 36, height: 36)
+                            .overlay {
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.gray)
+                            }
+                    }
                 }
                 
                 Spacer()
@@ -90,8 +109,4 @@ struct Header: View {
             )
         )
     }
-}
-
-#Preview {
-    Header()
 }
