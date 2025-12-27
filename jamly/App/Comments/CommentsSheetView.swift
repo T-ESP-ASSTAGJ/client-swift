@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CommentsSheetView: View {
-    let post: JamPost
+    let post: Post
     
     @EnvironmentObject private var userStore: UserStore
     
@@ -41,9 +41,9 @@ struct CommentsSheetView: View {
                     }
                     .padding(.vertical)
                 }
-                
-                Divider()
-                
+            
+            }
+            .safeAreaInset(edge: .bottom) {
                 commentInputSection
             }
             .onTapGesture {
@@ -70,7 +70,7 @@ struct CommentsSheetView: View {
     
     private var postHeader: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: post.coverImageName)) { image in
+            AsyncImage(url: URL(string: post.photoUrl)) { image in
                 image
                     .resizable()
                     .scaledToFill()
@@ -81,10 +81,10 @@ struct CommentsSheetView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(post.title)
+                Text(post.track.title)
                     .font(.headline)
                     .textCase(.uppercase)
-                Text(post.subtitle)
+                Text(post.track.artist.name)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -122,7 +122,7 @@ struct CommentsSheetView: View {
             TextField("Write a comment...", text: $newCommentText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .padding(12)
-                .background(Color(.systemGray4))
+                .background(.ultraThinMaterial)
                 .cornerRadius(20)
                 .focused($isTextFieldFocused)
                 .lineLimit(1...5)
@@ -186,10 +186,4 @@ struct CommentsSheetView: View {
         newCommentText = ""
         isTextFieldFocused = false
     }
-}
-
-// MARK: - Preview
-#Preview {
-    CommentsSheetView(post: JamPost.mock[0])
-        .preferredColorScheme(.dark)
 }
