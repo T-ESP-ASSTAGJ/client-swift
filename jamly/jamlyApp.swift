@@ -12,10 +12,15 @@ struct jamlyApp: App {
     
     @StateObject private var musicManager = MusicManager()
     
+    @Environment(\.scenePhase) private var scenePhase
+    
     init() {
         let userStore = UserStore()
         _userStore = StateObject(wrappedValue: userStore)
         _authManager = StateObject(wrappedValue: AuthManager(userStore: userStore))
+        
+        // ✅ Supprime les warnings de contraintes AutoLayout (bug iOS)
+        UserDefaults.standard.set(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
     }
     
     var body: some Scene {
@@ -40,12 +45,33 @@ struct jamlyApp: App {
                 // ✅ Charge les playlists EN ARRIÈRE-PLAN seulement si déjà autorisé
                 Task.detached(priority: .background) {
                     await loadMusicIfAuthorized()
+                    
+                }
+            
+                Task {
+                    await userStore.loadFeed()
                 }
                 
                 // Délai minimum pour voir le splash screen
                 try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 seconde
                 withAnimation(.easeInOut(duration: 0.5)) {
                     isLoading = false
+                }
+            }
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                switch newPhase {
+                case .background, .inactive:
+                    // App en arrière-plan ou inactive → pause
+                    musicManager.pause()
+                    print("🎵 App en arrière-plan, musique en pause")
+                    
+                case .active:
+                    // App redevient active → ne fait rien
+                    // (la musique reprendra quand l'user retourne sur le feed)
+                    print("🎵 App active")
+                    
+                @unknown default:
+                    break
                 }
             }
         }

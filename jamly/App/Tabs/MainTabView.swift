@@ -10,25 +10,26 @@ enum TabItem: Int, CaseIterable {
 
 struct MainTabView: View {
     @State private var selectedTab: TabItem = .home
+    @State private var feedScrollPosition: Int?
+    @State private var selectedSegment: FeedSegment = .discovery
+    
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Contenu selon l'onglet sélectionné
-            // ✅ Chaque tab a son propre NavigationStack
             Group {
                 switch selectedTab {
                 case .home:
                     NavigationStack {
-                        HomeView()
+                        // ✅ Passe le binding à HomeFeed
+                        HomeView(selectedSegment: $selectedSegment, scrollPosition: $feedScrollPosition)
                     }
                     
                 case .discover:
                     NavigationStack {
                         DiscoverView()
                     }
-                    
                 case .create:
                     NavigationStack {
                         CreatePostView()
@@ -73,10 +74,4 @@ struct ChatDetailView: View {
         }
         .navigationTitle(chatName)
     }
-}
-
-#Preview {
-    MainTabView()
-        .environmentObject(AuthManager(userStore: UserStore()))
-        .environmentObject(UserStore())
 }

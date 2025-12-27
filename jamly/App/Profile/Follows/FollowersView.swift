@@ -42,6 +42,7 @@ struct FollowersView: View {
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
         }
+        
         .scrollContentBackground(.hidden)
         .background(Color.appBackground)
         .listStyle(.plain)
