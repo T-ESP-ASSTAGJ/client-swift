@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76119AB32EFEDB2F00237349 /* FeedAction.swift */; };
+		76119ABB2EFEE52100237349 /* FormatDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76119ABA2EFEE52100237349 /* FormatDate.swift */; };
+		76119AC02EFF11E500237349 /* FollowersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76119ABD2EFF11E500237349 /* FollowersView.swift */; };
+		76119AC12EFF11E500237349 /* FollowingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76119ABE2EFF11E500237349 /* FollowingView.swift */; };
 		761C503B2EE3ABFC0053AD1F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 761C50352EE3ABFC0053AD1F /* Assets.xcassets */; };
 		761C50402EE3ABFC0053AD1F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C50362EE3ABFC0053AD1F /* HomeView.swift */; };
 		761C50422EE3ABFC0053AD1F /* jamlyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C50382EE3ABFC0053AD1F /* jamlyApp.swift */; };
@@ -76,6 +80,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		76119AB32EFEDB2F00237349 /* FeedAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAction.swift; sourceTree = "<group>"; };
+		76119ABA2EFEE52100237349 /* FormatDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatDate.swift; sourceTree = "<group>"; };
+		76119ABD2EFF11E500237349 /* FollowersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersView.swift; sourceTree = "<group>"; };
+		76119ABE2EFF11E500237349 /* FollowingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingView.swift; sourceTree = "<group>"; };
 		761C4FEC2EE392D60053AD1F /* jamly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = jamly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		761C4FFB2EE392D70053AD1F /* jamlyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = jamlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		761C50052EE392D70053AD1F /* jamlyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = jamlyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -147,11 +155,6 @@
 			path = model;
 			sourceTree = "<group>";
 		};
-		762D6AE32EE7092E0022C539 /* Follows */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Follows;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +183,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		76119AB42EFEDB2F00237349 /* Feed */ = {
+			isa = PBXGroup;
+			children = (
+				76119AB32EFEDB2F00237349 /* FeedAction.swift */,
+			);
+			path = Feed;
+			sourceTree = "<group>";
+		};
+		76119AB62EFEE0DA00237349 /* Functions */ = {
+			isa = PBXGroup;
+			children = (
+				76119ABA2EFEE52100237349 /* FormatDate.swift */,
+			);
+			path = Functions;
+			sourceTree = "<group>";
+		};
+		76119AB92EFEE13E00237349 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				763EF3BE2EE5FE580096A522 /* Color+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		76119ABF2EFF11E500237349 /* Follows */ = {
+			isa = PBXGroup;
+			children = (
+				76119ABD2EFF11E500237349 /* FollowersView.swift */,
+				76119ABE2EFF11E500237349 /* FollowingView.swift */,
+			);
+			path = Follows;
+			sourceTree = "<group>";
+		};
 		761C4FE32EE392D60053AD1F = {
 			isa = PBXGroup;
 			children = (
@@ -215,9 +251,9 @@
 				761C50532EE447380053AD1F /* Actions */,
 				76A2D3BE2EE4B22800AA6F6E /* App */,
 				761C50352EE3ABFC0053AD1F /* Assets.xcassets */,
-				763EF3BE2EE5FE580096A522 /* Color+Extensions.swift */,
 				761C504C2EE3ACA20053AD1F /* Components */,
 				761C50512EE446D90053AD1F /* Core */,
+				76119AB92EFEE13E00237349 /* Extensions */,
 				76A2D3BD2EE4AF2A00AA6F6E /* Info.plist */,
 				76A2D3BC2EE4AF0800AA6F6E /* jamly.entitlements */,
 				761C50382EE3ABFC0053AD1F /* jamlyApp.swift */,
@@ -280,6 +316,7 @@
 		761C50532EE447380053AD1F /* Actions */ = {
 			isa = PBXGroup;
 			children = (
+				76119AB42EFEDB2F00237349 /* Feed */,
 				76385AC12EE76648000B0320 /* Post */,
 				76883ED72EE50047006A3955 /* Users */,
 				76883EDA2EE5004E006A3955 /* Auth */,
@@ -290,6 +327,7 @@
 		761C50612EE458870053AD1F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				76119AB62EFEE0DA00237349 /* Functions */,
 				763EF3B52EE5E5390096A522 /* Schemas */,
 				761C50622EE458880053AD1F /* AuthManager.swift */,
 			);
@@ -309,7 +347,7 @@
 		761C50892EE47C290053AD1F /* Profile */ = {
 			isa = PBXGroup;
 			children = (
-				762D6AE32EE7092E0022C539 /* Follows */,
+				76119ABF2EFF11E500237349 /* Follows */,
 				76A2D3C22EE4B27A00AA6F6E /* Music */,
 				761C508A2EE47C350053AD1F /* ProfileView.swift */,
 			);
@@ -524,7 +562,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				761C506C2EE45A500053AD1F /* model */,
-				762D6AE32EE7092E0022C539 /* Follows */,
 			);
 			name = jamly;
 			packageProductDependencies = (
@@ -678,6 +715,7 @@
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
+				76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */,
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */,
 				793323972EF840E90040755F /* PostCardView.swift in Sources */,
@@ -700,7 +738,10 @@
 				761C50422EE3ABFC0053AD1F /* jamlyApp.swift in Sources */,
 				76883ED82EE50047006A3955 /* UserAction.swift in Sources */,
 				76204DCC2EE78A8B004C9C93 /* CreatePostView.swift in Sources */,
+				76119AC02EFF11E500237349 /* FollowersView.swift in Sources */,
+				76119AC12EFF11E500237349 /* FollowingView.swift in Sources */,
 				7661BD262EFA02F000855C37 /* JamPost.swift in Sources */,
+				76119ABB2EFEE52100237349 /* FormatDate.swift in Sources */,
 				76883EE42EE50062006A3955 /* HomeFeed.swift in Sources */,
 				7642FF742EE783BF0063DE3A /* MusicPickerView.swift in Sources */,
 				76883EDB2EE5004E006A3955 /* LoginAction.swift in Sources */,
@@ -864,6 +905,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = jamly/jamly.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9668FMYQJ3;
@@ -884,6 +926,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -900,6 +943,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = jamly/jamly.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9668FMYQJ3;
@@ -920,6 +964,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

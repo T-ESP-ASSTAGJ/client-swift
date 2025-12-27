@@ -5,31 +5,23 @@
 //  Created by REVERSS on 08/12/2025.
 //
 
-struct FeedRequestResponse: Decodable {
-    let feed: [Post]
-}
-
 enum FeedAction{
-    static func getPublicFeed(page: Int = 1) async throws -> APIResponse<FeedRequestResponse> {
+    static func getPublicFeed(page: Int = 1) async throws -> APIResponse<[Post]> {
         let response = try await APIClient.shared.request(
-            "/feed/public?\(page)",
+            "/feed/public",
             method: .get,
-            responseType: FeedRequestResponse.self
+            responseType: [Post].self
         )
-        
-        print(response)
         
         return response
     }
     
-    static func getPrivateFeed(page: Int = 1) async throws -> APIResponse<FeedRequestResponse> {
+    static func getPrivateFeed(page: Int = 1) async throws -> APIResponse<[Post]> {
         let response = try await APIClient.shared.request(
-            "/feed/private?\(page)",
+            "/feed/private",
             method: .get,
-            responseType: FeedRequestResponse.self
+            responseType: [Post].self
         )
-        
-        print(response)
         
         return response
     }

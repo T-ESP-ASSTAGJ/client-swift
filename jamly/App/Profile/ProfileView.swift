@@ -166,13 +166,32 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack() {
                 ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                        .frame(width: 85, height: 85)
-                    
-                    Image(systemName: "plus.circle")
-                        .font(.system(size: 25))
-                        .foregroundColor(.white.opacity(0.5))
+                    if let user = userStore.user, let profilePicture = user.profilePicture {
+                        AsyncImage(url: URL(string: profilePicture)) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 85, height: 85)
+                                .clipShape(Circle())
+                        } placeholder: {
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 85, height: 85)
+                                .overlay {
+                                    ProgressView()
+                                }
+                        }
+                    } else {
+                        // ✅ Pas d'user OU pas de photo
+                        Circle()
+                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                            .frame(width: 85, height: 85)
+                            .overlay {
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 35))
+                                    .foregroundColor(.gray)
+                            }
+                    }
                 }
                 .padding(.vertical)
                 .padding(.horizontal, 7)

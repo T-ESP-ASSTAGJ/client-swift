@@ -1,6 +1,20 @@
 import SwiftUI
 
+enum FeedSegment {
+    case friends
+    case discovery
+}
+
 struct HomeView: View {
+    @Binding var selectedSegment: FeedSegment
+    
+    @Binding var scrollPosition: Int?  // ✅ Change en @Binding
+    
+    init(selectedSegment: Binding<FeedSegment>, scrollPosition: Binding<Int?>) {
+        self._selectedSegment = selectedSegment
+        self._scrollPosition = scrollPosition
+    }
+    
     var body: some View {
         ZStack {
             Color.appBackground
@@ -11,14 +25,11 @@ struct HomeView: View {
                 .ignoresSafeArea()
             
             VStack {
-                Header()
+                Header(selectedSegment: $selectedSegment)
                 
-                HomeFeed()
+                HomeFeed(scrollPosition: $scrollPosition, selectedSegment: $selectedSegment)
             }
         }
     }
 }
 
-#Preview {
-    HomeView()
-}
