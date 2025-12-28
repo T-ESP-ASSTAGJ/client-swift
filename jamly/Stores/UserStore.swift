@@ -173,6 +173,53 @@ class UserStore: ObservableObject {
         }
     }
     
+    func followUser(userId: Int) async {
+        do {
+            _ = try await UserActions.followUser(userId: userId)
+            await fetchCurrentUser()
+        } catch let apiError as APIError {
+            switch apiError {
+            case .unauthorized:
+                error = .unauthorized
+            case .networkError:
+                error = .networkError
+            case .serverError:
+                error = .serverError
+            default:
+                error = .unknown
+            }
+        } catch {
+            self.error = .unknown
+        }
+    }
+    
+    func unfollowUser(userId: Int, autoRefresh: Bool = true) async {
+        do {
+            _ = try await UserActions.unfollowUser(userId: userId)
+            if autoRefresh {
+                print("test")
+                await fetchCurrentUser()
+            }
+        } catch let apiError as APIError {
+            switch apiError {
+            case .unauthorized:
+                error = .unauthorized
+            case .networkError:
+                error = .networkError
+            case .serverError:
+                error = .serverError
+            default:
+                error = .unknown
+            }
+        } catch {
+            self.error = .unknown
+        }
+    }
+    
+    func isFollowing(userId: Int) -> Bool {
+        return user?.followed?.contains(where: { $0.id == userId }) ?? false
+    }
+    
     func handleUnauthorized() {
         print("🔐 Unauthorized - logging out")
         logout()
