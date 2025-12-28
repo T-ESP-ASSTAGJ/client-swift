@@ -8,10 +8,48 @@
 import SwiftUI
 
 struct FollowingView: View {
-    let following = ["Alice", "Bob", "Charlie"]
+    @EnvironmentObject private var userStore: UserStore
+    
+    @State private var searchText = ""
+    @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
+    
+    var followings: [FollowedUser] {
+        userStore.user?.followed ?? []
+    }
+    
+    var filteredFollowings: [FollowedUser] {
+        if searchText.isEmpty {
+            return followings
+        } else {
+            return followings.filter { following in
+                following.username.localizedStandardContains(searchText)
+            }
+        }
+    }
+    
+    // Check if a user is locally followed (or use server state if not modified)
+    private func isFollowing(userId: Int) -> Bool {
+        if let localState = localFollowingState[userId] {
+            return localState
+        }
+        return userStore.isFollowing(userId: userId)
+    }
+    
+    private func toggleFollow(for following: FollowedUser) async {
+        // Update local state immediately for UI
+        let currentState = isFollowing(userId: following.id)
+        localFollowingState[following.id] = !currentState
+        
+        // Perform API call
+        if currentState {
+            await userStore.unfollowUser(userId: following.id, autoRefresh: false)
+        } else {
+            await userStore.followUser(userId: following.id)
+        }
+    }
     
     var body: some View {
-        List(following, id: \.self) { chat in
+        List(filteredFollowings) { following in
             HStack(spacing: 8) {
                 // Image
                 HStack(spacing: 15) {
@@ -23,7 +61,7 @@ struct FollowingView: View {
                     
                     // Infos
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(chat)
+                        Text(following.username)
                             .font(.headline)
                             .foregroundColor(.white)
                     }
@@ -31,15 +69,17 @@ struct FollowingView: View {
                 Spacer()
                 
                 Button {
-                    
+                    Task {
+                        await toggleFollow(for: following)
+                    }
                 } label: {
-                    Text("Following")
-                }
+                    Text(isFollowing(userId: following.id) ? "Unfollow" : "Follow")                }
                 .buttonStyle(.glass)
             }
             .frame(height: 40)
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 4, leading: 15, bottom: 20, trailing: 15))
         }
         .scrollContentBackground(.hidden)
         .background(Color.appBackground)
@@ -47,9 +87,15 @@ struct FollowingView: View {
         
         .navigationTitle("Following")
         .navigationBarTitleDisplayMode(.large)
+        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search followers")
+        .onDisappear {
+            Task {
+                await userStore.fetchCurrentUser()
+            }
+        }
+        .onAppear {
+            // Reset local state when view appears to sync with server
+            localFollowingState.removeAll()
+        }
     }
-}
-
-#Preview {
-    FollowingView()
 }

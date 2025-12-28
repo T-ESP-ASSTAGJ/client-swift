@@ -212,7 +212,10 @@ struct ProfileView: View {
                 Button {
                     selectedFollowView = .following
                 } label: {
-                    StatView(number: "441", label: "Followed")
+                    StatView(
+                        number: formatNumber(userStore.user?.followedCount ?? 0),
+                        label: "Followed"
+                    )
                 }
                 
                 VStack {
@@ -224,7 +227,10 @@ struct ProfileView: View {
                 Button {
                     selectedFollowView = .followers
                 } label: {
-                    StatView(number: "164,6K", label: "Followers")
+                    StatView(
+                        number: formatNumber(userStore.user?.followerCount ?? 0),
+                        label: "Followers"
+                    )
                 }
                 
                 VStack {
@@ -299,11 +305,17 @@ struct TabButton: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        ProfileView()
-            .environmentObject(AuthManager(userStore: UserStore()))
-            .environmentObject(UserStore())
-            .preferredColorScheme(.dark)
+private func formatNumber(_ number: Int) -> String {
+    switch number {
+    case 0..<1_000:
+        return "\(number)"
+    case 1_000..<1_000_000:
+        let thousands = Double(number) / 1_000.0
+        return String(format: "%.1fK", thousands).replacingOccurrences(of: ".0", with: "")
+    case 1_000_000...:
+        let millions = Double(number) / 1_000_000.0
+        return String(format: "%.1fM", millions).replacingOccurrences(of: ".0", with: "")
+    default:
+        return "\(number)"
     }
 }
