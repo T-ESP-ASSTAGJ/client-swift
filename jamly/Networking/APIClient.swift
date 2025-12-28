@@ -23,7 +23,7 @@ struct APIResponse<T> {
 final class APIClient {
     static let shared = APIClient()
     
-    private let baseURL = URL(string: "http://192.168.1.36:80/api")!
+    private let baseURL = URL(string: "http://169.254.229.251:80/api")!
     private let session: URLSession
     private let secureStore: SecureStore
     
@@ -106,6 +106,12 @@ final class APIClient {
             
             switch status {
             case 200..<300:
+                if status == 204 || data.isEmpty {
+                    if T.self == EmptyResponse.self {
+                        return APIResponse(value: EmptyResponse() as! T, statusCode: status)
+                    }
+                }
+                
                 let decoded = try decoder.decode(T.self, from: data)
                 return APIResponse(value: decoded, statusCode: status)
                 
