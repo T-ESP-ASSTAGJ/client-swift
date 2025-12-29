@@ -10,26 +10,27 @@ struct User: Codable {
     let username: String
     let email: String
     let profilePicture: String?
-    let followed: [FollowedUser]?
-    let follower: [FollowedUser]?
+    let followingCount: Int
+    let followersCount: Int
+    let likesCount: Int
     
     enum CodingKeys: String, CodingKey {
-        case id, username, email, profilePicture, followed, follower
-    }
-    
-    var followedCount: Int {
-        followed?.count ?? 0
-    }
-    
-    var followerCount: Int {
-        follower?.count ?? 0
+        case id, username, email, profilePicture, followingCount, followersCount, likesCount
     }
 }
 
 
-struct FollowedUser: Codable, Identifiable {
+struct FollowerUser: Codable, Identifiable {
     let id: Int
     let username: String
+    let profilePicture: String
+    
+}
+
+struct FollowingUser: Codable, Identifiable {
+    let id: Int
+    let username: String
+    let profilePicture: String
 }
 
 struct CommonUser: Codable {

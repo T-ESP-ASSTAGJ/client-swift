@@ -336,7 +336,7 @@ struct ProfileView: View {
                     selectedFollowView = .following
                 } label: {
                     StatView(
-                        number: formatNumber(userStore.user?.followedCount ?? 0),
+                        number: formatNumber(userStore.user?.followingCount ?? 0),
                         label: "Following"
                     )
                 }
@@ -351,7 +351,7 @@ struct ProfileView: View {
                     selectedFollowView = .followers
                 } label: {
                     StatView(
-                        number: formatNumber(userStore.user?.followerCount ?? 0),
+                        number: formatNumber(userStore.user?.followersCount ?? 0),
                         label: "Followers"
                     )
                 }

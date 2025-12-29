@@ -216,10 +216,6 @@ class UserStore: ObservableObject {
         }
     }
     
-    func isFollowing(userId: Int) -> Bool {
-        return user?.followed?.contains(where: { $0.id == userId }) ?? false
-    }
-    
     func handleUnauthorized() {
         print("🔐 Unauthorized - logging out")
         logout()
