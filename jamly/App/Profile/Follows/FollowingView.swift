@@ -49,41 +49,53 @@ struct FollowingView: View {
     }
     
     var body: some View {
-        List(filteredFollowings) { following in
-            HStack(spacing: 8) {
-                // Image
-                HStack(spacing: 15) {
-                    Image("avatar1")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 44, height: 44)
-                        .clipShape(Circle())
-                    
-                    // Infos
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(following.username)
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
+        LazyVStack {
+            if(followings.count == 0) {
+                VStack(spacing: 12) {
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
+                    Text("You follow no one yet.")
+                        .foregroundColor(.secondary)
                 }
                 Spacer()
-                
-                Button {
-                    Task {
-                        await toggleFollow(for: following)
+            } else {
+                List(filteredFollowings) { following in
+                    HStack(spacing: 8) {
+                        // Image
+                        HStack(spacing: 15) {
+                            Image("avatar1")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipShape(Circle())
+                            
+                            // Infos
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(following.username)
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        Spacer()
+                        
+                        Button {
+                            Task {
+                                await toggleFollow(for: following)
+                            }
+                        } label: {
+                            Text(isFollowing(userId: following.id) ? "Unfollow" : "Follow")                }
+                        .buttonStyle(.glass)
                     }
-                } label: {
-                    Text(isFollowing(userId: following.id) ? "Unfollow" : "Follow")                }
-                .buttonStyle(.glass)
+                    .frame(height: 40)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 15, bottom: 20, trailing: 15))
+                    .scrollContentBackground(.hidden)
+                    .listStyle(.plain)
+                }
             }
-            .frame(height: 40)
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 4, leading: 15, bottom: 20, trailing: 15))
         }
-        .scrollContentBackground(.hidden)
-        .background(Color.appBackground)
-        .listStyle(.plain)
         
         .navigationTitle("Following")
         .navigationBarTitleDisplayMode(.large)

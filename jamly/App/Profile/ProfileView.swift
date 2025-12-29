@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum ProfileTab {
-    case posts, likes, bookmarks
+    case posts, likes, music
 }
 
 enum FollowViews: Identifiable {
@@ -68,10 +68,10 @@ struct ProfileView: View {
                                 }
                                 
                                 TabButton(
-                                    icon: "bookmark.fill",
-                                    isSelected: selectedTab == .bookmarks
+                                    icon: "music.note.list",
+                                    isSelected: selectedTab == .music
                                 ) {
-                                    selectedTab = .bookmarks
+                                    selectedTab = .music
                                 }
                             }
                             .background(Color.black) // ✅ Fond noir opaque
@@ -85,38 +85,46 @@ struct ProfileView: View {
                     .zIndex(10) // ✅ GeometryReader aussi au-dessus
                     
                     // Grille de photos
-                    LazyVGrid(columns: columns, spacing: 2) {
-                        ForEach(0..<photos.count, id: \.self) { index in
-                            ZStack(alignment: .bottomLeading) {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .aspectRatio(1, contentMode: .fill)
-                                
-                                HStack(spacing: 4) {
-                                    Image(systemName: "eye.fill")
-                                        .font(.caption)
-                                    Text(photos[index].1)
-                                        .font(.caption)
-                                        .bold()
-                                }
-                                .foregroundColor(.white)
-                                .padding(8)
-                            }
-                            .clipped()
+                    if(photos.count == 0) {
+                        VStack(spacing: 12) {
+                            Text("No post created.")
+                                .foregroundColor(.secondary)
                         }
+                        .offset(y: 35)
+                    } else {
+                        LazyVGrid(columns: columns, spacing: 2) {
+                            ForEach(0..<photos.count, id: \.self) { index in
+                                ZStack(alignment: .bottomLeading) {
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .aspectRatio(1, contentMode: .fill)
+                                    
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "eye.fill")
+                                            .font(.caption)
+                                        Text(photos[index].1)
+                                            .font(.caption)
+                                            .bold()
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(8)
+                                }
+                                .clipped()
+                            }
+                        }
+                        .padding(.bottom, 50)
                     }
-                    .padding(.bottom, 50)
                 }
             }
             .coordinateSpace(name: "scroll")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {}) {
-                        Image(systemName: "person.badge.plus")
-                            .font(.system(size: 15))
-                            .foregroundColor(.white)
-                    }
-                }
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button(action: {}) {
+//                        Image(systemName: "person.badge.plus")
+//                            .font(.system(size: 15))
+//                            .foregroundColor(.white)
+//                    }
+//                }
                 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button {
@@ -127,13 +135,13 @@ struct ProfileView: View {
                             .foregroundColor(.white)
                     }.padding(.trailing, 3)
                     
-                    Button {
-                        authManager.logout()
-                    } label: {
-                        Image(systemName: "door.left.hand.open")
-                            .font(.system(size: 15))
-                            .foregroundColor(.red)
-                    }
+//                    Button {
+//                        authManager.logout()
+//                    } label: {
+//                        Image(systemName: "door.left.hand.open")
+//                            .font(.system(size: 15))
+//                            .foregroundColor(.red)
+//                    }
                 }
             }
             .navigationDestination(isPresented: $showMusicPlaylists) {
@@ -206,6 +214,7 @@ struct ProfileView: View {
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
+                Spacer()
             }
             
             HStack(spacing: 20) {
@@ -214,7 +223,7 @@ struct ProfileView: View {
                 } label: {
                     StatView(
                         number: formatNumber(userStore.user?.followedCount ?? 0),
-                        label: "Followed"
+                        label: "Following"
                     )
                 }
                 
@@ -233,34 +242,33 @@ struct ProfileView: View {
                     )
                 }
                 
-                VStack {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                }
-                .frame(width: 1, height: 25)
-                
-                StatView(number: "10,6M", label: "Likes")
+//                VStack {
+//                    Rectangle()
+//                        .fill(Color.gray.opacity(0.3))
+//                }
+//                .frame(width: 1, height: 25)
+//                
+//                StatView(number: "10,6M", label: "Likes")
             }
             .padding(.vertical, 0)
             .padding(.horizontal, 15)
             
-            Button(action: {}) {
-                HStack {
-                    Image(systemName: "pencil")
-                    Text("Edit Profile")
-                }
-                .foregroundColor(.white)
-                .fontWeight(.medium)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(8)
-            }
-            .padding(.horizontal, 10)
-            .padding(.top, 8)
+//            Button(action: {}) {
+//                HStack {
+//                    Image(systemName: "pencil")
+//                    Text("Edit Profile")
+//                }
+//                .foregroundColor(.white)
+//                .fontWeight(.medium)
+//                .frame(maxWidth: .infinity)
+//                .padding(.vertical, 12)
+//                .background(Color.white.opacity(0.1))
+//                .cornerRadius(8)
+//            }
+//            .padding(.horizontal, 10)
+//            .padding(.top, 8)
         }
         .padding(.bottom, 24)
-        .background(Color.black)
     }
 }
 
