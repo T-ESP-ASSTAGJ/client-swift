@@ -6,10 +6,10 @@
 //
 
 struct CreatePost: Codable {
-    let songPreview: String
     let caption: String?
-    let trackId: Int
-    let photoUrl: String
+    let songId: Int
+    let frontPhoto: String
+    let backPhoto: String
     let location: String
 }
 

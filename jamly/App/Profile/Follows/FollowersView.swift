@@ -35,43 +35,54 @@ struct FollowersView: View {
     }
     
     var body: some View {
-        List(filteredFollowers) { follower in
-            HStack(spacing: 8) {
-                // Image
-                HStack(spacing: 15) {
-                    Image("avatar1")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 44, height: 44)
-                        .clipShape(Circle())
-                    
-                    // Infos
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(follower.username)
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
+        LazyVStack {
+            if(followers.count == 0) {
+                VStack(spacing: 12) {
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
+                    Text("Actually no one follow you.")
+                        .foregroundColor(.secondary)
                 }
                 Spacer()
-                
-                Button {
-                    Task {
-                        await toggleFollow(for: follower)
+            } else {
+                List(filteredFollowers) { follower in
+                    HStack(spacing: 8) {
+                        // Image
+                        HStack(spacing: 15) {
+                            Image("avatar1")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipShape(Circle())
+                            
+                            // Infos
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(follower.username)
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        Spacer()
+                        
+                        Button {
+                            Task {
+                                await toggleFollow(for: follower)
+                            }
+                        } label: {
+                            Text(userStore.isFollowing(userId: follower.id) ? "Unfollow" : "Follow back")
+                        }
+                        .buttonStyle(.glass)
                     }
-                } label: {
-                    Text(userStore.isFollowing(userId: follower.id) ? "Unfollow" : "Follow back")
+                    .frame(height: 40)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 15, bottom: 20, trailing: 15))
+                    .scrollContentBackground(.hidden)
+                    .listStyle(.plain)
                 }
-                .buttonStyle(.glass)
             }
-            .frame(height: 40)
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 4, leading: 15, bottom: 20, trailing: 15))
         }
-        
-        .scrollContentBackground(.hidden)
-        .background(Color.appBackground)
-        .listStyle(.plain)
         .navigationTitle("Followers")
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search followers")

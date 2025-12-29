@@ -62,7 +62,15 @@ struct CameraView: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
         picker.delegate = context.coordinator
-        picker.allowsEditing = true
+        picker.allowsEditing = false
+        picker.cameraDevice = .rear
+        picker.cameraCaptureMode = .photo
+        picker.cameraFlashMode = .auto
+        picker.showsCameraControls = true
+        
+        // Force le style de présentation
+        picker.modalPresentationStyle = .overFullScreen
+        
         return picker
     }
     
@@ -80,12 +88,9 @@ struct CameraView: UIViewControllerRepresentable {
         }
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let editedImage = info[.editedImage] as? UIImage {
-                parent.image = editedImage
-            } else if let originalImage = info[.originalImage] as? UIImage {
+            if let originalImage = info[.originalImage] as? UIImage {
                 parent.image = originalImage
             }
-            
             parent.dismiss()
         }
         
