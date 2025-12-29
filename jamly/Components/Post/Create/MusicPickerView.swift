@@ -8,15 +8,25 @@
 import SwiftUI
 import MusicKit
 
+// MARK: - Cover Placement Enum
+enum CoverPlacement {
+    case front
+    case back
+}
+
 // MARK: - Music Picker View
 struct MusicPickerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var musicManager: MusicManager
-    @Binding var selectedSong: Song?
+    
     @State private var searchText = ""
     @State private var allTracks: [Track] = []
     @State private var filteredTracks: [Track] = []
     @State private var isLoadingSongs = false
+    
+    @Binding var selectedSong: Track?
+    @Binding var frontImage: UIImage?
+    @Binding var backImage: UIImage?
     
     var body: some View {
         NavigationStack {
@@ -43,7 +53,7 @@ struct MusicPickerView: View {
                     }
                 }
             }
-            .navigationTitle("Choisir une musique")
+            .navigationTitle("Choose a song")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: closeButton)
             .onAppear {
@@ -59,7 +69,7 @@ struct MusicPickerView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
             
-            TextField("Rechercher une chanson...", text: $searchText)
+            TextField("Search a song...", text: $searchText)
                 .font(.custom("Poppins-Regular", size: 15))
                 .foregroundColor(.white)
                 .autocorrectionDisabled()
@@ -85,8 +95,10 @@ struct MusicPickerView: View {
     }
     
     private var closeButton: some View {
-        Button("Fermer") {
+        Button {
             dismiss()
+        } label: {
+            Label("close", systemImage: "xmark")
         }
         .font(.custom("Poppins-Medium", size: 15))
         .foregroundColor(.white)
@@ -98,7 +110,7 @@ struct MusicPickerView: View {
             VStack(spacing: 16) {
                 ProgressView()
                     .tint(.white)
-                Text("Chargement de votre bibliothèque...")
+                Text("Loading of your library...")
                     .font(.custom("Poppins-Regular", size: 14))
                     .foregroundColor(.gray)
             }
@@ -112,25 +124,24 @@ struct MusicPickerView: View {
                 if allTracks.isEmpty {
                     emptyStateView
                 } else {
-                    // Afficher tous les tracks
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Votre bibliothèque (\(allTracks.count) chansons)")
+                        Text("Your library (\(allTracks.count) songs)")
                             .font(.custom("Poppins-Bold", size: 20))
                             .foregroundColor(.white)
                             .padding(.horizontal)
                         
                         ForEach(allTracks.prefix(100), id: \.id) { track in
-                            TrackRow(track: track) {
-                                // Essayer de convertir Track en Song
-                                if let song = track as? Song {
-                                    selectedSong = song
-                                }
-                                dismiss()
+                            TrackRow(
+                                track: track,
+                                hasFrontImage: frontImage != nil,
+                                hasBackImage: backImage != nil
+                            ) { placement in
+                                handleTrackSelection(track: track, placement: placement)
                             }
                         }
                         
                         if allTracks.count > 100 {
-                            Text("+ \(allTracks.count - 100) autres chansons")
+                            Text("+ \(allTracks.count - 100) other songs")
                                 .font(.custom("Poppins-Regular", size: 13))
                                 .foregroundColor(.gray)
                                 .padding(.horizontal)
@@ -149,15 +160,15 @@ struct MusicPickerView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.gray)
             
-            Text("Aucune chanson trouvée")
+            Text("No song found")
                 .font(.custom("Poppins-SemiBold", size: 18))
                 .foregroundColor(.white)
             
-            Text("Nombre de playlists: \(musicManager.playlists.count)")
+            Text("Number of playlists: \(musicManager.playlists.count)")
                 .font(.custom("Poppins-Regular", size: 14))
                 .foregroundColor(.yellow)
             
-            Text("Ajoutez de la musique à votre bibliothèque Apple Music")
+            Text("Add music into your library to see it here.")
                 .font(.custom("Poppins-Regular", size: 14))
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
@@ -177,7 +188,7 @@ struct MusicPickerView: View {
                             .font(.system(size: 48))
                             .foregroundColor(.gray)
                         
-                        Text("Aucun résultat")
+                        Text("No result found")
                             .font(.custom("Poppins-Medium", size: 16))
                             .foregroundColor(.gray)
                     }
@@ -187,11 +198,12 @@ struct MusicPickerView: View {
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         ForEach(filteredTracks, id: \.id) { track in
-                            TrackRow(track: track) {
-                                if let song = track as? Song {
-                                    selectedSong = song
-                                }
-                                dismiss()
+                            TrackRow(
+                                track: track,
+                                hasFrontImage: frontImage != nil,
+                                hasBackImage: backImage != nil
+                            ) { placement in
+                                handleTrackSelection(track: track, placement: placement)
                             }
                         }
                     }
@@ -203,12 +215,41 @@ struct MusicPickerView: View {
     
     // MARK: - Helper Functions
     
+    private func handleTrackSelection(track: Track, placement: CoverPlacement?) {
+        selectedSong = track
+        
+        // Si l'utilisateur veut utiliser la cover
+        if let placement = placement, let artwork = track.artwork {
+            Task {
+                // Charger l'image de la cover
+                if let url = artwork.url(width: 800, height: 800),
+                   let (data, _) = try? await URLSession.shared.data(from: url),
+                   let image = UIImage(data: data) {
+                    await MainActor.run {
+                        switch placement {
+                        case .front:
+                            frontImage = image
+                        case .back:
+                            backImage = image
+                        }
+                        dismiss()
+                    }
+                } else {
+                    await MainActor.run {
+                        dismiss()
+                    }
+                }
+            }
+        } else {
+            dismiss()
+        }
+    }
+    
     private func loadUserTracks() {
         isLoadingSongs = true
         
         print("🔍 Nombre de playlists: \(musicManager.playlists.count)")
         
-        // Récupérer tous les tracks des playlists déjà chargées
         var tracks: [Track] = []
         
         for playlist in musicManager.playlists {
@@ -222,7 +263,6 @@ struct MusicPickerView: View {
         
         print("✅ Total tracks trouvés: \(tracks.count)")
         
-        // Supprimer les doublons (même ID)
         let uniqueTracks = Array(Set(tracks.map { $0.id })).compactMap { id in
             tracks.first(where: { $0.id == id })
         }
@@ -250,10 +290,21 @@ struct MusicPickerView: View {
 // MARK: - Track Row
 struct TrackRow: View {
     let track: Track
-    let onSelect: () -> Void
+    let hasFrontImage: Bool
+    let hasBackImage: Bool
+    let onSelect: (CoverPlacement?) -> Void
+    
+    @State private var showCoverAlert = false
     
     var body: some View {
-        Button(action: onSelect) {
+        Button(action: {
+            // Si le track a une artwork, proposer de l'utiliser
+            if track.artwork != nil {
+                showCoverAlert = true
+            } else {
+                onSelect(nil)
+            }
+        }) {
             HStack(spacing: 12) {
                 // Album Artwork
                 if let artwork = track.artwork {
@@ -293,11 +344,36 @@ struct TrackRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .confirmationDialog(
+            "Use the cover ?",
+            isPresented: $showCoverAlert,
+            titleVisibility: .visible
+        ) {
+            Button(hasFrontImage ? "Replace the front image" : "Front image") {
+                onSelect(.front)
+            }
+            
+            Button(hasBackImage ? "Replace the back image" : "Back image") {
+                onSelect(.back)
+            }
+            
+            Button("No") {
+                onSelect(nil)
+            }
+            
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You can use the cover of \"\(track.title)\" for your post")
+        }
     }
 }
 
 // MARK: - Preview
 #Preview {
-    MusicPickerView(selectedSong: .constant(nil))
-        .environmentObject(MusicManager())
+    MusicPickerView(
+        selectedSong: .constant(nil),
+        frontImage: .constant(nil),
+        backImage: .constant(nil)
+    )
+    .environmentObject(MusicManager())
 }

@@ -7,10 +7,11 @@ import Combine
 struct CreatePostView: View {
     @EnvironmentObject var musicManager: MusicManager
     @StateObject private var viewModel = CreatePostViewModel()
+    @State private var showSourceSheet = false
     @State private var showMusicPicker = false
     @State private var showImagePicker = false
-    @State private var showCamera = false
     @State private var showBackImagePicker = false
+    @State private var showCamera = false
     @State private var showBackCamera = false
     @State private var currentImageSelection: ImageSelection = .front
     
@@ -20,60 +21,63 @@ struct CreatePostView: View {
     
     var body: some View {
         ZStack {
-            // Background gradient
-            Color(hex: "0C0C0C")
-                .ignoresSafeArea()
-            
             ScrollView {
                 VStack(spacing: 24) {
-                    // Images Section
-                    HStack(spacing: 12) {
-                        // Front Image
-                        ImageSelectionCard(
-                            title: "Photo principale",
-                            image: viewModel.frontImage,
-                            onCameraSelected: {
-                                currentImageSelection = .front
-                                showCamera = true
-                            },
-                            onGallerySelected: {
-                                currentImageSelection = .front
-                                showImagePicker = true
-                            },
-                            onRemove: {
-                                viewModel.frontImage = nil
+                    ZStack(alignment: .top) {
+                        // IMAGE PRINCIPALE AVEC BOUTON PAUSE CENTRÉ
+                        ZStack {
+                            ZStack {
+                                ImageSelectionCard(
+                                    image: viewModel.frontImage,
+                                    onShowSourceSelection: {
+                                        currentImageSelection = .front
+                                        showSourceSheet = true
+                                    },
+                                    onRemove: {
+                                        viewModel.frontImage = nil
+                                    },
+                                    frontImage: true
+                                )
                             }
-                        )
+                            .opacity(0.8)
+                        }
+                        .frame(width: 370, height: 300)
                         
-                        // Back Image (BeReal style)
-                        ImageSelectionCard(
-                            title: "Photo arrière",
-                            image: viewModel.backImage,
-                            onCameraSelected: {
-                                currentImageSelection = .back
-                                showBackCamera = true
-                            },
-                            onGallerySelected: {
-                                currentImageSelection = .back
-                                showBackImagePicker = true
-                            },
-                            onRemove: {
-                                viewModel.backImage = nil
+                        HStack(alignment: .top) {
+                            Spacer()
+                            
+                            // 👉 BOUTON MINIATURE DROITE
+                            ZStack {
+                                ZStack{
+                                    ImageSelectionCard(
+                                        image: viewModel.backImage,
+                                        onShowSourceSelection: {
+                                            currentImageSelection = .back
+                                            showSourceSheet = true
+                                        },
+                                        onRemove: {
+                                            viewModel.backImage = nil
+                                        },
+                                        frontImage: false
+                                    )
+                                }
+                                .frame(width: 80, height: 80)
                             }
-                        )
+                            .padding(.top, 15)
+                            .padding(.horizontal, 15)
+                        }
+                        .frame(width: 370)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 20)
                     
                     // Caption Section
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Description")
+                        Text("Caption")
                             .font(.custom("Poppins-SemiBold", size: 16))
                             .foregroundColor(.white)
                         
                         ZStack(alignment: .topLeading) {
                             if viewModel.caption.isEmpty {
-                                Text("Que se passe-t-il ?")
+                                Text("What's up?")
                                     .font(.custom("Poppins-Regular", size: 15))
                                     .foregroundColor(.gray)
                                     .padding(.horizontal, 16)
@@ -85,7 +89,6 @@ struct CreatePostView: View {
                                 .foregroundColor(.white)
                                 .scrollContentBackground(.hidden)
                                 .background(Color.clear)
-                                .frame(minHeight: 120)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                         }
@@ -105,28 +108,50 @@ struct CreatePostView: View {
                         showMusicPicker = true
                     }) {
                         HStack {
-                            Image(systemName: "music.note")
-                                .font(.system(size: 20))
-                                .foregroundColor(.white)
-                                .frame(width: 40, height: 40)
-                                .background(
-                                    Circle()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [Color(hex: "FF6B9D"), Color(hex: "C44569")],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
+                            if let selectedSong = viewModel.selectedSong {
+                                // Affichage de la chanson sélectionnée
+                                if let artwork = selectedSong.artwork {
+                                    ArtworkImage(artwork, width: 45, height: 45)
+                                        .cornerRadius(6)
+                                } else {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 45, height: 45)
+                                        .overlay(
+                                            Image(systemName: "music.note")
+                                                .font(.caption)
+                                                .foregroundColor(.white.opacity(0.5))
                                         )
-                                )
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(viewModel.selectedSong?.title ?? "Ajouter une musique")
-                                    .font(.custom("Poppins-SemiBold", size: 15))
-                                    .foregroundColor(.white)
+                                }
                                 
-                                if let artist = viewModel.selectedSong?.artistName {
-                                    Text(artist)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(selectedSong.title)
+                                        .font(.custom("Poppins-SemiBold", size: 15))
+                                        .foregroundColor(.white)
+                                }
+                            } else {
+                                // État par défaut (aucune chanson)
+                                Image(systemName: "music.note")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white)
+                                    .frame(width: 40, height: 40)
+                                    .background(
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color(hex: "FF6B9D"), Color(hex: "C44569")],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                    )
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Add a music")
+                                        .font(.custom("Poppins-SemiBold", size: 15))
+                                        .foregroundColor(.white)
+                                    
+                                    Text("Choose from your library")
                                         .font(.custom("Poppins-Regular", size: 13))
                                         .foregroundColor(.gray)
                                 }
@@ -137,7 +162,7 @@ struct CreatePostView: View {
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.gray)
                         }
-                        .padding(16)
+                        .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Color.white.opacity(0.05))
@@ -148,76 +173,89 @@ struct CreatePostView: View {
                         )
                     }
                     .padding(.horizontal)
-                }
-            }
-            
-            // Publish Button
-            VStack {
-                Spacer()
-                
-                Button(action: {
-                    viewModel.publishPost()
-                }) {
-                    HStack {
-                        if viewModel.isPublishing {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Text("Publier")
-                                .font(.custom("Poppins-SemiBold", size: 17))
-                                .foregroundColor(.white)
+                    
+                    // Publish Button
+                    Button(action: {
+                        viewModel.publishPost()
+                    }) {
+                        HStack {
+                            if viewModel.isPublishing {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("Publish")
+                                    .font(.custom("Poppins-SemiBold", size: 17))
+                                    .foregroundColor(viewModel.canPublish ? .black : .white)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(viewModel.canPublish ? .white : Color.gray.opacity(0.35))
+                        .cornerRadius(16)
+                        .shadow(color: viewModel.canPublish ? .white.opacity(0.3) : .clear, radius: 20, y: 10)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        LinearGradient(
-                            colors: viewModel.canPublish ?
-                            [Color(hex: "FF6B9D"), Color(hex: "C44569")] :
-                                [Color.gray.opacity(0.3), Color.gray.opacity(0.5)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(16)
-                    .shadow(color: viewModel.canPublish ? Color(hex: "FF6B9D").opacity(0.3) : .clear, radius: 20, y: 10)
+                    .disabled(!viewModel.canPublish || viewModel.isPublishing)
+                    .padding(.horizontal)
+                    .padding(.vertical, 20)
                 }
-                .disabled(!viewModel.canPublish || viewModel.isPublishing)
-                .padding(.horizontal)
-                .padding(.bottom, 60)
             }
         }
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
         }
-        .navigationTitle("Nouveau post")
+        .navigationTitle("New Post")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showSourceSheet) {
+            ImageSourceSheet(
+                onCameraSelected: {
+                    showSourceSheet = false
+                    if(currentImageSelection == .front) {
+                        showCamera = true
+                    }else {
+                        showBackCamera = true
+                    }
+                },
+                onGallerySelected: {
+                    showSourceSheet = false
+                    if(currentImageSelection == .front) {
+                        showImagePicker = true
+                    }else {
+                        showBackImagePicker = true
+                    }
+                }
+            )
+        }
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(image: $viewModel.frontImage)
         }
         .sheet(isPresented: $showCamera) {
             CameraView(image: $viewModel.frontImage)
+                .ignoresSafeArea(.all)
         }
         .sheet(isPresented: $showBackImagePicker) {
             ImagePicker(image: $viewModel.backImage)
         }
         .sheet(isPresented: $showBackCamera) {
             CameraView(image: $viewModel.backImage)
+                .ignoresSafeArea(.all)
         }
         .sheet(isPresented: $showMusicPicker) {
-            MusicPickerView(selectedSong: $viewModel.selectedSong)
-                .environmentObject(musicManager)
+            MusicPickerView(
+                selectedSong: $viewModel.selectedSong,
+                frontImage: $viewModel.frontImage,
+                backImage: $viewModel.backImage
+            )
+            .environmentObject(musicManager)
         }
     }
 }
 
 // MARK: - Image Selection Card
 struct ImageSelectionCard: View {
-    let title: String
     let image: UIImage?
-    let onCameraSelected: () -> Void
-    let onGallerySelected: () -> Void
+    let onShowSourceSelection: () -> Void
     let onRemove: () -> Void
+    let frontImage: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -226,23 +264,19 @@ struct ImageSelectionCard: View {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 220)
+                        .frame(width: frontImage ? 370 : 80, height: frontImage ? 300 : 80)
                         .clipped()
-                        .cornerRadius(16)
+                        .cornerRadius(25)
                 } else {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.05))
-                        .frame(height: 220)
+                    RoundedRectangle(cornerRadius: frontImage ? 25 : 20)
+                        .stroke(Color.white.opacity(0.25), lineWidth: 2)
                         .overlay(
-                            VStack(spacing: 16) {
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 32))
-                                    .foregroundColor(.gray)
-                                
-                                Text(title)
-                                    .font(.custom("Poppins-Medium", size: 13))
-                                    .foregroundColor(.gray)
-                            }
+                            Image(systemName: "camera")
+                                .font(.system(size: frontImage ? 36 : 20, weight: .semibold))
+                                .contentTransition(.symbolEffect(.replace))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .shadow(color: .white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 4)
                         )
                 }
                 
@@ -251,18 +285,8 @@ struct ImageSelectionCard: View {
                         Spacer()
                         
                         HStack(spacing: 12) {
-                            Button(action: onCameraSelected) {
-                                Image(systemName: "camera.fill")
-                                    .foregroundColor(.white)
-                                    .frame(width: 44, height: 44)
-                                    .background(
-                                        Circle()
-                                            .fill(.ultraThinMaterial)
-                                    )
-                            }
-                            
-                            Button(action: onGallerySelected) {
-                                Image(systemName: "photo.fill")
+                            Button(action: onShowSourceSelection) {
+                                Image(systemName: "photo.badge.plus")
                                     .foregroundColor(.white)
                                     .frame(width: 44, height: 44)
                                     .background(
@@ -275,19 +299,27 @@ struct ImageSelectionCard: View {
                     }
                 } else {
                     VStack {
-                        HStack {
+                        if !frontImage {
                             Spacer()
+                        }
+                        
+                        HStack {
+                            if !frontImage {
+                                Spacer()
+                            }
+                            
                             Button(action: onRemove) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.white)
+                                    .contentTransition(.symbolEffect(.replace))
+                                    .foregroundStyle(.white.opacity(0.8))
+                                    .shadow(color: .white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                    .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 4)
                                     .font(.system(size: 24))
                                     .padding(8)
-                                    .background(
-                                        Circle()
-                                            .fill(Color.black.opacity(0.5))
-                                    )
                             }
                             .padding(8)
+                            
+                            Spacer()
                         }
                         Spacer()
                     }
@@ -302,15 +334,24 @@ class CreatePostViewModel: ObservableObject {
     @Published var frontImage: UIImage?
     @Published var backImage: UIImage?
     @Published var caption: String = ""
-    @Published var selectedSong: Song?
+    @Published var selectedSong: Track?
     @Published var isPublishing = false
     
+
+    
     var canPublish: Bool {
-        frontImage != nil && !caption.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        frontImage != nil && backImage != nil && selectedSong != nil
     }
     
     func publishPost() {
         isPublishing = true
+        
+        print("📤 === PUBLISHING POST ===")
+        print("🖼️ Front Image: \(frontImage != nil ? "✅ Set (\(Int(frontImage!.size.width))x\(Int(frontImage!.size.height)))" : "❌ None")")
+        print("🖼️ Back Image: \(backImage != nil ? "✅ Set (\(Int(backImage!.size.width))x\(Int(backImage!.size.height)))" : "❌ None")")
+        print("📝 Caption: \(caption.isEmpty ? "❌ Empty" : "\"\(caption)\"")")
+        print("🎵 Song: \(selectedSong != nil ? "✅ \(selectedSong!.title) - \(selectedSong!.artistName)" : "❌ None")")
+        print("📤 =========================")
         
         // Simulate API call
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in

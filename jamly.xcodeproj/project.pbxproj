@@ -37,6 +37,7 @@
 		7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF712EE783BA0063DE3A /* ImagePicker.swift */; };
 		7642FF742EE783BF0063DE3A /* MusicPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF732EE783BF0063DE3A /* MusicPickerView.swift */; };
 		7661BD262EFA02F000855C37 /* JamPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7661BD242EFA02F000855C37 /* JamPost.swift */; };
+		7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7665D4782F02964100D420C1 /* ImageSourceSheet.swift */; };
 		766998A02EE4EA9600A73250 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7669989F2EE4EA9600A73250 /* PlaylistDetailView.swift */; };
 		76883ED82EE50047006A3955 /* UserAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883ED62EE50047006A3955 /* UserAction.swift */; };
 		76883EDB2EE5004E006A3955 /* LoginAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883ED92EE5004E006A3955 /* LoginAction.swift */; };
@@ -59,7 +60,6 @@
 		7933238A2EF80A230040755F /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* Comment.swift */; };
 		7933238F2EF80C970040755F /* CommentMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7933238E2EF80C950040755F /* CommentMock.swift */; };
 		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
-		793323972EF840E90040755F /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323962EF840E90040755F /* PostCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +113,7 @@
 		7642FF712EE783BA0063DE3A /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7642FF732EE783BF0063DE3A /* MusicPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPickerView.swift; sourceTree = "<group>"; };
 		7661BD242EFA02F000855C37 /* JamPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JamPost.swift; sourceTree = "<group>"; };
+		7665D4782F02964100D420C1 /* ImageSourceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSourceSheet.swift; sourceTree = "<group>"; };
 		7669989F2EE4EA9600A73250 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
 		76883ED62EE50047006A3955 /* UserAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAction.swift; sourceTree = "<group>"; };
 		76883ED92EE5004E006A3955 /* LoginAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAction.swift; sourceTree = "<group>"; };
@@ -136,7 +137,6 @@
 		793323892EF80A230040755F /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		7933238E2EF80C950040755F /* CommentMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentMock.swift; sourceTree = "<group>"; };
 		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
-		793323962EF840E90040755F /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -394,6 +394,16 @@
 			path = models;
 			sourceTree = "<group>";
 		};
+		7665D4772F02963F00D420C1 /* Create */ = {
+			isa = PBXGroup;
+			children = (
+				7665D4782F02964100D420C1 /* ImageSourceSheet.swift */,
+				7642FF732EE783BF0063DE3A /* MusicPickerView.swift */,
+				7642FF712EE783BA0063DE3A /* ImagePicker.swift */,
+			);
+			path = Create;
+			sourceTree = "<group>";
+		};
 		76883ED72EE50047006A3955 /* Users */ = {
 			isa = PBXGroup;
 			children = (
@@ -421,11 +431,9 @@
 		76883EE02EE5005C006A3955 /* Post */ = {
 			isa = PBXGroup;
 			children = (
-				7642FF732EE783BF0063DE3A /* MusicPickerView.swift */,
-				7642FF712EE783BA0063DE3A /* ImagePicker.swift */,
+				7665D4772F02963F00D420C1 /* Create */,
 				76883EDF2EE5005C006A3955 /* PostCard.swift */,
 				793323942EF840D80040755F /* PostView.swift */,
-				793323962EF840E90040755F /* PostCardView.swift */,
 			);
 			path = Post;
 			sourceTree = "<group>";
@@ -713,12 +721,12 @@
 				761C505C2EE458420053AD1F /* APIError.swift in Sources */,
 				76883EEC2EE501AC006A3955 /* UserStore.swift in Sources */,
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
+				7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */,
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */,
-				793323972EF840E90040755F /* PostCardView.swift in Sources */,
 				76883EDE2EE50055006A3955 /* TabBar.swift in Sources */,
 				763EF3C42EE614C00096A522 /* DiscoverView.swift in Sources */,
 				7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */,
@@ -908,10 +916,11 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZ3FC58SU8;
+				DEVELOPMENT_TEAM = 9668FMYQJ3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Jamly;
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Jamly need access to Apple Music so you can add music to your posts.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Jamly need access to your camera to take photos for your post.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jamly would like to display your location on your posts.";
@@ -919,18 +928,22 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly.drenyth;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -949,10 +962,11 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZ3FC58SU8;
+				DEVELOPMENT_TEAM = 9668FMYQJ3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Jamly;
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Jamly need access to Apple Music so you can add music to your posts.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Jamly need access to your camera to take photos for your post.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jamly would like to display your location on your posts.";
@@ -960,18 +974,22 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly.drenyth;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
