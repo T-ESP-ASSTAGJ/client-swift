@@ -121,10 +121,10 @@ struct HomeFeed: View {
     
     private func getTestTrackId(for post: Post) -> String? {
         let testTrackIds = [
-            "1554171600",
-            "1795300046",
-            "1818044892",
-            "1528480004"
+            "1440873687",
+            "1554171602",
+            "1851616662",
+            "1853899855"
         ]
         
         if let index = userStore.feed.firstIndex(where: { $0.id == post.id }) {

@@ -172,7 +172,7 @@ struct CommentsSheetView: View {
                 id: user.id,  // ✅ user est garanti non-nil ici
                 username: user.username,
                 email: user.email,
-                profilePicture: nil,
+                profilePicture: user.profilePicture,
                 followed: [],
                 follower: []
             ),
