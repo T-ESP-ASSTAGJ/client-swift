@@ -312,27 +312,6 @@ struct SearchResultUserCard: View {
     }
 }
 
-// MARK: - Legacy Search Results View (for other filter types)
-struct SearchResultsPage: View {
-    let searchText: String
-    let selectedFilter: SearchResultsView.SearchFilter
-    
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ForEach(0..<10, id: \.self) { index in
-                    SearchResultCard(
-                        title: "\(selectedFilter.rawValue) Result \(index + 1)",
-                        subtitle: "Matching '\(searchText)'",
-                        filterType: selectedFilter
-                    )
-                }
-            }
-            .padding()
-        }
-    }
-}
-
 struct SearchResultCard: View {
     let title: String
     let subtitle: String
@@ -364,10 +343,3 @@ struct SearchResultCard: View {
         .cornerRadius(12)
     }
 }
-
-//NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
-//    Image(systemName: "magnifyingglass")
-//
-//        .font(.system(size: 22, weight:.semibold))
-//        .tint(.white)
-//}

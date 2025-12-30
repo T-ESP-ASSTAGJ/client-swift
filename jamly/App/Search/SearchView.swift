@@ -266,57 +266,6 @@ struct UserSearchResultRow: View {
     }
 }
 
-// MARK: - Immediate Search Results (legacy - can be removed)
-struct ImmediateSearchResults: View {
-    let searchText: String
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                // Accounts Section
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Accounts")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.gray)
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8)
-                    
-                    ForEach(0..<5, id: \.self) { index in
-                        ImmediateResultRow(
-                            title: "Account \(index + 1)",
-                            subtitle: "@account\(index + 1)",
-                            icon: "person.crop.circle.fill",
-                            searchText: searchText
-                        )
-                    }
-                }
-                
-                // Artists Section
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Artists")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.gray)
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8)
-                    
-                    ForEach(0..<3, id: \.self) { index in
-                        ImmediateResultRow(
-                            title: "Artist \(index + 1)",
-                            subtitle: "Matching '\(searchText)'",
-                            icon: "music.mic",
-                            searchText: searchText
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
 struct ImmediateResultRow: View {
     let title: String
     let subtitle: String
