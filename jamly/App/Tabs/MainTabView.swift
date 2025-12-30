@@ -55,15 +55,6 @@ struct MainTabView: View {
     }
 }
 
-// Vues de détail
-struct SearchView: View {
-    var body: some View {
-        Text("Search Results")
-            .foregroundColor(.white)
-            .navigationTitle("Search")
-    }
-}
-
 struct ChatDetailView: View {
     let chatName: String
     

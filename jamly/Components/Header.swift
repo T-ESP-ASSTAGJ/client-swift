@@ -90,11 +90,10 @@ struct Header: View {
                 }
                 
                 Spacer()
-                
-                // Loupe
-                Button(action: {}) {
+
+                NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: 22, weight:.semibold))
                         .tint(.white)
                 }
             }
