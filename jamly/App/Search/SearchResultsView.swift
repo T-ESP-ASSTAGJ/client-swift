@@ -312,6 +312,26 @@ struct SearchResultUserCard: View {
     }
 }
 
+struct SearchResultsPage: View {
+    let searchText: String
+    let selectedFilter: SearchResultsView.SearchFilter
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                ForEach(0..<10, id: \.self) { index in
+                    SearchResultCard(
+                        title: "\(selectedFilter.rawValue) Result \(index + 1)",
+                        subtitle: "Matching '\(searchText)'",
+                        filterType: selectedFilter
+                    )
+                }
+            }
+            .padding()
+        }
+    }
+}
+
 struct SearchResultCard: View {
     let title: String
     let subtitle: String
