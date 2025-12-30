@@ -3,9 +3,16 @@ import SwiftUI
 struct CommentRow: View {
     let comment: CommentResponse
     
-    @State private var isLiked = false
-    @State private var likeCount = 0
-    @State private var showReplySheet = false
+    @State private var isLiked: Bool
+    @State private var likesCount: Int
+    @State private var isTogglingLike: Bool = false
+//    @State private var showReplySheet = false
+    
+    init(comment: CommentResponse) {
+        self.comment = comment
+        self._isLiked = State(initialValue: comment.isLiked)
+        self._likesCount = State(initialValue: comment.likesCount)
+    }
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -58,22 +65,23 @@ struct CommentRow: View {
                 
                 HStack(spacing: 16) {
                     Button {
-                        withAnimation(.spring(response: 0.3)) {
-                            isLiked.toggle()
+                        Task {
+                            await toggleLike()
                         }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: isLiked ? "heart.fill" : "heart")
                                 .foregroundStyle(isLiked ? .red : .secondary)
                             
-                            if likeCount + (isLiked ? 1 : 0) > 0 {
-                                Text("\(likeCount + (isLiked ? 1 : 0))")
+                            if likesCount > 0 {
+                                Text("\(likesCount)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                         }
                     }
                     .buttonStyle(.plain)
+                    .disabled(isTogglingLike)
                     
 //                    Button {
 //                        // TODO: Action pour répondre
@@ -91,6 +99,36 @@ struct CommentRow: View {
         .padding(12)
         .background(Color(.systemGray6))
         .cornerRadius(12)
+    }
+    
+    private func toggleLike() async {
+        guard !isTogglingLike else { return }
+        
+        isTogglingLike = true
+        
+        let previousLikedState = isLiked
+        let previousLikesCount = likesCount
+        
+        withAnimation(.spring(response: 0.3)) {
+            isLiked.toggle()
+            likesCount += isLiked ? 1 : -1
+        }
+        
+        do {
+            if isLiked {
+                _ = try await CommentAction.like(commentId: comment.id)
+            } else {
+                _ = try await CommentAction.unlike(commentId: comment.id)
+            }
+        } catch {
+            withAnimation(.spring(response: 0.3)) {
+                isLiked = previousLikedState
+                likesCount = previousLikesCount
+            }
+            print("Error toggling like: \(error)")
+        }
+        
+        isTogglingLike = false
     }
     
     // MARK: - Helper Methods

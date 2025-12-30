@@ -9,5 +9,6 @@ struct CommentResponse: Codable, Identifiable {
     let id: Int
     let user: CommonUser
     let content: String
-    let createdAt: String?
+    let likesCount: Int
+    let isLiked: Bool
 }

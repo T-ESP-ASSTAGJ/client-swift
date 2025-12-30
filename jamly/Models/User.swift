@@ -12,10 +12,9 @@ struct User: Codable {
     let profilePicture: String?
     let followingCount: Int
     let followersCount: Int
-    let likesCount: Int
     
     enum CodingKeys: String, CodingKey {
-        case id, username, email, profilePicture, followingCount, followersCount, likesCount
+        case id, username, email, profilePicture, followingCount, followersCount
     }
 }
 
