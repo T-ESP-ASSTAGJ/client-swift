@@ -17,7 +17,6 @@ struct SearchResultsView: View {
     
     enum SearchFilter: String, CaseIterable {
         case all = "All"
-        case person = "Person"
         case account = "Account"
         case artist = "Artist"
         case post = "Post"
@@ -26,7 +25,6 @@ struct SearchResultsView: View {
         var icon: String {
             switch self {
             case .all: return "square.grid.2x2"
-            case .person: return "person.fill"
             case .account: return "person.crop.circle.fill"
             case .artist: return "music.mic"
             case .post: return "photo.on.rectangle"
@@ -41,7 +39,7 @@ struct SearchResultsView: View {
                 .ignoresSafeArea()
             
             VStack{
-                HStack(spacing: 24) {
+                HStack(spacing: 20) {
                     Button(action: {
                         dismiss()
                     }) {
@@ -99,7 +97,7 @@ struct SearchResultsView: View {
                 Divider()
                 
                 // Search Results - Now with real API data
-                if selectedFilter == .person || selectedFilter == .all {
+                if selectedFilter == .account || selectedFilter == .all {
                     SearchResultsContent(
                         viewModel: viewModel,
                         searchText: searchText.isEmpty ? searchQuery : searchText,
