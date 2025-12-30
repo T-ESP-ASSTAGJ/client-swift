@@ -1,0 +1,22 @@
+name: AutoPR CI
+run-name: "🔀 [${{ github.workflow }} #${{ github.run_number }}] ${{ github.ref_name }} by @${{ github.actor }}"
+
+on:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+jobs:
+  auto-pr:
+    uses: T-ESP-ASSTAGJ/infra/.github/workflows/reusable-autopr.yml@main
+    with:
+      repository_name: "client-swift"
+      dev_branch: "staging"
+      prod_branch: "main"
+      dev_tag: "#STAGING"
+      prod_tag: "#MASTER"
+      trad_tag: "#TRAD"
+      reviewers: "IIREVERSSII,Drenyth,alexvdbe"
+    secrets:
+      AUTO_DEPLOY_TOKEN: ${{ secrets.AUTO_DEPLOY_TOKEN }}
