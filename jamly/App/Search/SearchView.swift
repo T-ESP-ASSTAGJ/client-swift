@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct SearchView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = SearchViewModel()
     @State private var searchText = ""
     @State private var searchHistory: [String] = SearchHistoryManager.shared.loadHistory()
@@ -19,9 +20,17 @@ struct SearchView: View {
                 Color.appBackground
                     .ignoresSafeArea()
                 
-                VStack(spacing: 0) {
+                VStack {
+                
+                  
                     // Search Bar
-                    HStack {
+                    HStack(spacing: 20) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                        }
                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
