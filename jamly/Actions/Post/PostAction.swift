@@ -10,7 +10,7 @@ struct CreatePostRequestResponse: Decodable {
 }
 
 struct LikePostBody: Encodable {
-    let entityClass: String
+    let entityClass: String = "App\\Entity\\Post"
     let entityId: Int
 }
 
@@ -29,7 +29,7 @@ enum PostActions {
     }
     
     static func likePost(post: Post) async throws -> APIResponse<EmptyResponse> {
-        let body = LikePostBody(entityClass: "App\\Entity\\Post", entityId: post.id)
+        let body = LikePostBody(entityId: post.id)
         
         let response = try await APIClient.shared.request(
             "/likes",
