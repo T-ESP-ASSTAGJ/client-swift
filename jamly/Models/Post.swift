@@ -13,13 +13,16 @@ struct CreatePost: Codable {
     let location: String
 }
 
-struct Post: Codable {
+struct Post: Codable, Identifiable {
     let id: Int
     let user: User
     let caption: String
     let track: Track
     let photoUrl: String
     let location: String
+    let likesCount: Int
+    let commentsCount: Int
+    let isLiked: Bool
     // let createdAt: String
     
     struct User: Codable {

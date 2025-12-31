@@ -35,48 +35,7 @@ struct SearchResultsView: View {
     
     var body: some View {
         ZStack {
-            Color.appBackground
-                .ignoresSafeArea()
-            
-            VStack{
-                HStack(spacing: 20) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
-                    }
-                    
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search", text: $searchText)
-                            .foregroundStyle(.white)
-                            .focused($isSearchFocused)
-                            .submitLabel(.search)
-                            .onSubmit {
-                                if !searchText.isEmpty && !searchHistory.contains(searchText) {
-                                    searchHistory.insert(searchText, at: 0)
-                                }
-                            }
-                        
-                        if !searchText.isEmpty {
-                            Button(action: {
-                                searchText = ""
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                    }
-                    .padding(10)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(10)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                
+            VStack{                
                 // Filter Pills - Always visible on results page
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
@@ -134,6 +93,39 @@ struct SearchResultsView: View {
         }
         .onTapGesture {
             hideKeyboard()
+        }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack(spacing: 20) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        
+                        TextField("Search", text: $searchText)
+                            .foregroundStyle(.white)
+                            .focused($isSearchFocused)
+                            .submitLabel(.search)
+                            .onSubmit {
+                                if !searchText.isEmpty && !searchHistory.contains(searchText) {
+                                    searchHistory.insert(searchText, at: 0)
+                                }
+                            }
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                }
+                .padding(10)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
+                .frame(width: UIScreen.main.bounds.width - 100)
+            }
         }
     }
     

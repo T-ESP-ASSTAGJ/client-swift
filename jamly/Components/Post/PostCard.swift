@@ -10,15 +10,41 @@ import SwiftUI
 struct PostCard: View {
     let post: Post
     let isCurrentPost: Bool
+    
+    @Binding var showPostDetail: Bool
+    
     @ObservedObject var musicManager: MusicManager
+    
+    @StateObject private var viewModel = PostViewModel()
     
     @State private var coverUIImage: UIImage?
     @State private var avatarUIImage: UIImage?
     @State private var isSwapped = false
-    @State private var showCommentsSheet: Bool = false
+    
+    @State private var isLiked: Bool = false
+    
+    // Seuil pour afficher "See more" (environ 2 lignes)
+    private let captionTruncationThreshold = 80
+
+    private var shouldShowSeeMore: Bool {
+        post.caption.count > captionTruncationThreshold
+    }
+    
+    init(post: Post, isCurrentPost: Bool, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
+        self.post = post
+        self.isCurrentPost = isCurrentPost
+
+        // Initialize property wrappers
+        self._showPostDetail = showPostDetail
+        self._musicManager = ObservedObject(initialValue: musicManager)
+
+        print("Current post: \(post)")
+
+        // Initialise isLiked avec la valeur du post
+        self._isLiked = State(initialValue: post.isLiked)
+    }
     
     var body: some View {
-        // ✅ Utilise un ZStack pour occuper TOUTE la hauteur
         ZStack {
             VStack(spacing: 0) {
                 // Header utilisateur
@@ -42,10 +68,15 @@ struct PostCard: View {
                         Text(post.user.username)
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.white)
-                        Text(post.location)
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .opacity(0.7)
+                        if !post.location.isEmpty {
+                            HStack(spacing: 4) {
+                                Image(systemName: "location.fill")
+                                    .font(.system(size: 10))
+                                Text(post.location)
+                                    .font(.system(size: 12))
+                            }
+                            .foregroundColor(.secondary)
+                        }
                     }
                     
                     Spacer()
@@ -57,14 +88,14 @@ struct PostCard: View {
                 }
                 .padding(.top, 25)
                 .padding(.horizontal, 15)
-                .padding(.bottom, 25)
+                .padding(.bottom, 15)
                 
                 // Image principale avec boutons
                 ZStack(alignment: .bottom) {
                     // 🎨 IMAGE PRINCIPALE + MINIATURE
                     ZStack(alignment: .topTrailing) {
                         // IMAGE PRINCIPALE AVEC BOUTON PAUSE CENTRÉ
-                        ZStack { // ← ZStack simple pour centrer le pause
+                        ZStack {
                             Group {
                                 if let img = isSwapped ? avatarUIImage : coverUIImage {
                                     Image(uiImage: img)
@@ -75,21 +106,21 @@ struct PostCard: View {
                                 }
                             }
                             
-                            // ✅ BOUTON PAUSE CENTRÉ (directement dans le même ZStack)
+                            // ✅ BOUTON PAUSE CENTRÉ
                             if !musicManager.isPlaying && isCurrentPost {
                                 ZStack {
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 36, weight: .semibold))
                                         .contentTransition(.symbolEffect(.replace))
                                         .foregroundStyle(.white.opacity(0.6))
-                                        .shadow(color: .white.opacity(0.6), radius: 4, x: 0, y: 0) // Inner glow
-                                        .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 4) // Drop shadow
+                                        .shadow(color: .white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                        .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 4)
                                 }
                                 .opacity(musicManager.isPlaying ? 0 : 0.8)
                                 .animation(.easeInOut(duration: 0.2), value: musicManager.isPlaying)
                             }
                         }
-                        .frame(width: 370, height: 420)
+                        .frame(width: 370, height: 400)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
                         
                         HStack(alignment: .top) {
@@ -137,7 +168,7 @@ struct PostCard: View {
                                 }
                             }
                             .padding(.top, 20)
-                            .padding(.horizontal, 16)  // ✅ Padding interne au HStack
+                            .padding(.horizontal, 16)
                         }
                         .frame(width: 370)
                     }
@@ -146,81 +177,151 @@ struct PostCard: View {
                     }
                     
                     // ❤️ STATISTIQUES (en bas)
-                    HStack(spacing: 10) {
-                        VStack {
-                            Button(action: {}) {
-                                VStack(spacing: 5) {
-                                    Image(systemName: "heart")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(.white)
+                    if !showPostDetail {
+                        HStack(spacing: 10) {
+                            VStack {
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                        isLiked.toggle()
+                                        viewModel.likePost(post: post)
+                                    }
+                                }) {
+                                    VStack(spacing: 5) {
+                                        Image(systemName: isLiked ? "heart.fill" : "heart")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundColor(isLiked ? .red : .white)
+                                    }
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 7)
                                 }
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 7)
+                                .buttonStyle(.glass)
+                                .buttonBorderShape(.circle)
+                                
+                                Text(isLiked ? String(post.likesCount + 1) : String(post.likesCount))
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .opacity(0.8)
                             }
-                            .buttonStyle(.glass)
-                            .buttonBorderShape(.circle)
                             
-                            Text("56")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .opacity(0.8)
+                            VStack {
+                                Button(action: {
+                                    showPostDetail = true
+                                }) {
+                                    VStack(spacing: 5) {
+                                        Image(systemName: "text.bubble")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding(.horizontal, 6.5)
+                                    .padding(.vertical, 6.5)
+                                }
+                                .buttonStyle(.glass)
+                                .buttonBorderShape(.circle)
+                                
+                                Text(String(post.commentsCount))
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .opacity(0.8)
+                            }
                         }
-                        
-                        VStack {
-                            Button(action: {
-                                showCommentsSheet = true
-                            }) {
-                                VStack(spacing: 5) {
-                                    Image(systemName: "text.bubble")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(.white)
+                        .offset(y: -20)
+                    }
+                    }
+                
+                // 📝 FOOTER: Track Info + Caption
+                if !showPostDetail{
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Track info (toujours affiché)
+                        HStack(alignment: .center) {
+                            HStack(spacing: 8) {
+                                // Mini cover art
+                                if let coverImg = coverUIImage {
+                                    Image(uiImage: coverImg)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 36, height: 36)
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                } else {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 36, height: 36)
                                 }
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 7)
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(post.track.title)
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundColor(.white)
+                                        .lineLimit(1)
+                                    
+                                    Text(post.track.artist.name)
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .lineLimit(1)
+                                }
                             }
-                            .buttonStyle(.glass)
-                            .buttonBorderShape(.circle)
                             
-                            Text("144")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .opacity(0.8)
+                            Spacer()
+                            
+                            // Bouton Apple Music
+                            Button {
+                                // Action pour ouvrir dans Apple Music
+                            } label: {
+                                Image(systemName: "apple.logo")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .padding(8)
+                                    .background(.ultraThinMaterial)
+                                    .clipShape(Circle())
+                            }
+                        }
+                        .padding(8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(.ultraThinMaterial)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(.white.opacity(0.1), lineWidth: 1)
+                                }
+                        )
+                        
+                        // Caption (si présent)
+                        if !post.caption.isEmpty {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(post.caption)
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
+                                    .lineLimit(2)
+                                
+                                // "See more" ouvre PostDetailView
+                                if shouldShowSeeMore {
+                                    Button {
+                                        showPostDetail = true
+                                    } label: {
+                                        Text("See more")
+                                            .font(.subheadline.weight(.medium))
+                                            .foregroundColor(.white.opacity(0.5))
+                                    }
+                                }
+                            }
                         }
                     }
-                    .offset(y: -20)
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 15)
                 }
                 
-                // Titre + artiste + année
-                VStack(alignment: .leading, spacing: 20) {
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(post.track.title)
-                                .font(.headline)
-                                .textCase(.uppercase)
-                                .foregroundColor(.white)
-                            Text("• \(post.track.artist.name)")
-                                .font(.subheadline)
-                                .opacity(0.8)
-                                .foregroundColor(.white)
-                        }
-                        
-                        Spacer()
-                        
-                        Text("2023")
-                            .font(.caption)
-                            .opacity(0.7)
-                            .foregroundColor(.white)
-                    }
-                }
-                .padding(.horizontal, 25)
-                .padding(.vertical, 15)
-                
-                Spacer() // ✅ Pousse le contenu du bas vers le haut
+                Spacer()
             }
         }
-        .sheet(isPresented: $showCommentsSheet) {
-            CommentsSheetView(post: post)
+        .navigationDestination(isPresented: $showPostDetail) {
+            PostDetailView(post: post)
         }
+    }
+    
+    private var truncatedCaption: String {
+        if post.caption.count > captionTruncationThreshold {
+            return String(post.caption.prefix(captionTruncationThreshold)) + "..."
+        }
+        return post.caption
     }
     
     func preloadImages() async {
@@ -248,3 +349,4 @@ struct PostCard: View {
         }
     }
 }
+
