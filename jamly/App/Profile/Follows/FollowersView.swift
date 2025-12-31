@@ -10,41 +10,17 @@ import SwiftUI
 struct FollowersView: View {
     @EnvironmentObject private var userStore: UserStore
     
+    @StateObject private var followerViewModel = FollowerViewModel()
+    @StateObject private var followingViewModel = FollowingViewModel()
+    
     @State private var searchText = ""
     @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
-    @State private var followers: [FollowerUser] = []
-    @State private var followingUsers: [FollowingUser] = [] // Pour savoir qui on suit
-    @State private var isLoading = true
-    
-    func loadFollowers() async {
-        do {
-            followers = try await FollowerAction.getFollowerUsers(
-                page: 1,
-                userId: userStore.user?.id ?? 0
-            ).value
-        } catch {
-            print("Error during loading: \(error)")
-            followers = []
-        }
-    }
-    
-    func loadFollowings() async {
-        do {
-            followingUsers = try await FollowingAction.getFollowingUsers(
-                page: 1,
-                userId: userStore.user?.id ?? 0
-            ).value
-        } catch {
-            print("Error loading followings: \(error)")
-            followingUsers = []
-        }
-    }
     
     var filteredFollowers: [FollowerUser] {
         if searchText.isEmpty {
-            return followers
+            return followerViewModel.followers
         } else {
-            return followers.filter { follower in
+            return followerViewModel.followers.filter { follower in
                 follower.username.localizedStandardContains(searchText)
             }
         }
@@ -58,7 +34,7 @@ struct FollowersView: View {
         }
         
         // Sinon, vérifier si l'utilisateur est dans notre liste de following
-        return followingUsers.contains(where: { $0.id == userId })
+        return followingViewModel.followingUsers.contains(where: { $0.id == userId })
     }
     
     private func toggleFollow(for follower: FollowerUser) async {
@@ -76,7 +52,7 @@ struct FollowersView: View {
     
     var body: some View {
         Group {
-            if isLoading {
+            if followerViewModel.isLoading || followingViewModel.isLoading {
                 // État de chargement
                 VStack(spacing: 12) {
                     ProgressView()
@@ -142,10 +118,8 @@ struct FollowersView: View {
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search followers")
         .task {
-            isLoading = true
-            await loadFollowers()
-            await loadFollowings()
-            isLoading = false
+            await followerViewModel.loadFollowers(userId: userStore.user?.id ?? 0)
+            await followingViewModel.loadFollowing(userId: userStore.user?.id ?? 0)
         }
         .onDisappear {
             Task {

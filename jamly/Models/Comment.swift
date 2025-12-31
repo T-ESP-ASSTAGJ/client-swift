@@ -11,4 +11,11 @@ struct CommentResponse: Codable, Identifiable {
     let content: String
     let likesCount: Int
     let isLiked: Bool
+    let createdAt: String?
+}
+
+struct SendCommentResponse: Codable {
+    let id: Int
+    let user: CommonUser
+    let content: String
 }

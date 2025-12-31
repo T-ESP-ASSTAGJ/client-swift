@@ -296,9 +296,18 @@ struct PostDetailView: View {
             let response = try await CommentAction.CreateComment(postId: post.id, content: trimmedText)
 
             print("✅ Comment sent successfully: \(response)")
+            
+            let commentResponse = CommentResponse(
+                id: response.value.id,
+                user: response.value.user,
+                content: response.value.content,
+                likesCount: 0,
+                isLiked: false,
+                createdAt: nil
+            )
 
             withAnimation {
-                commentViewModel.comments.insert(response.value, at: 0)
+                commentViewModel.comments.insert(commentResponse, at: 0)
             }
 
             // Reset text field

@@ -10,28 +10,17 @@ import SwiftUI
 struct FollowingView: View {
     @EnvironmentObject private var userStore: UserStore
     
+    @StateObject private var followingViewModel = FollowingViewModel()
+    
     @State private var searchText = ""
     @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
-    @State private var followings: [FollowingUser] = []
-    @State private var isLoading = true
     
-    func loadFollowings() async {
-        do {
-            followings = try await FollowingAction.getFollowingUsers(
-                page: 1,
-                userId: userStore.user?.id ?? 0
-            ).value
-        } catch {
-            print("Error during loading: \(error)")
-            followings = []
-        }
-    }
     
     var filteredFollowings: [FollowingUser] {
         if searchText.isEmpty {
-            return followings
+            return followingViewModel.followingUsers
         } else {
-            return followings.filter { following in
+            return followingViewModel.followingUsers.filter { following in
                 following.username.localizedStandardContains(searchText)
             }
         }
@@ -46,7 +35,7 @@ struct FollowingView: View {
         
         // Sinon, par défaut, si l'utilisateur est dans la liste des followings,
         // c'est qu'on le suit (puisque cette vue affiche justement la liste des following)
-        return followings.contains(where: { $0.id == userId })
+        return followingViewModel.followingUsers.contains(where: { $0.id == userId })
     }
     
     private func toggleFollow(for following: FollowingUser) async {
@@ -64,7 +53,7 @@ struct FollowingView: View {
     
     var body: some View {
         Group {
-            if isLoading {
+            if followingViewModel.isLoading {
                 // État de chargement
                 VStack(spacing: 12) {
                     ProgressView()
@@ -130,9 +119,7 @@ struct FollowingView: View {
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search followers")
         .task {
-            isLoading = true
-            await loadFollowings()
-            isLoading = false
+            await followingViewModel.loadFollowing(userId: userStore.user?.id ?? 0)
         }
         .onDisappear {
             Task {

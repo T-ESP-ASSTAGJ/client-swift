@@ -14,12 +14,12 @@ struct LikeCommentRequest: Encodable {
     let entityId: Int
 }
 enum CommentAction {
-    static func CreateComment(postId: Int, content: String) async throws -> APIResponse<CommentResponse> {
+    static func CreateComment(postId: Int, content: String) async throws -> APIResponse<SendCommentResponse> {
         let response = try await APIClient.shared.request(
             "/posts/\(postId)/comments",
             method: .post,
             body: CreateCommentRequest(content: content),
-            responseType: CommentResponse.self
+            responseType: SendCommentResponse.self
         )
         
         return response

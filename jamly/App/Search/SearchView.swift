@@ -115,6 +115,23 @@ struct LiveSearchResults: View {
     @ObservedObject var viewModel: SearchViewModel
     let onSelectUser: (SearchUser) -> Void
     
+    @EnvironmentObject private var userStore: UserStore
+    @StateObject private var followingViewModel = FollowingViewModel()
+    @State private var localFollowingState: [Int: Bool] = [:]
+    
+    private func toggleFollow(for user: SearchUser) async {
+        // Update local state immediately for UI
+        let currentState = localFollowingState[user.id] ?? followingViewModel.followingUsers.contains(where: { $0.id == user.id })
+        localFollowingState[user.id] = !currentState
+        
+        // Perform API call
+        if currentState {
+            await userStore.unfollowUser(userId: user.id)
+        } else {
+            await userStore.followUser(userId: user.id)
+        }
+    }
+    
     var body: some View {
         ZStack {
             if viewModel.isLoading && viewModel.searchResults.isEmpty {
@@ -164,7 +181,12 @@ struct LiveSearchResults: View {
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         ForEach(viewModel.searchResults) { user in
-                            UserSearchResultRow(user: user)
+                            UserSearchResultRow(
+                                user: user,
+                                localFollowingState: $localFollowingState,
+                                followingUsers: followingViewModel.followingUsers,
+                                onToggleFollow: toggleFollow
+                            )
                                 .onTapGesture {
                                     onSelectUser(user)
                                 }
@@ -191,12 +213,36 @@ struct LiveSearchResults: View {
                 }
             }
         }
+        .task {
+            // Load following list when view appears
+            if let userId = userStore.user?.id {
+                await followingViewModel.loadFollowing(userId: userId)
+            }
+        }
+        .onAppear {
+            localFollowingState.removeAll()
+        }
     }
 }
 
 // MARK: - User Search Result Row
 struct UserSearchResultRow: View {
     let user: SearchUser
+    
+    @Binding var localFollowingState: [Int: Bool]
+    let followingUsers: [FollowingUser]
+    let onToggleFollow: (SearchUser) async -> Void
+    
+    // Check if a user is locally followed
+    private var isFollowing: Bool {
+        // Si on a un état local (modification en cours), on l'utilise
+        if let localState = localFollowingState[user.id] {
+            return localState
+        }
+        
+        // Sinon, vérifier si l'utilisateur est dans notre liste de following
+        return followingUsers.contains(where: { $0.id == user.id })
+    }
     
     var body: some View {
         HStack(spacing: 12) {
@@ -241,9 +287,19 @@ struct UserSearchResultRow: View {
             
             Spacer()
             
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14))
-                .foregroundColor(.gray.opacity(0.5))
+            Button {
+                Task {
+                    await onToggleFollow(user)
+                }
+            } label: {
+                Text(isFollowing ? "Unfollow" : "Follow")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(isFollowing ? .white : .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .cornerRadius(8)
+            }
+            .buttonStyle(.glass)
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
@@ -370,8 +426,4 @@ struct SearchHistoryRow: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-}
-
-#Preview {
-    SearchView()
 }
