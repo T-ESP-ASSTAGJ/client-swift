@@ -55,7 +55,7 @@ struct FollowersView: View {
                                 .scaledToFill()
                                 .frame(width: 44, height: 44)
                                 .clipShape(Circle())
-                            
+
                             // Infos
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(follower.username)
@@ -64,7 +64,7 @@ struct FollowersView: View {
                             }
                         }
                         Spacer()
-                        
+
                         Button {
                             Task {
                                 await toggleFollow(for: follower)

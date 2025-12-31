@@ -31,3 +31,9 @@ struct FollowedUser: Codable, Identifiable {
     let id: Int
     let username: String
 }
+
+struct CommonUser: Codable {
+    let id: Int
+    let username: String
+    let profilePicture: String?
+}

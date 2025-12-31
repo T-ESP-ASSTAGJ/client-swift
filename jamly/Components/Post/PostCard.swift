@@ -10,26 +10,27 @@ import SwiftUI
 struct PostCard: View {
     let post: Post
     let isCurrentPost: Bool
-    
+
     @Binding var showPostDetail: Bool
-    
+
     @ObservedObject var musicManager: MusicManager
     
     @StateObject private var viewModel = PostViewModel()
-    
+
     @State private var coverUIImage: UIImage?
     @State private var avatarUIImage: UIImage?
     @State private var isSwapped = false
-    
+    @State private var showCommentsSheet: Bool = false
+
     @State private var isLiked: Bool = false
-    
+
     // Seuil pour afficher "See more" (environ 2 lignes)
     private let captionTruncationThreshold = 80
 
     private var shouldShowSeeMore: Bool {
         post.caption.count > captionTruncationThreshold
     }
-    
+
     init(post: Post, isCurrentPost: Bool, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
         self.post = post
         self.isCurrentPost = isCurrentPost
@@ -196,16 +197,16 @@ struct PostCard: View {
                                 }
                                 .buttonStyle(.glass)
                                 .buttonBorderShape(.circle)
-                                
+
                                 Text(isLiked ? String(post.likesCount + 1) : String(post.likesCount))
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .opacity(0.8)
                             }
-                            
+
                             VStack {
                                 Button(action: {
-                                    showPostDetail = true
+                                    showCommentsSheet = true
                                 }) {
                                     VStack(spacing: 5) {
                                         Image(systemName: "text.bubble")
@@ -217,7 +218,7 @@ struct PostCard: View {
                                 }
                                 .buttonStyle(.glass)
                                 .buttonBorderShape(.circle)
-                                
+
                                 Text(String(post.commentsCount))
                                     .font(.headline)
                                     .foregroundColor(.white)
@@ -246,22 +247,22 @@ struct PostCard: View {
                                         .fill(Color.gray.opacity(0.3))
                                         .frame(width: 36, height: 36)
                                 }
-                                
+
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(post.track.title)
                                         .font(.footnote.weight(.semibold))
                                         .foregroundColor(.white)
                                         .lineLimit(1)
-                                    
+
                                     Text(post.track.artist.name)
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.7))
                                         .lineLimit(1)
                                 }
                             }
-                            
+
                             Spacer()
-                            
+
                             // Bouton Apple Music
                             Button {
                                 // Action pour ouvrir dans Apple Music
@@ -283,7 +284,7 @@ struct PostCard: View {
                                         .stroke(.white.opacity(0.1), lineWidth: 1)
                                 }
                         )
-                        
+
                         // Caption (si présent)
                         if !post.caption.isEmpty {
                             VStack(alignment: .leading, spacing: 6) {
@@ -291,7 +292,7 @@ struct PostCard: View {
                                     .font(.subheadline)
                                     .foregroundColor(.white)
                                     .lineLimit(2)
-                                
+
                                 // "See more" ouvre PostDetailView
                                 if shouldShowSeeMore {
                                     Button {
@@ -308,15 +309,18 @@ struct PostCard: View {
                     .padding(.horizontal, 15)
                     .padding(.vertical, 15)
                 }
-                
+
                 Spacer()
             }
         }
         .navigationDestination(isPresented: $showPostDetail) {
             PostDetailView(post: post)
         }
+        .sheet(isPresented: $showCommentsSheet) {
+            CommentsSheetView(post: post)
+        }
     }
-    
+
     private var truncatedCaption: String {
         if post.caption.count > captionTruncationThreshold {
             return String(post.caption.prefix(captionTruncationThreshold)) + "..."

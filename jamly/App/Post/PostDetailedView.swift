@@ -13,8 +13,9 @@ struct PostDetailView: View {
     @EnvironmentObject var musicManager: MusicManager
     @EnvironmentObject private var userStore: UserStore
     
+    @StateObject private var commentViewModel = CommentViewModel()
+    
     @State private var coverUIImage: UIImage?
-    @State private var comments: [CommentType] = []
     @State private var newCommentText: String = ""
     @State private var isLoading: Bool = false
     @State private var isPlaying = true
@@ -150,7 +151,7 @@ struct PostDetailView: View {
                     .font(.headline)
                     .foregroundColor(.white)
                 
-                Text("(\(comments.count))")
+                Text("(\(commentViewModel.comments.count))")
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.5))
                 
@@ -162,7 +163,7 @@ struct PostDetailView: View {
                 .background(.white.opacity(0.1))
             
             // Comments list
-            if comments.isEmpty && !isLoading {
+            if commentViewModel.comments.isEmpty && !isLoading {
                 emptyCommentsView
             } else if isLoading {
                 HStack {
@@ -174,8 +175,8 @@ struct PostDetailView: View {
                 .padding(.top, 30)
             } else {
                 LazyVStack(spacing: 16) {
-                    ForEach(comments) { comment in
-                        Comment(comment: comment)
+                    ForEach(commentViewModel.comments) { comment in
+                        CommentRow(comment: comment)
                             .padding(.horizontal, 20)
                     }
                 }
@@ -275,20 +276,14 @@ struct PostDetailView: View {
         }
         
         // Load comments
-        await loadComments()
-    }
-    
-    private func loadComments() async {
-        isLoading = true
-        defer { isLoading = false }
-        
-        // TODO: Replace with actual API call
-        try? await Task.sleep(for: .seconds(0.5))
-        comments = CommentType.mockComments
+        print("ID DU POST")
+        print(post.id)
+        print("ID DU POST")
+        await commentViewModel.getComments(post: post)
     }
     
     private func sendComment() async {
-        guard let user = userStore.user else { return }
+        guard userStore.user != nil else { return }
         
         let trimmedText = newCommentText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else { return }
@@ -296,29 +291,24 @@ struct PostDetailView: View {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Replace with actual API call
-        try? await Task.sleep(for: .seconds(0.3))
-        
-        let newComment = CommentType(
-            id: comments.count + 1,
-            user: User(
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                profilePicture: user.profilePicture,
-                followed: [],
-                follower: []
-            ),
-            content: trimmedText,
-            createdAt: ISO8601DateFormatter().string(from: Date())
-        )
-        
-        withAnimation {
-            comments.insert(newComment, at: 0)
+        do {
+            print("📤 Sending comment: '\(trimmedText)'")
+            let response = try await CommentAction.CreateComment(postId: post.id, content: trimmedText)
+
+            print("✅ Comment sent successfully: \(response)")
+
+            withAnimation {
+                commentViewModel.comments.insert(response.value, at: 0)
+            }
+
+            // Reset text field
+            newCommentText = ""
+            isTextFieldFocused = false
+
+        } catch {
+            print("❌ Failed to send comment: \(error)")
+            // TODO: Afficher une alerte d'erreur à l'utilisateur
         }
-        
-        newCommentText = ""
-        isTextFieldFocused = false
     }
     
     private func togglePlayPause() async {

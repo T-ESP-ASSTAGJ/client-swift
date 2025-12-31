@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct Comment: View {
-    let comment: CommentType
+struct CommentRow: View {
+    let comment: CommentResponse
     
     @State private var isLiked = false
     @State private var likeCount = 0
@@ -40,12 +40,13 @@ struct Comment: View {
                     Text("•")
                         .foregroundStyle(.secondary)
                     
-                    if let date = ISO8601DateFormatter().date(from: comment.createdAt) {
+                    if let createdAt = comment.createdAt,
+                       let date = ISO8601DateFormatter().date(from: createdAt) {
                         Text(relativeTimeString(from: date))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text(comment.createdAt)
+                        Text("Right now")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -74,14 +75,14 @@ struct Comment: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Button {
-                        // TODO: Action pour répondre
-                    } label: {
-                        Text("Answer")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
+//                    Button {
+//                        // TODO: Action pour répondre
+//                    } label: {
+//                        Text("Answer")
+//                            .font(.caption)
+//                            .foregroundStyle(.secondary)
+//                    }
+//                    .buttonStyle(.plain)
                 }
                 .padding(.top, 4)
             }
