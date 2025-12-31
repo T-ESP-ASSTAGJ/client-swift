@@ -9,6 +9,10 @@
 // Actions/UserActions.swift
 import Foundation
 
+struct LikedRequestResponse: Decodable {
+    let likedEntity: Post
+}
+
 enum UserActions {
     static func fetchMe() async throws -> APIResponse<User> {
         let response = try await APIClient.shared.request(
@@ -44,5 +48,18 @@ enum UserActions {
         print("❌ Unfollowed user \(userId)")
         
         return response
+    }
+    
+    static func getLikedPostsByUser(userId: Int) async throws -> APIResponse<[Post]> {
+        let response = try await APIClient.shared.request(
+            "/users/\(userId)/likes",
+            method: .get,
+            responseType: [LikedRequestResponse].self
+        )
+        
+        print("💖 Found \(response.value.count) liked posts of user \(userId)")
+        
+        let posts = response.value.map { $0.likedEntity }
+        return APIResponse<[Post]>(value: posts, statusCode: response.statusCode)
     }
 }

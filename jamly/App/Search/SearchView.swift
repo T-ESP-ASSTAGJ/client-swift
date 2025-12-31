@@ -17,57 +17,7 @@ struct SearchView: View {
     
     var body: some View {
             ZStack {
-                Color.appBackground
-                    .ignoresSafeArea()
-                
                 VStack {
-                
-                  
-                    // Search Bar
-                    HStack(spacing: 20) {
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.white)
-                        }
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            
-                            TextField("Search", text: $searchText)
-                                .foregroundStyle(.white)
-                                .focused($isSearchFocused)
-                                .submitLabel(.search)
-                                .onSubmit {
-                                    if !searchText.isEmpty {
-                                        // Add to history and persist
-                                        if !searchHistory.contains(searchText) {
-                                            searchHistory.insert(searchText, at: 0)
-                                            SearchHistoryManager.shared.addToHistory(searchText)
-                                        }
-                                        // Navigate to results page
-                                        submittedSearch = searchText
-                                        navigateToResults = true
-                                    }
-                                }
-                            
-                            if !searchText.isEmpty {
-                                Button(action: {
-                                    searchText = ""
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                        }
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    
                     Divider()
                     
                     // Content - Show immediate results or recent searches
@@ -101,7 +51,6 @@ struct SearchView: View {
                     searchQuery: submittedSearch,
                     searchHistory: $searchHistory
                 )
-                .navigationBarBackButtonHidden(true)
             }
             .onChange(of: searchText) { oldValue, newValue in
                 // Perform live search while typing (with debouncing)
@@ -115,6 +64,42 @@ struct SearchView: View {
                     } else if newValue.isEmpty {
                         viewModel.clearResults()
                     }
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        
+                        TextField("Search", text: $searchText)
+                            .foregroundStyle(.white)
+                            .focused($isSearchFocused)
+                            .submitLabel(.search)
+                            .onSubmit {
+                                if !searchText.isEmpty {
+                                    if !searchHistory.contains(searchText) {
+                                        searchHistory.insert(searchText, at: 0)
+                                        SearchHistoryManager.shared.addToHistory(searchText)
+                                    }
+                                    submittedSearch = searchText
+                                    navigateToResults = true
+                                }
+                            }
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                    .padding(10)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                    .frame(width: UIScreen.main.bounds.width - 100)
                 }
             }
     }

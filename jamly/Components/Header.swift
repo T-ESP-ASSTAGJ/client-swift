@@ -20,6 +20,8 @@ struct Header: View {
     
     @Binding var selectedSegment: FeedSegment
     
+    @State private var showSearchView: Bool = false
+    
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -90,13 +92,18 @@ struct Header: View {
                 }
                 
                 Spacer()
-
-                NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
+                
+                Button {
+                    showSearchView = true
+                }label: {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 22, weight:.semibold))
                         .tint(.white)
                 }
             }
+        }
+        .navigationDestination(isPresented: $showSearchView) {
+            SearchView()
         }
         .padding(.horizontal, 25)
         .padding(.vertical, 10)

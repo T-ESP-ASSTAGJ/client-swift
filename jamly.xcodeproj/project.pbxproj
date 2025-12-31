@@ -22,6 +22,8 @@
 		761C508B2EE47C350053AD1F /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C508A2EE47C350053AD1F /* ProfileView.swift */; };
 		76204DCC2EE78A8B004C9C93 /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76204DCB2EE78A8B004C9C93 /* CreatePostView.swift */; };
 		762D6AE22EE6FBB30022C539 /* ChatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762D6AE12EE6FBB30022C539 /* ChatsView.swift */; };
+		76381C532F04338E008BB4B0 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76381C522F04338E008BB4B0 /* ProfileViewModel.swift */; };
+		76381C582F0440C6008BB4B0 /* PostViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76381C572F0440C6008BB4B0 /* PostViewModel.swift */; };
 		76385AC32EE76651000B0320 /* PostAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76385AC22EE76651000B0320 /* PostAction.swift */; };
 		76385AC52EE767EC000B0320 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76385AC42EE767EC000B0320 /* Post.swift */; };
 		763EF3AD2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3AA2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf */; };
@@ -52,6 +54,7 @@
 		76883F002EE5CF03006A3955 /* Poppins-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76883EFC2EE5CF03006A3955 /* Poppins-Regular.ttf */; };
 		76883F012EE5CF03006A3955 /* Poppins-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76883EFA2EE5CF03006A3955 /* Poppins-Light.ttf */; };
 		76883F022EE5CF03006A3955 /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76883EF92EE5CF03006A3955 /* Poppins-Bold.ttf */; };
+		768FFC872F03307C00388CB7 /* PostDetailedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768FFC862F03307C00388CB7 /* PostDetailedView.swift */; };
 		76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */; };
 		76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */; };
 		76BB5C482EE4F699007B92EB /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 76BB5C472EE4F699007B92EB /* Inject */; };
@@ -104,6 +107,8 @@
 		761C508A2EE47C350053AD1F /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		76204DCB2EE78A8B004C9C93 /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
 		762D6AE12EE6FBB30022C539 /* ChatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsView.swift; sourceTree = "<group>"; };
+		76381C522F04338E008BB4B0 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		76381C572F0440C6008BB4B0 /* PostViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostViewModel.swift; sourceTree = "<group>"; };
 		76385AC22EE76651000B0320 /* PostAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAction.swift; sourceTree = "<group>"; };
 		76385AC42EE767EC000B0320 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		763EF3A92EE5D3490096A522 /* Poppins-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-BoldItalic.ttf"; sourceTree = "<group>"; };
@@ -134,6 +139,7 @@
 		76883EFB2EE5CF03006A3955 /* Poppins-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-Medium.ttf"; sourceTree = "<group>"; };
 		76883EFC2EE5CF03006A3955 /* Poppins-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-Regular.ttf"; sourceTree = "<group>"; };
 		76883EFD2EE5CF03006A3955 /* Poppins-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-SemiBold.ttf"; sourceTree = "<group>"; };
+		768FFC862F03307C00388CB7 /* PostDetailedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDetailedView.swift; sourceTree = "<group>"; };
 		76A2D3BC2EE4AF0800AA6F6E /* jamly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = jamly.entitlements; sourceTree = "<group>"; };
 		76A2D3BD2EE4AF2A00AA6F6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicManager.swift; sourceTree = "<group>"; };
@@ -275,6 +281,7 @@
 				763EF3B82EE5FCBE0096A522 /* SplashScreenView.swift */,
 				76883EE52EE500E2006A3955 /* Stores */,
 				761C50612EE458870053AD1F /* Utils */,
+				76381C542F044095008BB4B0 /* ViewModels */,
 			);
 			path = jamly;
 			sourceTree = "<group>";
@@ -376,6 +383,31 @@
 			path = Chats;
 			sourceTree = "<group>";
 		};
+		76381C542F044095008BB4B0 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				76381C562F0440B4008BB4B0 /* Profile */,
+				76381C552F0440A0008BB4B0 /* Post */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		76381C552F0440A0008BB4B0 /* Post */ = {
+			isa = PBXGroup;
+			children = (
+				76381C572F0440C6008BB4B0 /* PostViewModel.swift */,
+			);
+			path = Post;
+			sourceTree = "<group>";
+		};
+		76381C562F0440B4008BB4B0 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				76381C522F04338E008BB4B0 /* ProfileViewModel.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
 		76385AC12EE76648000B0320 /* Post */ = {
 			isa = PBXGroup;
 			children = (
@@ -387,6 +419,7 @@
 		76385AC92EE76A56000B0320 /* Post */ = {
 			isa = PBXGroup;
 			children = (
+				768FFC862F03307C00388CB7 /* PostDetailedView.swift */,
 				76204DCB2EE78A8B004C9C93 /* CreatePostView.swift */,
 			);
 			path = Post;
@@ -507,15 +540,15 @@
 		76A2D3BE2EE4B22800AA6F6E /* App */ = {
 			isa = PBXGroup;
 			children = (
+				761C50472EE3AC330053AD1F /* Auth */,
+				762D6ADF2EE6FB9E0022C539 /* Chats */,
 				79A162DA2EEC7275004CBDCF /* Comments */,
+				76C6771A2EE4DF88009F4D80 /* Discover */,
+				761C50342EE3ABFC0053AD1F /* Home */,
 				76385AC92EE76A56000B0320 /* Post */,
 				C338C8ED2EEC71B200916AED /* Search */,
-				762D6ADF2EE6FB9E0022C539 /* Chats */,
-				76C6771A2EE4DF88009F4D80 /* Discover */,
 				761C50892EE47C290053AD1F /* Profile */,
-				761C50342EE3ABFC0053AD1F /* Home */,
 				761C50482EE3AC590053AD1F /* Tabs */,
-				761C50472EE3AC330053AD1F /* Auth */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -765,6 +798,7 @@
 				76883EEC2EE501AC006A3955 /* UserStore.swift in Sources */,
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
 				7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */,
+				768FFC872F03307C00388CB7 /* PostDetailedView.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */,
@@ -776,6 +810,7 @@
 				7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */,
 				C39A5DCE2F0468AE00945A76 /* SearchAction.swift in Sources */,
 				7933238A2EF80A230040755F /* Comment.swift in Sources */,
+				76381C532F04338E008BB4B0 /* ProfileViewModel.swift in Sources */,
 				76883EEA2EE501A7006A3955 /* SecureStore.swift in Sources */,
 				761C50402EE3ABFC0053AD1F /* HomeView.swift in Sources */,
 				761C50552EE447BD0053AD1F /* MainTabView.swift in Sources */,
@@ -794,6 +829,7 @@
 				C39A5DCC2F04686800945A76 /* Search.swift in Sources */,
 				C39A5DD32F046C0E00945A76 /* SearchHistoryManager.swift in Sources */,
 				76204DCC2EE78A8B004C9C93 /* CreatePostView.swift in Sources */,
+				76381C582F0440C6008BB4B0 /* PostViewModel.swift in Sources */,
 				76119AC02EFF11E500237349 /* FollowersView.swift in Sources */,
 				76119AC12EFF11E500237349 /* FollowingView.swift in Sources */,
 				7661BD262EFA02F000855C37 /* JamPost.swift in Sources */,
@@ -964,7 +1000,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZ3FC58SU8;
+				DEVELOPMENT_TEAM = 9668FMYQJ3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
@@ -984,7 +1020,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly.drenyth;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1010,7 +1046,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZ3FC58SU8;
+				DEVELOPMENT_TEAM = 9668FMYQJ3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
@@ -1030,7 +1066,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly.drenyth;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
