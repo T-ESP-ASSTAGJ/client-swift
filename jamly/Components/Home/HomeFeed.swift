@@ -8,6 +8,7 @@ struct HomeFeed: View {
     @Binding var scrollPosition: Int?  // ✅ Change en @Binding
     @Binding var selectedSegment: FeedSegment
     
+    @State private var showPostDetail: Bool = false
     @State private var pendingMusicChange: Task<Void, Never>?
     
     var body: some View {
@@ -22,7 +23,7 @@ struct HomeFeed: View {
                             Image(systemName: "music.note.list")
                                 .font(.system(size: 48))
                                 .foregroundColor(.gray)
-                            Text("Aucun post pour le moment")
+                            Text("No post found for now. Try creating a new one! ")
                                 .font(.headline)
                                 .foregroundColor(.gray)
                         }
@@ -33,6 +34,7 @@ struct HomeFeed: View {
                                 PostCard(
                                     post: post,
                                     isCurrentPost: post.id == scrollPosition,
+                                    showPostDetail: $showPostDetail,   // ✅ showPostDetail avant musicManager
                                     musicManager: musicManager
                                 )
                                 .frame(width: geometry.size.width, height: geometry.size.height)
@@ -99,7 +101,9 @@ struct HomeFeed: View {
             }
         }
         .onDisappear {
-            musicManager.pause()
+            if !showPostDetail {
+                musicManager.pause()
+            }
             pendingMusicChange?.cancel()
         }
     }
