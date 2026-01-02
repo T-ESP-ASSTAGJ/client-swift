@@ -277,6 +277,7 @@ struct UserSearchResultRow: View {
                 Text(user.username)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
+                    .lineLimit(1)
                 
                 if let email = user.email {
                     Text(email)

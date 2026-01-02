@@ -82,11 +82,23 @@ struct FollowingView: View {
                     HStack(spacing: 8) {
                         // Image
                         HStack(spacing: 15) {
-                            Image("avatar1")
-                                .resizable()
-                                .scaledToFill()
+                            AsyncImage(url: URL(string: following.profilePicture)) { phase in
+                                Group {
+                                    if let image = phase.image {
+                                        image.resizable().scaledToFill()
+                                    } else {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.2))
+                                            .overlay(
+                                                phase.error != nil ?
+                                                Image(systemName: "person.fill").foregroundColor(.gray) as! ProgressView<EmptyView, EmptyView> :
+                                                ProgressView()
+                                            )
+                                    }
+                                }
                                 .frame(width: 44, height: 44)
                                 .clipShape(Circle())
+                            }
 
                             // Infos
                             VStack(alignment: .leading, spacing: 4) {

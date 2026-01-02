@@ -13,6 +13,12 @@ struct LikeCommentRequest: Encodable {
     let entityClass: String = "App\\Entity\\Comment"
     let entityId: Int
 }
+
+struct UnLikeCommentRequest: Encodable {
+    let entityClass: String = "App\\Entity\\Comment"
+    let entityId: Int
+}
+
 enum CommentAction {
     static func CreateComment(postId: Int, content: String) async throws -> APIResponse<SendCommentResponse> {
         let response = try await APIClient.shared.request(
@@ -48,8 +54,9 @@ enum CommentAction {
     
     static func unlike(commentId: Int) async throws -> APIResponse<EmptyResponse> {
         let response = try await APIClient.shared.request(
-            "/likes/\(commentId)",
-            method: .delete,
+            "/likes/delete",
+            method: .post,
+            body: UnLikeCommentRequest(entityId: commentId),
             responseType: EmptyResponse.self
         )
         

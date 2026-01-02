@@ -163,6 +163,23 @@ struct SearchResultsContent: View {
     let searchText: String
     let selectedFilter: SearchResultsView.SearchFilter
     
+    @EnvironmentObject private var userStore: UserStore
+    @StateObject private var followingViewModel = FollowingViewModel()
+    @State private var localFollowingState: [Int: Bool] = [:]
+    
+    private func toggleFollow(for user: SearchUser) async {
+        // Update local state immediately for UI
+        let currentState = localFollowingState[user.id] ?? followingViewModel.followingUsers.contains(where: { $0.id == user.id })
+        localFollowingState[user.id] = !currentState
+        
+        // Perform API call
+        if currentState {
+            await userStore.unfollowUser(userId: user.id)
+        } else {
+            await userStore.followUser(userId: user.id)
+        }
+    }
+    
     var body: some View {
         ZStack {
             if viewModel.isLoading && viewModel.searchResults.isEmpty {
@@ -213,7 +230,13 @@ struct SearchResultsContent: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(viewModel.searchResults) { user in
-                            SearchResultUserCard(user: user, filterType: selectedFilter)
+                            SearchResultUserCard(
+                                user: user,
+                                filterType: selectedFilter,
+                                localFollowingState: $localFollowingState,
+                                followingUsers: followingViewModel.followingUsers,
+                                onToggleFollow: toggleFollow
+                            )
                                 .onAppear {
                                     // Load more when approaching the end
                                     if viewModel.shouldLoadMore(for: user) {
@@ -249,6 +272,21 @@ struct SearchResultUserCard: View {
     let user: SearchUser
     let filterType: SearchResultsView.SearchFilter
     
+    @Binding var localFollowingState: [Int: Bool]
+    let followingUsers: [FollowingUser]
+    let onToggleFollow: (SearchUser) async -> Void
+    
+    // Check if a user is locally followed
+    private var isFollowing: Bool {
+        // Si on a un état local (modification en cours), on l'utilise
+        if let localState = localFollowingState[user.id] {
+            return localState
+        }
+        
+        // Sinon, vérifier si l'utilisateur est dans notre liste de following
+        return followingUsers.contains(where: { $0.id == user.id })
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
             // Profile picture
@@ -282,6 +320,7 @@ struct SearchResultUserCard: View {
                 Text("@\(user.username)")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.white)
+                    .lineLimit(1)
                 
                 if let email = user.email {
                     Text(email)
@@ -293,9 +332,19 @@ struct SearchResultUserCard: View {
             
             Spacer()
             
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14))
-                .foregroundColor(.gray.opacity(0.5))
+            Button {
+                Task {
+                    await onToggleFollow(user)
+                }
+            } label: {
+                Text(isFollowing ? "Unfollow" : "Follow")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(isFollowing ? .white : .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .cornerRadius(8)
+            }
+            .buttonStyle(.glass)
         }
         .padding()
         .background(Color.gray.opacity(0.05))
