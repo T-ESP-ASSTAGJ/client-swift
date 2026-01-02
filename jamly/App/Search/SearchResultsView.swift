@@ -339,7 +339,7 @@ struct SearchResultUserCard: View {
             } label: {
                 Text(isFollowing ? "Unfollow" : "Follow")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(isFollowing ? .white : .white)
+                    .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)
                     .cornerRadius(8)
