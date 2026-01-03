@@ -68,44 +68,22 @@ struct SearchView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search", text: $searchText)
-                            .foregroundStyle(.white)
-                            .focused($isSearchFocused)
-                            .submitLabel(.search)
-                            .onSubmit {
-                                if !searchText.isEmpty {
-                                    if !searchHistory.contains(searchText) {
-                                        searchHistory.insert(searchText, at: 0)
-                                        SearchHistoryManager.shared.addToHistory(searchText)
-                                    }
-                                    submittedSearch = searchText
-                                    navigateToResults = true
+                    SearchBarToolbarItem(
+                        searchText: $searchText,
+                        isSearchFocused: $isSearchFocused,
+                        onSubmit: {
+                            if !searchText.isEmpty {
+                                if !searchHistory.contains(searchText) {
+                                    searchHistory.insert(searchText, at: 0)
+                                    SearchHistoryManager.shared.addToHistory(searchText)
                                 }
-                            }
-                        
-                        if !searchText.isEmpty {
-                            Button(action: {
-                                searchText = ""
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
+                                submittedSearch = searchText
+                                navigateToResults = true
                             }
                         }
-                    }
-                    .padding(10)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(10)
-                    .frame(width: UIScreen.main.bounds.width - 100)
+                    )
                 }
             }
-    }
-    
-    private func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
@@ -115,196 +93,13 @@ struct LiveSearchResults: View {
     @ObservedObject var viewModel: SearchViewModel
     let onSelectUser: (SearchUser) -> Void
     
-    @EnvironmentObject private var userStore: UserStore
-    @StateObject private var followingViewModel = FollowingViewModel()
-    @State private var localFollowingState: [Int: Bool] = [:]
-    
-    private func toggleFollow(for user: SearchUser) async {
-        // Update local state immediately for UI
-        let currentState = localFollowingState[user.id] ?? followingViewModel.followingUsers.contains(where: { $0.id == user.id })
-        localFollowingState[user.id] = !currentState
-        
-        // Perform API call
-        if currentState {
-            await userStore.unfollowUser(userId: user.id)
-        } else {
-            await userStore.followUser(userId: user.id)
-        }
-    }
-    
     var body: some View {
-        ZStack {
-            if viewModel.isLoading && viewModel.searchResults.isEmpty {
-                // Initial loading state
-                VStack(spacing: 16) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Text("Searching...")
-                        .foregroundColor(.gray)
-                        .font(.subheadline)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.error {
-                // Error state
-                VStack(spacing: 16) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 48))
-                        .foregroundColor(.red.opacity(0.7))
-                    Text(error.errorDescription ?? "An error occurred")
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                    Button("Try Again") {
-                        Task {
-                            await viewModel.search(query: searchText)
-                        }
-                    }
-                    .foregroundColor(.blue)
-                }
-                .padding()
-            } else if viewModel.searchResults.isEmpty && !viewModel.isLoading {
-                // No results state
-                VStack(spacing: 16) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 48))
-                        .foregroundColor(.gray.opacity(0.5))
-                    Text("No content found")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                    Text("Try searching for something else")
-                        .font(.caption)
-                        .foregroundColor(.gray.opacity(0.7))
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 60)
-            } else {
-                // Results list with pagination
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(viewModel.searchResults) { user in
-                            UserSearchResultRow(
-                                user: user,
-                                localFollowingState: $localFollowingState,
-                                followingUsers: followingViewModel.followingUsers,
-                                onToggleFollow: toggleFollow
-                            )
-                                .onTapGesture {
-                                    onSelectUser(user)
-                                }
-                                .onAppear {
-                                    // Load more when approaching the end
-                                    if viewModel.shouldLoadMore(for: user) {
-                                        Task {
-                                            await viewModel.loadMoreResults()
-                                        }
-                                    }
-                                }
-                        }
-                        
-                        // Loading indicator at the bottom
-                        if viewModel.isLoadingMore {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                    .padding()
-                                Spacer()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .task {
-            // Load following list when view appears
-            if let userId = userStore.user?.id {
-                await followingViewModel.loadFollowing(userId: userId)
-            }
-        }
-        .onAppear {
-            localFollowingState.removeAll()
-        }
-    }
-}
-
-// MARK: - User Search Result Row
-struct UserSearchResultRow: View {
-    let user: SearchUser
-    
-    @Binding var localFollowingState: [Int: Bool]
-    let followingUsers: [FollowingUser]
-    let onToggleFollow: (SearchUser) async -> Void
-    
-    // Check if a user is locally followed
-    private var isFollowing: Bool {
-        // Si on a un état local (modification en cours), on l'utilise
-        if let localState = localFollowingState[user.id] {
-            return localState
-        }
-        
-        // Sinon, vérifier si l'utilisateur est dans notre liste de following
-        return followingUsers.contains(where: { $0.id == user.id })
-    }
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // Profile picture or placeholder
-            if let profilePicture = user.profilePicture, !profilePicture.isEmpty {
-                AsyncImage(url: URL(string: profilePicture)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Circle()
-                        .fill(Color.gray.opacity(0.2))
-                        .overlay(
-                            Image(systemName: "person.fill")
-                                .foregroundColor(.gray)
-                        )
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(Circle())
-            } else {
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .foregroundColor(.gray)
-                            .font(.system(size: 20))
-                    )
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(user.username)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                
-                if let email = user.email {
-                    Text(email)
-                        .font(.system(size: 14))
-                        .foregroundColor(.gray)
-                }
-            }
-            
-            Spacer()
-            
-            Button {
-                Task {
-                    await onToggleFollow(user)
-                }
-            } label: {
-                Text(isFollowing ? "Unfollow" : "Follow")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
-                    .cornerRadius(8)
-            }
-            .buttonStyle(.glass)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .contentShape(Rectangle())
+        SearchResultsList(
+            viewModel: viewModel,
+            searchText: searchText,
+            onSelectUser: onSelectUser
+        )
+        .padding(.horizontal, 16)
     }
 }
 
