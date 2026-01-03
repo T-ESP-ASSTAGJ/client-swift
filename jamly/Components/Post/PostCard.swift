@@ -341,7 +341,6 @@ struct PostCard: View {
         }
     }
 
-
     private var truncatedCaption: String {
         if post.caption.count > captionTruncationThreshold {
             return String(post.caption.prefix(captionTruncationThreshold)) + "..."
