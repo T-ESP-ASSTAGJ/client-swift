@@ -11,10 +11,10 @@ struct CommentsSheetView: View {
     let post: Post
     
     @EnvironmentObject private var userStore: UserStore
-    
     @Environment(\.dismiss) private var dismiss
     
-    @State private var comments: [CommentType] = CommentType.mockComments
+    @StateObject private var commentViewModel = CommentViewModel()
+    
     @State private var newCommentText: String = ""
     @State private var isLoading: Bool = false
     
@@ -23,18 +23,26 @@ struct CommentsSheetView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                postHeader
+                commentHeader
                 
                 Divider()
                     .padding(.top, 20)
                 
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        if comments.isEmpty && !isLoading {
+                        if commentViewModel.comments.isEmpty && !commentViewModel.isLoading {
+                            Spacer()
                             emptyStateView
+                            Spacer()
+                        } else if commentViewModel.isLoading {
+                            Spacer()
+                            ProgressView()
+                                .scaleEffect(1.2)
+                                .padding(.top, 60)
+                            Spacer()
                         } else {
-                            ForEach(comments) { comment in
-                                Comment(comment: comment)
+                            ForEach(commentViewModel.comments) { comment in
+                                CommentRow(comment: comment)
                                     .padding(.horizontal)
                             }
                         }
@@ -49,7 +57,7 @@ struct CommentsSheetView: View {
             .onTapGesture {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
             }
-            .navigationTitle("\($comments.count) comments")
+            .navigationTitle("\(post.commentsCount) comments")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -61,14 +69,14 @@ struct CommentsSheetView: View {
                 }
             }
             .task {
-                await loadComments()
+                await commentViewModel.getComments(post: post)
             }
         }
     }
     
     // MARK: - Post Header
     
-    private var postHeader: some View {
+    private var commentHeader: some View {
         HStack(spacing: 12) {
             AsyncImage(url: URL(string: post.photoUrl)) { image in
                 image
@@ -103,16 +111,17 @@ struct CommentsSheetView: View {
                 .font(.system(size: 60))
                 .foregroundStyle(.secondary)
             
-            Text("Aucun commentaire")
+            Text("Any comments")
                 .font(.title3)
                 .fontWeight(.medium)
             
-            Text("Soyez le premier à commenter!")
+            Text("Be the first to comment!")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 60)
+        .offset(y: 90)
     }
     
     // MARK: - Comment Input Section
@@ -142,20 +151,9 @@ struct CommentsSheetView: View {
         .background(Color(.systemBackground))
     }
     
-    // MARK: - Methods
-    
-    private func loadComments() async {
-        isLoading = true
-        defer { isLoading = false }
-        
-        // TODO: Remplacer par un appel API pour charger les commentaires du post
-        try? await Task.sleep(for: .seconds(0.5))
-        
-        comments = CommentType.mockComments
-    }
     
     private func sendComment() async {
-        guard let user = userStore.user else { return }
+        guard userStore.user != nil else { return }
         
         let trimmedText = newCommentText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else { return }
@@ -163,29 +161,14 @@ struct CommentsSheetView: View {
         isLoading = true
         defer { isLoading = false }
         
-        // TODO: Remplacer par un appel API pour poster le commentaire
-        try? await Task.sleep(for: .seconds(0.5))
-        
-        let newComment = CommentType(
-            id: comments.count + 1,
-            user: User(
-                id: user.id,  // ✅ user est garanti non-nil ici
-                username: user.username,
-                email: user.email,
-                profilePicture: user.profilePicture,
-                followed: [],
-                follower: []
-            ),
-            content: trimmedText,
-            createdAt: ISO8601DateFormatter().string(from: Date())
-        )
-        
-        withAnimation {
-            comments.insert(newComment, at: 0)
+        do {
+            _ = try await commentViewModel.sendComment(postId: post.id, content: trimmedText)
+            
+            // Reset text field
+            newCommentText = ""
+            isTextFieldFocused = false
+        } catch {
+            print("❌ Failed to send comment: \(error)")
         }
-        
-        // Reset text field
-        newCommentText = ""
-        isTextFieldFocused = false
     }
 }

@@ -101,7 +101,3 @@ struct TabBar: View {
         .buttonStyle(.plain)
     }
 }
-
-#Preview {
-    TabBar(selectedTab: .constant(.home))
-}
