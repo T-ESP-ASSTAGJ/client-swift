@@ -7,6 +7,7 @@
 # Xcode - User settings
 jamly.xcodeproj/xcuserdata/
 *.xcuserstate
+jamly.xcodeproj/project.xcworkspace
 
 # Build artifacts
 DerivedData/
@@ -25,6 +26,5 @@ Pods/
 # Temporary files
 *.swp
 *~
-.DS_Store
 EOF
 .idea
