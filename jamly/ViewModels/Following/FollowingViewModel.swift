@@ -37,7 +37,6 @@ final class FollowingViewModel: ObservableObject {
         
         do {
             let response = try await FollowingAction.getFollowingUsers(
-                page: currentPage,
                 userId: userId
             )
             

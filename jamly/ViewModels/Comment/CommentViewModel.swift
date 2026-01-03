@@ -47,6 +47,36 @@ final class CommentViewModel: ObservableObject {
             isLoading = false
         }
     }
+    
+    func sendComment(postId: Int, content: String) async throws -> CommentResponse {
+        errorMessage = nil
+        
+        do {
+            print("📤 Sending comment: '\(content)'")
+            let response = try await CommentAction.CreateComment(postId: postId, content: content)
+            
+            print("✅ Comment sent successfully: \(response)")
+            
+            // Convertir la réponse en CommentResponse
+            let commentResponse = CommentResponse(
+                id: response.value.id,
+                user: response.value.user,
+                content: response.value.content,
+                likesCount: 0,
+                isLiked: false,
+                createdAt: nil
+            )
+            
+            // Ajouter le commentaire à la liste
+            comments.insert(commentResponse, at: 0)
+            
+            return commentResponse
+        } catch {
+            print("❌ Failed to send comment: \(error)")
+            errorMessage = "Failed to send comment"
+            throw error
+        }
+    }
 }
 
 

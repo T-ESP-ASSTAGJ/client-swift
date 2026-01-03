@@ -162,32 +162,13 @@ struct CommentsSheetView: View {
         defer { isLoading = false }
         
         do {
-            print("📤 Sending comment: '\(trimmedText)'")
-            let response = try await CommentAction.CreateComment(postId: post.id, content: trimmedText)
-
-            print("✅ Comment sent successfully: \(response)")
+            _ = try await commentViewModel.sendComment(postId: post.id, content: trimmedText)
             
-            let commentResponse = CommentResponse(
-                id: response.value.id,
-                user: response.value.user,
-                content: response.value.content,
-                likesCount: 0,
-                isLiked: false,
-                createdAt: nil
-            )
-
-            withAnimation {
-                commentViewModel.comments.insert(commentResponse, at: 0)
-            }
-            
-
             // Reset text field
             newCommentText = ""
             isTextFieldFocused = false
-
         } catch {
             print("❌ Failed to send comment: \(error)")
-            // TODO: Afficher une alerte d'erreur à l'utilisateur
         }
     }
 }

@@ -44,7 +44,7 @@ struct FollowersView: View {
         
         // Perform API call
         if currentState {
-            await userStore.unfollowUser(userId: follower.id, autoRefresh: false)
+            await userStore.unfollowUser(userId: follower.id, autoRefresh: true)
         } else {
             await userStore.followUser(userId: follower.id)
         }
@@ -78,51 +78,14 @@ struct FollowersView: View {
                 }
             } else {
                 List(filteredFollowers) { follower in
-                    HStack(spacing: 8) {
-                        // Image
-                        HStack(spacing: 15) {
-                            AsyncImage(url: URL(string: follower.profilePicture)) { phase in
-                                Group {
-                                    if let image = phase.image {
-                                        image.resizable().scaledToFill()
-                                    } else {
-                                        Circle()
-                                            .fill(Color.gray.opacity(0.2))
-                                            .overlay(
-                                                phase.error != nil ?
-                                                Image(systemName: "person.fill").foregroundColor(.gray) as! ProgressView<EmptyView, EmptyView> :
-                                                    ProgressView()
-                                            )
-                                    }
-                                }
-                                .frame(width: 44, height: 44)
-                                .clipShape(Circle())
-                            }
-
-                            // Infos
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(follower.username)
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                            }
+                    UserRow(
+                        user: follower,
+                        isFollowing: isFollowing(userId: follower.id),
+                        showFollowBack: true,
+                        onToggleFollow: {
+                            await toggleFollow(for: follower)
                         }
-                        Spacer()
-
-                        Button {
-                            Task {
-                                await toggleFollow(for: follower)
-                            }
-                        } label: {
-                            Text(isFollowing(userId: follower.id) ? "Unfollow" : "Follow back")
-                        }
-                        .buttonStyle(.glass)
-                    }
-                    .frame(height: 40)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 15, bottom: 20, trailing: 15))
-                    .scrollContentBackground(.hidden)
-                    .listStyle(.plain)
+                    )
                 }
             }
         }
