@@ -197,6 +197,7 @@ struct UserSearchResultCard: View {
                     .cornerRadius(8)
             }
             .buttonStyle(.glass)
+            .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.horizontal, horizontalPadding)
         .padding(.vertical, verticalPadding)
