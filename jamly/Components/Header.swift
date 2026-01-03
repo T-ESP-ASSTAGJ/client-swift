@@ -20,40 +20,38 @@ struct Header: View {
     
     @Binding var selectedSegment: FeedSegment
     
-    @State private var showSearchView: Bool = false
-    
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
                 // Avatar + badge notifs
-                ZStack(alignment: .topTrailing) {
-                    if let user = userStore.user, let profilePicture = user.profilePicture {
-                        AsyncImage(url: URL(string: profilePicture)) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 36, height: 36)
-                                .clipShape(Circle())
-                        } placeholder: {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 36, height: 36)
-                                .overlay {
-                                    ProgressView()
-                                }
-                        }
-                    } else {
-                        // ✅ Pas d'user OU pas de photo
-                        Circle()
-                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                            .frame(width: 36, height: 36)
-                            .overlay {
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.gray)
-                            }
-                    }
-                }
+//                ZStack(alignment: .topTrailing) {
+//                    if let user = userStore.user, let profilePicture = user.profilePicture {
+//                        AsyncImage(url: URL(string: profilePicture)) { image in
+//                            image
+//                                .resizable()
+//                                .scaledToFill()
+//                                .frame(width: 36, height: 36)
+//                                .clipShape(Circle())
+//                        } placeholder: {
+//                            Circle()
+//                                .fill(Color.gray.opacity(0.3))
+//                                .frame(width: 36, height: 36)
+//                                .overlay {
+//                                    ProgressView()
+//                                }
+//                        }
+//                    } else {
+//                        // ✅ Pas d'user OU pas de photo
+//                        Circle()
+//                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
+//                            .frame(width: 36, height: 36)
+//                            .overlay {
+//                                Image(systemName: "person.fill")
+//                                    .font(.system(size: 16))
+//                                    .foregroundColor(.gray)
+//                            }
+//                    }
+//                }
                 
                 Spacer()
                 
@@ -93,26 +91,19 @@ struct Header: View {
                 
                 Spacer()
                 
-                Button {
-                    showSearchView = true
-                }label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 22, weight:.semibold))
-                        .tint(.white)
-                }
+//                Button {
+//                    showSearchView = true
+//                }label: {
+//                    Image(systemName: "magnifyingglass")
+//                        .font(.system(size: 22, weight:.semibold))
+//                        .tint(.white)
+//                }
             }
         }
-        .navigationDestination(isPresented: $showSearchView) {
-            SearchView()
-        }
+//        .navigationDestination(isPresented: $showSearchView) {
+//            SearchView()
+//        }
         .padding(.horizontal, 25)
-        .padding(.vertical, 10)
-        .background(
-            LinearGradient(
-                colors: [Color.black.opacity(0.7), Color.clear],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
+        .background(.clear)
     }
 }

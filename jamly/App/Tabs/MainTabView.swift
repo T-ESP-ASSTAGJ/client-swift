@@ -17,52 +17,38 @@ struct MainTabView: View {
     @EnvironmentObject private var userStore: UserStore
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Group {
-                switch selectedTab {
-                case .home:
-                    NavigationStack {
-                        // ✅ Passe le binding à HomeFeed
-                        HomeView(selectedSegment: $selectedSegment, scrollPosition: $feedScrollPosition)
-                    }
-                    
-                case .discover:
-                    NavigationStack {
-                        DiscoverView()
-                    }
-                case .create:
-                    NavigationStack {
-                        CreatePostView()
-                    }
-                    
-                case .chats:
-                    NavigationStack {
-                        ChatsView()
-                    }
-                    
-                case .profile:
-                    NavigationStack {
-                        ProfileView()
-                    }
+        TabView(selection: $selectedTab) {
+            Tab("Home", systemImage: "rectangle.stack.badge.play.fill", value: .home) {
+                NavigationStack {
+                    HomeView(selectedSegment: $selectedSegment, scrollPosition: $feedScrollPosition)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            // TabBar custom
-            TabBar(selectedTab: $selectedTab)
+            Tab("Discover", systemImage: "safari", value: .discover) {
+                NavigationStack {
+                    DiscoverView()
+                }
+            }
+            
+            Tab("", systemImage: "plus", value: .create) {
+                NavigationStack {
+                    CreatePostView()
+                }
+            }
+            
+            Tab("Chats", systemImage: "ellipsis.message", value: .chats) {
+                NavigationStack {
+                    ChatsView()
+                }
+            }
+            
+            
+            Tab("Profile", systemImage: "person.crop.circle.fill", value: .profile) {
+                NavigationStack {
+                    ProfileView()
+                }
+            }
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
-    }
-}
-
-struct ChatDetailView: View {
-    let chatName: String
-    
-    var body: some View {
-        VStack {
-            Text("Chat with \(chatName)")
-                .foregroundColor(.white)
-        }
-        .navigationTitle(chatName)
+        .accentColor(.white)
     }
 }

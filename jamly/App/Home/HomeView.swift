@@ -6,9 +6,10 @@ enum FeedSegment {
 }
 
 struct HomeView: View {
-    @Binding var selectedSegment: FeedSegment
+    @State private var showSearchView: Bool = false
     
-    @Binding var scrollPosition: Int?  // ✅ Change en @Binding
+    @Binding var selectedSegment: FeedSegment
+    @Binding var scrollPosition: Int?
     
     init(selectedSegment: Binding<FeedSegment>, scrollPosition: Binding<Int?>) {
         self._selectedSegment = selectedSegment
@@ -16,7 +17,7 @@ struct HomeView: View {
     }
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.appBackground
                 .ignoresSafeArea()
             
@@ -24,12 +25,42 @@ struct HomeView: View {
                 .resizable(resizingMode: .stretch)
                 .ignoresSafeArea()
             
-            VStack {
-                Header(selectedSegment: $selectedSegment)
-                
-                HomeFeed(scrollPosition: $scrollPosition, selectedSegment: $selectedSegment)
+            // Feed en dessous (prend tout l'écran)
+            HomeFeed(scrollPosition: $scrollPosition, selectedSegment: $selectedSegment)
+            
+            // Header au-dessus avec dégradé transparent
+            Header(selectedSegment: $selectedSegment)
+                .background(
+                    LinearGradient(
+                        colors: [.black.opacity(0.7), .black.opacity(0)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                )
+        }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("JAMLY.")
+                    .font(.custom("Poppins-BoldItalic", size: 18))
+                    .italic()
+                    .foregroundColor(.white)
             }
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    showSearchView = true
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 15))
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                }
+                .padding(.trailing, 3)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showSearchView) {
+            SearchView()
         }
     }
 }
-

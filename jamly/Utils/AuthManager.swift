@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 final class AuthManager: ObservableObject {
     @Published var isAuthenticated: Bool = false {
         didSet {

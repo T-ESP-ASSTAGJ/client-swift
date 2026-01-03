@@ -21,7 +21,9 @@ struct PostCard: View {
     @State private var avatarUIImage: UIImage?
     @State private var isSwapped = false
     
-    @State private var isLiked: Bool = false
+    // ✅ États locaux pour le like
+    @State private var isLiked: Bool
+    @State private var likesCount: Int
     
     // Seuil pour afficher "See more" (environ 2 lignes)
     private let captionTruncationThreshold = 80
@@ -38,10 +40,11 @@ struct PostCard: View {
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
 
-        print("Current post: \(post)")
-
-        // Initialise isLiked avec la valeur du post
+//        print("Current post: \(post)")
+        
+        // ✅ Initialiser avec les valeurs du post
         self._isLiked = State(initialValue: post.isLiked)
+        self._likesCount = State(initialValue: post.likesCount)
     }
     
     var body: some View {
@@ -181,15 +184,13 @@ struct PostCard: View {
                         HStack(spacing: 10) {
                             VStack {
                                 Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                        isLiked.toggle()
-                                        viewModel.likePost(post: post)
-                                    }
+                                    toggleLike()
                                 }) {
                                     VStack(spacing: 5) {
                                         Image(systemName: isLiked ? "heart.fill" : "heart")
                                             .font(.system(size: 20, weight: .semibold))
                                             .foregroundColor(isLiked ? .red : .white)
+                                            .symbolEffect(.bounce, value: isLiked)
                                     }
                                     .padding(.horizontal, 7)
                                     .padding(.vertical, 7)
@@ -197,7 +198,7 @@ struct PostCard: View {
                                 .buttonStyle(.glass)
                                 .buttonBorderShape(.circle)
                                 
-                                Text(isLiked ? String(post.likesCount + 1) : String(post.likesCount))
+                                Text("\(likesCount)")
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .opacity(0.8)
@@ -308,12 +309,27 @@ struct PostCard: View {
                     .padding(.horizontal, 15)
                     .padding(.vertical, 15)
                 }
-                
-                Spacer()
             }
         }
         .navigationDestination(isPresented: $showPostDetail) {
             PostDetailView(post: post)
+        }
+    }
+    
+    // ✅ Fonction toggle propre
+    private func toggleLike() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            if isLiked {
+                // Unlike
+                isLiked = false
+                likesCount -= 1
+                viewModel.unlikePost(post: post)
+            } else {
+                // Like
+                isLiked = true
+                likesCount += 1
+                viewModel.likePost(post: post)
+            }
         }
     }
     
