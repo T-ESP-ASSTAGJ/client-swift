@@ -18,6 +18,11 @@ struct ProfileView: View {
     
     @StateObject private var viewModel = ProfileViewModel()
     
+    // MARK: - Profile Mode
+    /// Si userId est fourni, on affiche le profil d'un autre utilisateur
+    /// Sinon, on affiche le profil de l'utilisateur connecté
+    let userId: Int?
+
     @State private var selectedTab: ProfileTab = .posts
     @State private var selectedFollowView: FollowViews? = nil
     @State private var showMusicPlaylists = false
@@ -25,6 +30,31 @@ struct ProfileView: View {
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     
+    // MARK: - Computed Properties
+
+    /// Retourne l'utilisateur à afficher (celui du profil visité ou le user connecté)
+    private var displayedUser: User? {
+        if userId != nil {
+            return viewModel.profileUser
+        } else {
+            return userStore.user
+        }
+    }
+
+    /// Indique si on affiche son propre profil
+    private var isOwnProfile: Bool {
+        guard let userId = userId, let currentUserId = userStore.user?.id else {
+            return true // Par défaut, c'est notre profil
+        }
+        return userId == currentUserId
+    }
+
+    // MARK: - Init
+
+    init(userId: Int? = nil) {
+        self.userId = userId
+    }
+
     let photos = [
         ("photo1", "661K"),
         ("photo2", "97K"),
@@ -53,6 +83,13 @@ struct ProfileView: View {
                     // Header (photo de profil et infos)
                     headerSection
                     
+                    // Follow/Unfollow button (seulement si ce n'est pas notre profil)
+                    if !isOwnProfile {
+                        followButtonSection
+                            .padding(.horizontal)
+                            .padding(.bottom, 16)
+                    }
+
                     // Tabs avec GeometryReader pour sticky
                     GeometryReader { geometry in
                         let minY = geometry.frame(in: .global).minY - 110
@@ -75,8 +112,10 @@ struct ProfileView: View {
                             .tag(ProfileTab.likes)
                         
                         // MARK: - Music Tab
-                        musicGrid
-                            .tag(ProfileTab.music)
+                        if isOwnProfile {
+                            musicGrid
+                                .tag(ProfileTab.music)
+                        }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .frame(height: calculateGridHeight())
@@ -94,14 +133,17 @@ struct ProfileView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button {
-                    showMusicPlaylists = true
-                } label: {
-                    Image(systemName: "music.note.square.stack.fill")
-                        .font(.system(size: 15))
-                        .foregroundColor(.white)
+                // N'afficher le bouton musique que sur son propre profil
+                if isOwnProfile {
+                    Button {
+                        showMusicPlaylists = true
+                    } label: {
+                        Image(systemName: "music.note.square.stack.fill")
+                            .font(.system(size: 15))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.trailing, 3)
                 }
-                .padding(.trailing, 3)
             }
         }
         .navigationDestination(isPresented: $showMusicPlaylists) {
@@ -121,6 +163,12 @@ struct ProfileView: View {
                 PostDetailView(post: post)
             } else {
                 EmptyView()
+            }
+        }
+        .task {
+            // Charger le profil si c'est un autre utilisateur
+            if let userId = userId {
+                viewModel.fetchUserProfile(userId: userId)
             }
         }
     }
@@ -143,17 +191,19 @@ struct ProfileView: View {
                     selectedTab = .likes
                 }
                 
-                TabButton(
-                    icon: "music.note.list",
-                    isSelected: selectedTab == .music
-                ) {
-                    selectedTab = .music
+                if isOwnProfile {
+                    TabButton(
+                        icon: "music.note.list",
+                        isSelected: selectedTab == .music
+                    ) {
+                        selectedTab = .music
+                    }
                 }
             }
             
             // Indicateur animé
             GeometryReader { geo in
-                let tabWidth = geo.size.width / 3
+                let tabWidth = geo.size.width / CGFloat(isOwnProfile ? 3 : 2)
                 
                 Rectangle()
                     .fill(Color.white)
@@ -172,12 +222,26 @@ struct ProfileView: View {
         VStack(spacing: 0) {
             if viewModel.isLoading {
                 loadingState()
-            } else if photos.isEmpty {
+            } else if viewModel.posts.isEmpty {
                 emptyState(message: "No posts yet.")
+            } else {
+                LazyVGrid(columns: columns, spacing: 2) {
+                    ForEach(viewModel.posts, id: \.id) { post in
+                        gridItem(views: formatNumber(0), cover: post.photoUrl)
+                            .onTapGesture {
+                                selectedPost = post
+                                isShowingPostDetail = true
+                            }
+                    }
+                }
             }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onAppear {
+            guard let targetUserId = userId ?? userStore.user?.id else { return }
+            viewModel.getPosts(id: targetUserId)
+        }
     }
     
     // MARK: - Likes Grid
@@ -202,8 +266,8 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
-            guard let user = userStore.user else { return }
-            viewModel.getLikedPosts(id: user.id)
+            guard let targetUserId = userId ?? userStore.user?.id else { return }
+            viewModel.getLikedPosts(id: targetUserId)
         }
     }
     
@@ -277,7 +341,15 @@ struct ProfileView: View {
     
     // MARK: - Calculate Grid Height
     private func calculateGridHeight() -> CGFloat {
-        let itemCount = photos.count
+        let itemCount: Int
+        switch selectedTab {
+        case .posts:
+            itemCount = viewModel.posts.count
+        case .likes:
+            itemCount = viewModel.likedPosts.count
+        case .music:
+            itemCount = 0 // Pas de musique pour l'instant
+        }
         let rowCount = ceil(Double(itemCount) / 3.0)
         let screenWidth = UIScreen.main.bounds.width
         let itemHeight = screenWidth / 3
@@ -289,7 +361,7 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 ZStack {
-                    if let user = userStore.user, let profilePicture = user.profilePicture {
+                    if let user = displayedUser, let profilePicture = user.profilePicture {
                         AsyncImage(url: URL(string: profilePicture)) { image in
                             image
                                 .resizable()
@@ -319,12 +391,12 @@ struct ProfileView: View {
                 .padding(.horizontal, 7)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(userStore.user?.username ?? "")
+                    Text(displayedUser?.username ?? "")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                     
-                    Text("@\(userStore.user?.username ?? "")")
+                    Text("@\(displayedUser?.username ?? "")")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
@@ -336,7 +408,7 @@ struct ProfileView: View {
                     selectedFollowView = .following
                 } label: {
                     StatView(
-                        number: formatNumber(userStore.user?.followingCount ?? 0),
+                        number: formatNumber(displayedUser?.followedCount ?? 0),
                         label: "Following"
                     )
                 }
@@ -351,7 +423,7 @@ struct ProfileView: View {
                     selectedFollowView = .followers
                 } label: {
                     StatView(
-                        number: formatNumber(userStore.user?.followersCount ?? 0),
+                        number: formatNumber(displayedUser?.followerCount ?? 0),
                         label: "Followers"
                     )
                 }
@@ -360,6 +432,53 @@ struct ProfileView: View {
             .padding(.horizontal, 15)
         }
         .padding(.bottom, 24)
+    }
+
+    // MARK: - Follow Button Section
+    private var followButtonSection: some View {
+        HStack {
+            if let targetUserId = userId {
+                if userStore.isFollowing(userId: targetUserId) {
+                    Button {
+                        Task {
+                            await userStore.unfollowUser(userId: targetUserId, autoRefresh: false)
+                            // Refresh le profil affiché
+                            if let userId = userId {
+                                viewModel.fetchUserProfile(userId: userId)
+                            }
+                        }
+                    } label: {
+                        Text("Unfollow")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(8)
+                    }
+                } else {
+                    Button {
+                        Task {
+                            await userStore.followUser(userId: targetUserId)
+                            // Refresh le profil affiché
+                            if let userId = userId {
+                                viewModel.fetchUserProfile(userId: userId)
+                            }
+                        }
+                    } label: {
+                        Text("Follow")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.white)
+                            .cornerRadius(8)
+                    }
+                }
+            }
+        }
     }
 }
 

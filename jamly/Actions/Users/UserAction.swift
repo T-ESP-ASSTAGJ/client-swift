@@ -26,6 +26,18 @@ enum UserActions {
         return response
     }
     
+    static func getUserById(userId: Int) async throws -> APIResponse<User> {
+        let response = try await APIClient.shared.request(
+            "/users/\(userId)",
+            method: .get,
+            responseType: User.self
+        )
+        
+        print("👤 Fetched user \(userId): \(response.value.username)")
+        
+        return response
+    }
+    
     static func followUser(userId: Int) async throws -> APIResponse<EmptyResponse> {
         let response = try await APIClient.shared.request(
             "/users/\(userId)/follow",
@@ -61,5 +73,18 @@ enum UserActions {
         
         let posts = response.value.map { $0.likedEntity }
         return APIResponse<[Post]>(value: posts, statusCode: response.statusCode)
+    }
+    
+    static func getPostsByUser(userId: Int) async throws -> APIResponse<[Post]> {
+        let response = try await APIClient.shared.request(
+            "/posts",
+            method: .get,
+            query: ["user": "\(userId)"],
+            responseType: [Post].self
+        )
+        
+        print("📝 Found \(response.value.count) posts of user \(userId)")
+        
+        return response
     }
 }

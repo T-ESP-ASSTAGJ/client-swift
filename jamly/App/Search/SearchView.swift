@@ -8,14 +8,14 @@ import SwiftUI
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
-    
+
     @StateObject private var viewModel = SearchViewModel()
-    
+
     @State private var searchText = ""
     @State private var searchHistory: [String] = SearchHistoryManager.shared.loadHistory()
     @State private var navigateToResults = false
     @State private var submittedSearch = ""
-    
+    @State private var selectedUserId: Int?
     @FocusState private var isSearchFocused: Bool
     
     var body: some View {
@@ -40,8 +40,8 @@ struct SearchView: View {
                             searchText: searchText,
                             viewModel: viewModel,
                             onSelectUser: { user in
-                                // Navigate to user profile or handle selection
-                                print("Selected user: \(user.username)")
+                                // Navigate to user profile
+                                selectedUserId = user.id
                             }
                         )
                     }
@@ -54,6 +54,9 @@ struct SearchView: View {
                     searchQuery: submittedSearch,
                     searchHistory: $searchHistory
                 )
+            }
+            .navigationDestination(item: $selectedUserId) { userId in
+                ProfileView(userId: userId)
             }
             .onChange(of: searchText) { oldValue, newValue in
                 // Perform live search while typing (with debouncing)
