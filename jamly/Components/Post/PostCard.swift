@@ -10,16 +10,21 @@ import SwiftUI
 struct PostCard: View {
     let post: Post
     let isCurrentPost: Bool
-
+    
     @Binding var showPostDetail: Bool
-
+    
     @ObservedObject var musicManager: MusicManager
     
     @StateObject private var viewModel = PostViewModel()
-
+    
     @State private var coverUIImage: UIImage?
     @State private var avatarUIImage: UIImage?
     @State private var isSwapped = false
+    
+    // ✅ États locaux pour le like
+    @State private var isLiked: Bool
+    @State private var likesCount: Int
+    
     @State private var showCommentsSheet: Bool = false
 
     @State private var isLiked: Bool = false
@@ -39,10 +44,11 @@ struct PostCard: View {
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
 
-        print("Current post: \(post)")
+//        print("Current post: \(post)")
 
-        // Initialise isLiked avec la valeur du post
+        // ✅ Initialiser avec les valeurs du post
         self._isLiked = State(initialValue: post.isLiked)
+        self._likesCount = State(initialValue: post.likesCount)
     }
     
     var body: some View {
@@ -320,6 +326,24 @@ struct PostCard: View {
             CommentsSheetView(post: post)
         }
     }
+
+    // ✅ Fonction toggle propre
+    private func toggleLike() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            if isLiked {
+                // Unlike
+                isLiked = false
+                likesCount -= 1
+                viewModel.unlikePost(post: post)
+            } else {
+                // Like
+                isLiked = true
+                likesCount += 1
+                viewModel.likePost(post: post)
+            }
+        }
+    }
+
 
     private var truncatedCaption: String {
         if post.caption.count > captionTruncationThreshold {

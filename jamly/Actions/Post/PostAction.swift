@@ -42,4 +42,19 @@ enum PostActions {
         
         return response
     }
+    
+    static func unlikePost(post: Post) async throws -> APIResponse<EmptyResponse> {
+        let body = LikePostBody(entityId: post.id)
+        
+        let response = try await APIClient.shared.request(
+            "/likes/delete",
+            method: .post,
+            body: body,
+            responseType: EmptyResponse.self
+        )
+        
+        print("❤️ Post \(post.id) Unliked!")
+        
+        return response
+    }
 }

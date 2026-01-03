@@ -57,6 +57,7 @@
 		76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */; };
 		76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */; };
 		76BB5C482EE4F699007B92EB /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 76BB5C472EE4F699007B92EB /* Inject */; };
+		76C8951A2F089F2D0087166B /* ChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C895192F089F2D0087166B /* ChatDetailView.swift */; };
 		76D554372EEC2CB600244164 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D554362EEC2CB600244164 /* Header.swift */; };
 		7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7918D9F02F095C6500F33AB2 /* UserRow.swift */; };
 		7919EE392EF87C4B00C3C63A /* CommentsSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */; };
@@ -150,6 +151,7 @@
 		76A2D3BD2EE4AF2A00AA6F6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicManager.swift; sourceTree = "<group>"; };
 		76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlaylistsView.swift; sourceTree = "<group>"; };
+		76C895192F089F2D0087166B /* ChatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatDetailView.swift; sourceTree = "<group>"; };
 		76D554362EEC2CB600244164 /* Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
 		7918D9F02F095C6500F33AB2 /* UserRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRow.swift; sourceTree = "<group>"; };
 		7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsSheetView.swift; sourceTree = "<group>"; };
@@ -397,6 +399,7 @@
 			isa = PBXGroup;
 			children = (
 				762D6AE12EE6FBB30022C539 /* ChatsView.swift */,
+				76C895192F089F2D0087166B /* ChatDetailView.swift */,
 			);
 			path = Chats;
 			sourceTree = "<group>";
@@ -800,7 +803,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "jamly" */;
+			buildConfigurationList = 761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "Jamly" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -902,6 +905,7 @@
 				76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */,
 				79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */,
 				7919EE392EF87C4B00C3C63A /* CommentsSheetView.swift in Sources */,
+				76C8951A2F089F2D0087166B /* ChatDetailView.swift in Sources */,
 				793323952EF840D80040755F /* PostView.swift in Sources */,
 				76883EE12EE5005C006A3955 /* PostCard.swift in Sources */,
 				76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */,
@@ -1254,7 +1258,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "jamly" */ = {
+		761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "Jamly" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				761C500D2EE392D70053AD1F /* Debug */,
