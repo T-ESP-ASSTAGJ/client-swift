@@ -12,6 +12,7 @@ struct SearchResultsView: View {
     let searchQuery: String
     @State private var searchText = ""
     @State private var selectedFilter: SearchFilter = .all
+    @State private var selectedUserId: Int?
     @Binding var searchHistory: [String]
     @FocusState private var isSearchFocused: Bool
     
@@ -63,7 +64,10 @@ struct SearchResultsView: View {
                     SearchResultsContent(
                         viewModel: viewModel,
                         searchText: searchText.isEmpty ? searchQuery : searchText,
-                        selectedFilter: selectedFilter
+                        selectedFilter: selectedFilter,
+                        onSelectUser: { user in
+                            selectedUserId = user.id
+                        }
                     )
                 } else {
                     // Placeholder for other filter types
@@ -75,6 +79,9 @@ struct SearchResultsView: View {
                 
                 Spacer()
             }
+        }
+        .navigationDestination(item: $selectedUserId) { userId in
+            ProfileView(userId: userId)
         }
         .onAppear {
             searchText = searchQuery
@@ -141,12 +148,13 @@ struct SearchResultsContent: View {
     @ObservedObject var viewModel: SearchViewModel
     let searchText: String
     let selectedFilter: SearchResultsView.SearchFilter
-    
+    let onSelectUser: (SearchUser) -> Void
+
     var body: some View {
         SearchResultsList(
             viewModel: viewModel,
             searchText: searchText,
-            onSelectUser: nil,
+            onSelectUser: onSelectUser,
             cardStyle: .prominent
         )
     }

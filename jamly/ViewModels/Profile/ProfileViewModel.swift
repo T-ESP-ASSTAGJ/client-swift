@@ -16,12 +16,42 @@ final class ProfileViewModel: ObservableObject {
         case error
     }
     
+    @Published var profileUser: User?
     @Published var likedPosts: [Post] = []
+    @Published var posts : [Post] = []
+    @Published var followers: [FollowerUser] = []
     @Published var state: VerifyState = .loading
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
     // MARK: - Actions
+    
+    func fetchUserProfile(userId: Int) {
+        Task {
+            isLoading = true
+            errorMessage = nil
+            state = .loading
+            
+            do {
+                let response = try await UserActions.getUserById(userId: userId)
+                
+                switch response.statusCode {
+                case 200:
+                    state = .success
+                    profileUser = response.value
+                    
+                default:
+                    state = .error
+                    errorMessage = "Une erreur est survenue."
+                }
+            } catch {
+                state = .error
+                errorMessage = "Impossible de charger le profil."
+            }
+            
+            isLoading = false
+        }
+    }
     
     func getLikedPosts(id: Int) {
         Task {
@@ -47,6 +77,51 @@ final class ProfileViewModel: ObservableObject {
             }
             
             isLoading = false
+        }
+    }
+    
+    func getPosts(id: Int) {
+        Task {
+            isLoading = true
+            errorMessage = nil
+            state = .loading
+            
+            do {
+                let response = try await UserActions.getPostsByUser(userId: id)
+                
+                switch response.statusCode {
+                case 200:
+                    state = .success
+                    posts = response.value
+                    
+                default:
+                    state = .error
+                    errorMessage = "Une erreur est survenue."
+                }
+            } catch {
+                state = .error
+                errorMessage = "Une erreur est survenue."
+            }
+            
+            isLoading = false
+        }
+    }
+    
+    func getFollowers(userId: Int) {
+        Task {
+            do {
+                let response = try await FollowerAction.getFollowerUsers(userId: userId)
+                
+                switch response.statusCode {
+                case 200:
+                    followers = response.value
+                    
+                default:
+                    errorMessage = "Une erreur est survenue lors du chargement des followers."
+                }
+            } catch {
+                errorMessage = "Impossible de charger les followers."
+            }
         }
     }
 }

@@ -16,6 +16,32 @@ struct FollowersView: View {
     @State private var searchText = ""
     @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
     
+    // MARK: - Profile Mode
+    /// Si userId est fourni, on affiche les followers d'un autre utilisateur
+    /// Sinon, on affiche les followers de l'utilisateur connecté
+    let userId: Int?
+    
+    // MARK: - Computed Properties
+    
+    /// Indique si on affiche son propre profil
+    private var isOwnProfile: Bool {
+        guard let userId = userId, let currentUserId = userStore.user?.id else {
+            return true // Par défaut, c'est notre profil
+        }
+        return userId == currentUserId
+    }
+    
+    /// Retourne l'ID de l'utilisateur à afficher
+    private var targetUserId: Int {
+        return userId ?? userStore.user?.id ?? 0
+    }
+    
+    // MARK: - Init
+    
+    init(userId: Int? = nil) {
+        self.userId = userId
+    }
+    
     var filteredFollowers: [FollowerUser] {
         if searchText.isEmpty {
             return followerViewModel.followers
@@ -67,7 +93,7 @@ struct FollowersView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.gray)
                     if searchText.isEmpty {
-                        Text("You follow no one yet.")
+                        Text(isOwnProfile ? "You have no followers" : "This user has no followers")
                             .foregroundColor(.secondary)
                     } else {
                         Text("No user found with the name '\(searchText)'")
@@ -82,6 +108,7 @@ struct FollowersView: View {
                         user: follower,
                         isFollowing: isFollowing(userId: follower.id),
                         showFollowBack: true,
+                        showFollowButton: isOwnProfile,
                         onToggleFollow: {
                             await toggleFollow(for: follower)
                         }
@@ -93,7 +120,8 @@ struct FollowersView: View {
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search followers")
         .task {
-            await followerViewModel.loadFollowers(userId: userStore.user?.id ?? 0)
+            await followerViewModel.loadFollowers(userId: targetUserId)
+            // Charger la liste de following de l'utilisateur connecté pour savoir qui on suit
             await followingViewModel.loadFollowing(userId: userStore.user?.id ?? 0)
         }
         .onDisappear {

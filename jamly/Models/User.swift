@@ -19,7 +19,7 @@ struct User: Codable {
 }
 
 
-struct FollowerUser: Codable, Identifiable {
+struct FollowerUser: Codable, Identifiable, Equatable {
     let id: Int
     let username: String
     let profilePicture: String

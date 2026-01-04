@@ -11,9 +11,36 @@ struct FollowingView: View {
     @EnvironmentObject private var userStore: UserStore
     
     @StateObject private var followingViewModel = FollowingViewModel()
+    @StateObject private var currentUserFollowingViewModel = FollowingViewModel() // Pour tracker qui on suit
     
     @State private var searchText = ""
     @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
+    
+    // MARK: - Profile Mode
+    /// Si userId est fourni, on affiche les following d'un autre utilisateur
+    /// Sinon, on affiche les following de l'utilisateur connecté
+    let userId: Int?
+    
+    // MARK: - Computed Properties
+    
+    /// Indique si on affiche son propre profil
+    private var isOwnProfile: Bool {
+        guard let userId = userId, let currentUserId = userStore.user?.id else {
+            return true // Par défaut, c'est notre profil
+        }
+        return userId == currentUserId
+    }
+    
+    /// Retourne l'ID de l'utilisateur à afficher
+    private var targetUserId: Int {
+        return userId ?? userStore.user?.id ?? 0
+    }
+    
+    // MARK: - Init
+    
+    init(userId: Int? = nil) {
+        self.userId = userId
+    }
     
     
     var filteredFollowings: [FollowingUser] {
@@ -33,9 +60,13 @@ struct FollowingView: View {
             return localState
         }
         
-        // Sinon, par défaut, si l'utilisateur est dans la liste des followings,
-        // c'est qu'on le suit (puisque cette vue affiche justement la liste des following)
-        return followingViewModel.followingUsers.contains(where: { $0.id == userId })
+        // Si c'est notre propre profil, on vérifie dans la liste affichée
+        if isOwnProfile {
+            return followingViewModel.followingUsers.contains(where: { $0.id == userId })
+        } else {
+            // Si c'est le profil d'un autre, on vérifie dans notre propre liste de following
+            return currentUserFollowingViewModel.followingUsers.contains(where: { $0.id == userId })
+        }
     }
     
     private func toggleFollow(for following: FollowingUser) async {
@@ -68,7 +99,7 @@ struct FollowingView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.gray)
                     if searchText.isEmpty {
-                        Text("You follow no one yet.")
+                        Text(isOwnProfile ? "You follow no one yet." : "This user follows no one.")
                             .foregroundColor(.secondary)
                     } else {
                         Text("No user found with the name '\(searchText)'")
@@ -83,6 +114,7 @@ struct FollowingView: View {
                         user: following,
                         isFollowing: isFollowing(userId: following.id),
                         showFollowBack: false,
+                        showFollowButton: isOwnProfile,
                         onToggleFollow: {
                             await toggleFollow(for: following)
                         }
@@ -94,7 +126,11 @@ struct FollowingView: View {
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search followers")
         .task {
-            await followingViewModel.loadFollowing(userId: userStore.user?.id ?? 0)
+            await followingViewModel.loadFollowing(userId: targetUserId)
+            // Si ce n'est pas notre profil, charger aussi notre propre liste de following
+            if !isOwnProfile {
+                await currentUserFollowingViewModel.loadFollowing(userId: userStore.user?.id ?? 0)
+            }
         }
         .onDisappear {
             Task {
