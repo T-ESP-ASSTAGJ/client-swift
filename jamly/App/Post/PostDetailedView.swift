@@ -22,6 +22,12 @@ struct PostDetailView: View {
     
     @FocusState private var isTextFieldFocused: Bool
     
+    init(post: Post) {
+        self.post = post
+        
+        print("Current post: \(post)")
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {

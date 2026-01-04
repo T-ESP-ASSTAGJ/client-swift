@@ -27,7 +27,6 @@ struct PostCard: View {
     
     @State private var showCommentsSheet: Bool = false
 
-    @State private var isLiked: Bool = false
 
     // Seuil pour afficher "See more" (environ 2 lignes)
     private let captionTruncationThreshold = 80
@@ -44,7 +43,7 @@ struct PostCard: View {
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
 
-//        print("Current post: \(post)")
+        print("Current post: \(post)")
 
         // ✅ Initialiser avec les valeurs du post
         self._isLiked = State(initialValue: post.isLiked)
@@ -188,10 +187,7 @@ struct PostCard: View {
                         HStack(spacing: 10) {
                             VStack {
                                 Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                        isLiked.toggle()
-                                        viewModel.likePost(post: post)
-                                    }
+                                    toggleLike()
                                 }) {
                                     VStack(spacing: 5) {
                                         Image(systemName: isLiked ? "heart.fill" : "heart")
@@ -319,6 +315,7 @@ struct PostCard: View {
                 Spacer()
             }
         }
+        .padding(.top, !showPostDetail ? 20 : 0)
         .navigationDestination(isPresented: $showPostDetail) {
             PostDetailView(post: post)
         }
