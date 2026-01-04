@@ -29,6 +29,8 @@ struct ProfileView: View {
     @State private var likedPosts: [Post] = []
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
+    @State private var followingUsers: [FollowingUser] = []
+    @State private var isFollowingTarget: Bool = false
     
     // MARK: - Computed Properties
 
@@ -153,9 +155,9 @@ struct ProfileView: View {
         .navigationDestination(item: $selectedFollowView) { view in
             switch view {
             case .followers:
-                FollowersView()
+                FollowersView(userId: userId ?? userStore.user?.id)
             case .following:
-                FollowingView()
+                FollowingView(userId: userId ?? userStore.user?.id)
             }
         }
         .navigationDestination(isPresented: $isShowingPostDetail) {
@@ -408,7 +410,7 @@ struct ProfileView: View {
                     selectedFollowView = .following
                 } label: {
                     StatView(
-                        number: formatNumber(displayedUser?.followedCount ?? 0),
+                        number: formatNumber(displayedUser?.followingCount ?? 0),
                         label: "Following"
                     )
                 }
@@ -423,7 +425,7 @@ struct ProfileView: View {
                     selectedFollowView = .followers
                 } label: {
                     StatView(
-                        number: formatNumber(displayedUser?.followerCount ?? 0),
+                        number: formatNumber(displayedUser?.followersCount ?? 0),
                         label: "Followers"
                     )
                 }
@@ -438,10 +440,12 @@ struct ProfileView: View {
     private var followButtonSection: some View {
         HStack {
             if let targetUserId = userId {
-                if userStore.isFollowing(userId: targetUserId) {
+                if isFollowingTarget {
                     Button {
                         Task {
                             await userStore.unfollowUser(userId: targetUserId, autoRefresh: false)
+                            // Update local state
+                            isFollowingTarget = false
                             // Refresh le profil affiché
                             if let userId = userId {
                                 viewModel.fetchUserProfile(userId: userId)
@@ -461,6 +465,8 @@ struct ProfileView: View {
                     Button {
                         Task {
                             await userStore.followUser(userId: targetUserId)
+                            // Update local state
+                            isFollowingTarget = true
                             // Refresh le profil affiché
                             if let userId = userId {
                                 viewModel.fetchUserProfile(userId: userId)

@@ -80,6 +80,9 @@ struct SearchResultsView: View {
                 Spacer()
             }
         }
+        .navigationDestination(item: $selectedUserId) { userId in
+            ProfileView(userId: userId)
+        }
         .onAppear {
             searchText = searchQuery
             // Perform initial search
@@ -151,7 +154,7 @@ struct SearchResultsContent: View {
         SearchResultsList(
             viewModel: viewModel,
             searchText: searchText,
-            onSelectUser: nil,
+            onSelectUser: onSelectUser,
             cardStyle: .prominent
         )
     }

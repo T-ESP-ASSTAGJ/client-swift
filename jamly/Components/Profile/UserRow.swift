@@ -17,6 +17,7 @@ struct UserRow<User: UserRowRepresentable>: View {
     let user: User
     let isFollowing: Bool
     let showFollowBack: Bool // Nouveau paramètre pour déterminer si on affiche "Follow back"
+    var showFollowButton: Bool = true // Paramètre pour afficher/cacher le bouton
     let onToggleFollow: () async -> Void
     
     var body: some View {
@@ -50,14 +51,17 @@ struct UserRow<User: UserRowRepresentable>: View {
             }
             Spacer()
 
-            Button {
-                Task {
-                    await onToggleFollow()
+            // Afficher le bouton uniquement si showFollowButton est true
+            if showFollowButton {
+                Button {
+                    Task {
+                        await onToggleFollow()
+                    }
+                } label: {
+                    Text(buttonText)
                 }
-            } label: {
-                Text(buttonText)
+                .buttonStyle(.glass)
             }
-            .buttonStyle(.glass)
         }
         .frame(height: 40)
         .listRowBackground(Color.clear)
