@@ -10,19 +10,23 @@ import SwiftUI
 struct PostCard: View {
     let post: Post
     let isCurrentPost: Bool
-
+    
     @Binding var showPostDetail: Bool
-
+    
     @ObservedObject var musicManager: MusicManager
     
     @StateObject private var viewModel = PostViewModel()
-
+    
     @State private var coverUIImage: UIImage?
     @State private var avatarUIImage: UIImage?
     @State private var isSwapped = false
+    
+    // ✅ États locaux pour le like
+    @State private var isLiked: Bool
+    @State private var likesCount: Int
+    
     @State private var showCommentsSheet: Bool = false
 
-    @State private var isLiked: Bool = false
 
     // Seuil pour afficher "See more" (environ 2 lignes)
     private let captionTruncationThreshold = 80
@@ -41,8 +45,9 @@ struct PostCard: View {
 
         print("Current post: \(post)")
 
-        // Initialise isLiked avec la valeur du post
+        // ✅ Initialiser avec les valeurs du post
         self._isLiked = State(initialValue: post.isLiked)
+        self._likesCount = State(initialValue: post.likesCount)
     }
     
     var body: some View {
@@ -182,10 +187,7 @@ struct PostCard: View {
                         HStack(spacing: 10) {
                             VStack {
                                 Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                        isLiked.toggle()
-                                        viewModel.likePost(post: post)
-                                    }
+                                    toggleLike()
                                 }) {
                                     VStack(spacing: 5) {
                                         Image(systemName: isLiked ? "heart.fill" : "heart")
@@ -313,11 +315,29 @@ struct PostCard: View {
                 Spacer()
             }
         }
+        .padding(.top, !showPostDetail ? 20 : 0)
         .navigationDestination(isPresented: $showPostDetail) {
             PostDetailView(post: post)
         }
         .sheet(isPresented: $showCommentsSheet) {
             CommentsSheetView(post: post)
+        }
+    }
+
+    // ✅ Fonction toggle propre
+    private func toggleLike() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            if isLiked {
+                // Unlike
+                isLiked = false
+                likesCount -= 1
+                viewModel.unlikePost(post: post)
+            } else {
+                // Like
+                isLiked = true
+                likesCount += 1
+                viewModel.likePost(post: post)
+            }
         }
     }
 

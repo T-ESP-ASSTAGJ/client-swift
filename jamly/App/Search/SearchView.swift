@@ -8,11 +8,14 @@ import SwiftUI
 
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
+    
     @StateObject private var viewModel = SearchViewModel()
+    
     @State private var searchText = ""
     @State private var searchHistory: [String] = SearchHistoryManager.shared.loadHistory()
     @State private var navigateToResults = false
     @State private var submittedSearch = ""
+    
     @FocusState private var isSearchFocused: Bool
     
     var body: some View {

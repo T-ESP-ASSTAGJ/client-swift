@@ -47,6 +47,32 @@ final class PostViewModel: ObservableObject {
             }
         }
     }
+    
+    func unlikePost(post: Post) {
+        Task {
+            errorMessage = nil
+            
+            do {
+                let response = try await PostActions.unlikePost(post: post)
+                
+                switch response.statusCode {
+                case 204:
+                    state = .success
+                    
+                case 422:
+                    state = .error
+                    errorMessage = "An error occurred. Please try again."
+                    
+                default:
+                    state = .error
+                    errorMessage = "An error occurred."
+                }
+            } catch {
+                state = .error
+                errorMessage = "An error occurred."
+            }
+        }
+    }
 }
 
 

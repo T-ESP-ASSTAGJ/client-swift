@@ -78,7 +78,6 @@ struct HomeFeed: View {
                 }
             }
         }
-        .ignoresSafeArea()
         .onAppear {
             // ✅ Simplifié : juste initialise si nil
             if scrollPosition == nil, let firstPost = userStore.feed.first {
@@ -138,4 +137,3 @@ struct HomeFeed: View {
         return testTrackIds.first
     }
 }
-
