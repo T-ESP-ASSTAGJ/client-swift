@@ -19,6 +19,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var profileUser: User?
     @Published var likedPosts: [Post] = []
     @Published var posts : [Post] = []
+    @Published var followers: [FollowerUser] = []
     @Published var state: VerifyState = .loading
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -103,6 +104,24 @@ final class ProfileViewModel: ObservableObject {
             }
             
             isLoading = false
+        }
+    }
+    
+    func getFollowers(userId: Int) {
+        Task {
+            do {
+                let response = try await FollowerAction.getFollowerUsers(userId: userId)
+                
+                switch response.statusCode {
+                case 200:
+                    followers = response.value
+                    
+                default:
+                    errorMessage = "Une erreur est survenue lors du chargement des followers."
+                }
+            } catch {
+                errorMessage = "Impossible de charger les followers."
+            }
         }
     }
 }

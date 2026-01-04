@@ -93,7 +93,7 @@ struct FollowersView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.gray)
                     if searchText.isEmpty {
-                        Text("You follow no one yet.")
+                        Text(isOwnProfile ? "You have no followers" : "This user has no followers")
                             .foregroundColor(.secondary)
                     } else {
                         Text("No user found with the name '\(searchText)'")

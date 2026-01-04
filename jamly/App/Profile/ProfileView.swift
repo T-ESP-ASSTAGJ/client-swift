@@ -29,7 +29,6 @@ struct ProfileView: View {
     @State private var likedPosts: [Post] = []
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
-    @State private var followingUsers: [FollowingUser] = []
     @State private var isFollowingTarget: Bool = false
     
     // MARK: - Computed Properties
@@ -171,6 +170,14 @@ struct ProfileView: View {
             // Charger le profil si c'est un autre utilisateur
             if let userId = userId {
                 viewModel.fetchUserProfile(userId: userId)
+                // Charger les followers pour vérifier si on suit déjà cet utilisateur
+                viewModel.getFollowers(userId: userId)
+            }
+        }
+        .onChange(of: viewModel.followers) { oldValue, newValue in
+            // Vérifier si l'utilisateur connecté est dans les followers
+            if !isOwnProfile, let currentUserId = userStore.user?.id {
+                isFollowingTarget = newValue.contains(where: { $0.id == currentUserId })
             }
         }
     }
@@ -443,13 +450,13 @@ struct ProfileView: View {
                 if isFollowingTarget {
                     Button {
                         Task {
-                            await userStore.unfollowUser(userId: targetUserId, autoRefresh: false)
+                            await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
                             // Update local state
                             isFollowingTarget = false
+                            // Refresh les followers pour synchroniser
+                            viewModel.getFollowers(userId: targetUserId)
                             // Refresh le profil affiché
-                            if let userId = userId {
-                                viewModel.fetchUserProfile(userId: userId)
-                            }
+                            viewModel.fetchUserProfile(userId: targetUserId)
                         }
                     } label: {
                         Text("Unfollow")
@@ -467,10 +474,10 @@ struct ProfileView: View {
                             await userStore.followUser(userId: targetUserId)
                             // Update local state
                             isFollowingTarget = true
+                            // Refresh les followers pour synchroniser
+                            viewModel.getFollowers(userId: targetUserId)
                             // Refresh le profil affiché
-                            if let userId = userId {
-                                viewModel.fetchUserProfile(userId: userId)
-                            }
+                            viewModel.fetchUserProfile(userId: targetUserId)
                         }
                     } label: {
                         Text("Follow")
