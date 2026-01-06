@@ -90,7 +90,7 @@ struct PostDetailView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 
-                Text(post.track.artist.name)
+                Text(post.track.artistName)
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.7))
                     .lineLimit(1)
@@ -270,7 +270,7 @@ struct PostDetailView: View {
     
     private func loadData() async {
         // Load cover image
-        if let url = URL(string: post.track.coverUrl) {
+        if let url = URL(string: post.backImage) {
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 if let uiImage = UIImage(data: data) {
