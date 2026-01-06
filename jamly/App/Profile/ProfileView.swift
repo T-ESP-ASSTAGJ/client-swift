@@ -26,7 +26,6 @@ struct ProfileView: View {
     @State private var selectedTab: ProfileTab = .posts
     @State private var selectedFollowView: FollowViews? = nil
     @State private var showMusicPlaylists = false
-    @State private var likedPosts: [Post] = []
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     @State private var isFollowingTarget: Bool = false
@@ -236,7 +235,7 @@ struct ProfileView: View {
             } else {
                 LazyVGrid(columns: columns, spacing: 2) {
                     ForEach(viewModel.posts, id: \.id) { post in
-                        gridItem(views: formatNumber(0), cover: post.photoUrl)
+                        gridItem(views: formatNumber(0), cover: post.backImage)
                             .onTapGesture {
                                 selectedPost = post
                                 isShowingPostDetail = true
@@ -263,7 +262,7 @@ struct ProfileView: View {
             } else {
                 LazyVGrid(columns: columns, spacing: 2) {
                     ForEach(viewModel.likedPosts, id: \.id) { post in
-                        gridItem(views: "0", cover: post.photoUrl)
+                        gridItem(views: "0", cover: post.backImage)
                             .onTapGesture {
                                 selectedPost = post
                                 isShowingPostDetail = true

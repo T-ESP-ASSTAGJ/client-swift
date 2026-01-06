@@ -18,7 +18,8 @@ struct Post: Codable, Identifiable {
     let user: User
     let caption: String
     let track: Track
-    let photoUrl: String
+    let frontImage: String
+    let backImage: String
     let location: String
     let likesCount: Int
     let commentsCount: Int
@@ -34,18 +35,6 @@ struct Post: Codable, Identifiable {
     struct Track: Codable {
         let id: Int
         let title: String
-        let coverUrl: String
-        let metadata: Metadata
-        let artist: Artist
-        
-        struct Metadata: Codable {
-            let duration: Int
-            let genre: String
-        }
-        
-        struct Artist: Codable {
-            let id: Int
-            let name: String
-        }
+        let artistName: String
     }
 }

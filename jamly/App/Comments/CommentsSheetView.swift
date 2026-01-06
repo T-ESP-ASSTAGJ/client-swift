@@ -78,7 +78,7 @@ struct CommentsSheetView: View {
     
     private var commentHeader: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: post.photoUrl)) { image in
+            AsyncImage(url: URL(string: post.backImage)) { image in
                 image
                     .resizable()
                     .scaledToFill()
@@ -92,7 +92,7 @@ struct CommentsSheetView: View {
                 Text(post.track.title)
                     .font(.headline)
                     .textCase(.uppercase)
-                Text(post.track.artist.name)
+                Text(post.track.artistName)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

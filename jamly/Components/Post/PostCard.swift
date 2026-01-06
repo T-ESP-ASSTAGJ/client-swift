@@ -256,7 +256,7 @@ struct PostCard: View {
                                         .foregroundColor(.white)
                                         .lineLimit(1)
 
-                                    Text(post.track.artist.name)
+                                    Text(post.track.artistName)
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.7))
                                         .lineLimit(1)
@@ -351,8 +351,8 @@ struct PostCard: View {
     func preloadImages() async {
         if coverUIImage != nil && avatarUIImage != nil { return }
         
-        async let coverData = fetchImageData(from: post.track.coverUrl)
-        async let avatarData = fetchImageData(from: post.photoUrl)
+        async let coverData = fetchImageData(from: post.backImage)
+        async let avatarData = fetchImageData(from: post.frontImage)
         
         if let data = await coverData, let uiImage = UIImage(data: data) {
             coverUIImage = uiImage
