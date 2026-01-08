@@ -15,6 +15,7 @@ struct FollowingView: View {
     
     @State private var searchText = ""
     @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
+    @State private var selectedUserId: Int? // ✅ Pour la navigation vers un profil
     
     // MARK: - Profile Mode
     /// Si userId est fourni, on affiche les following d'un autre utilisateur
@@ -119,6 +120,9 @@ struct FollowingView: View {
                             await toggleFollow(for: following)
                         }
                     )
+                    .onTapGesture {
+                        selectedUserId = following.id
+                    }
                 }
             }
         }
@@ -140,6 +144,9 @@ struct FollowingView: View {
         .onAppear {
             // Reset local state when view appears to sync with server
             localFollowingState.removeAll()
+        }
+        .navigationDestination(item: $selectedUserId) { userId in
+            ProfileView(userId: userId)
         }
     }
 }

@@ -5,8 +5,9 @@ struct HomeFeed: View {
     @EnvironmentObject private var userStore: UserStore
     @EnvironmentObject private var musicManager: MusicManager
     
-    @Binding var scrollPosition: Int?  // ✅ Change en @Binding
     @Binding var selectedSegment: FeedSegment
+    @Binding var discoveryScrollPosition: Int?
+    @Binding var friendsScrollPosition: Int?
     
     @State private var showPostDetail: Bool = false
     @State private var pendingMusicChange: Task<Void, Never>?
@@ -33,14 +34,14 @@ struct HomeFeed: View {
                             ForEach(userStore.feed, id: \.id) { post in
                                 PostCard(
                                     post: post,
-                                    isCurrentPost: post.id == scrollPosition,
+                                    isCurrentPost: post.id == currentScrollPosition,
                                     showPostDetail: $showPostDetail,   // ✅ showPostDetail avant musicManager
                                     musicManager: musicManager
                                 )
                                 .frame(width: geometry.size.width, height: geometry.size.height)
                                 .id(post.id)
                                 .onTapGesture {
-                                    if post.id == scrollPosition {
+                                    if post.id == currentScrollPosition {
                                         withAnimation {
                                             if musicManager.isPlaying {
                                                 musicManager.pause()
@@ -59,8 +60,8 @@ struct HomeFeed: View {
                 }
                 .scrollIndicators(.hidden)
                 .scrollTargetBehavior(.paging)
-                .scrollPosition(id: $scrollPosition)  // ✅ Utilise le binding
-                .onChange(of: scrollPosition) { oldValue, newValue in
+                .scrollPosition(id: currentScrollPositionBinding)  // ✅ Utilise le binding
+                .onChange(of: currentScrollPosition) { oldValue, newValue in
                     pendingMusicChange?.cancel()
                     
                     pendingMusicChange = Task {
@@ -74,20 +75,27 @@ struct HomeFeed: View {
                     }
                 }
                 .refreshable {
-                    await userStore.loadFeed(forceRefresh: true)
+                    await loadFeedBasedOnSegment()
                 }
             }
         }
         .onAppear {
-            // ✅ Simplifié : juste initialise si nil
-            if scrollPosition == nil, let firstPost = userStore.feed.first {
-                scrollPosition = firstPost.id
-            }
-            
-            // Reprend la musique
-            if let currentId = scrollPosition,
-               let post = userStore.feed.first(where: { $0.id == currentId }) {
-                Task {
+            Task {
+                if userStore.feed.isEmpty {
+                    await userStore.loadBothFeeds()
+                }
+                // ✅ Simplifié : juste initialise si nil
+                if currentScrollPosition == nil, let firstPost = userStore.feed.first {
+                    if selectedSegment == FeedSegment.friends {
+                        friendsScrollPosition = firstPost.id
+                    } else {
+                        discoveryScrollPosition = firstPost.id
+                    }
+                }
+                
+                // Reprend la musique
+                if let currentId = currentScrollPosition,
+                   let post = userStore.feed.first(where: { $0.id == currentId }) {
                     await playPostMusic(post)
                 }
             }
@@ -95,8 +103,23 @@ struct HomeFeed: View {
         .onChange(of: selectedSegment) { oldValue, newValue in
             musicManager.pause()
             pendingMusicChange?.cancel()
+            
+            // ✅ Juste switcher entre les feeds (pas de reload)
+            let mode = selectedSegment == .friends ? "private" : "public"
             Task {
-                await loadFeedBasedOnSegment()
+                await userStore.loadFeed(page: 1, forceRefresh: false, mode: mode)
+                
+                // ✅ Toujours revenir au premier post lors du changement de segment
+                if let firstPost = userStore.feed.first {
+                    if selectedSegment == .friends {
+                        friendsScrollPosition = firstPost.id
+                    } else {
+                        discoveryScrollPosition = firstPost.id
+                    }
+                    
+                    // Jouer la musique du premier post
+                    await playPostMusic(firstPost)
+                }
             }
         }
         .onDisappear {
@@ -135,5 +158,21 @@ struct HomeFeed: View {
         }
         
         return testTrackIds.first
+    }
+    
+    private var currentScrollPositionBinding: Binding<Int?> {
+        if selectedSegment == FeedSegment.discovery {
+            return $discoveryScrollPosition
+        } else {
+            return $friendsScrollPosition
+        }
+    }
+    
+    private var currentScrollPosition: Int? {
+        if selectedSegment == .discovery {
+            return discoveryScrollPosition
+        } else {
+            return friendsScrollPosition
+        }
     }
 }
