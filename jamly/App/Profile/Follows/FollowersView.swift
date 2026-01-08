@@ -15,6 +15,7 @@ struct FollowersView: View {
     
     @State private var searchText = ""
     @State private var localFollowingState: [Int: Bool] = [:] // Track local follow state
+    @State private var selectedUserId: Int? // ✅ Pour la navigation vers un profil
     
     // MARK: - Profile Mode
     /// Si userId est fourni, on affiche les followers d'un autre utilisateur
@@ -113,6 +114,9 @@ struct FollowersView: View {
                             await toggleFollow(for: follower)
                         }
                     )
+                    .onTapGesture {
+                        selectedUserId = follower.id
+                    }
                 }
             }
         }
@@ -131,6 +135,9 @@ struct FollowersView: View {
         }
         .onAppear {
             localFollowingState.removeAll()
+        }
+        .navigationDestination(item: $selectedUserId) { userId in
+            ProfileView(userId: userId)
         }
     }
 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum TabItem: Int, CaseIterable {
+enum TabItem: Int, CaseIterable, Hashable {
     case home
     case discover
     case create
@@ -10,8 +10,10 @@ enum TabItem: Int, CaseIterable {
 
 struct MainTabView: View {
     @State private var selectedTab: TabItem = .home
-    @State private var feedScrollPosition: Int?
+    @State private var discoveryScrollPosition: Int?
+    @State private var friendsScrollPosition: Int?
     @State private var selectedSegment: FeedSegment = .discovery
+
     
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
@@ -20,7 +22,11 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "rectangle.stack.badge.play.fill", value: .home) {
                 NavigationStack {
-                    HomeView(selectedSegment: $selectedSegment, scrollPosition: $feedScrollPosition)
+                    HomeView(
+                        selectedSegment: $selectedSegment,
+                        discoveryScrollPosition: $discoveryScrollPosition,
+                        friendsScrollPosition: $friendsScrollPosition
+                    )
                 }
             }
             
@@ -50,5 +56,11 @@ struct MainTabView: View {
             }
         }
         .accentColor(.white)
+        .onChange(of: selectedTab) { oldValue, newValue in
+            // ✅ Quand on quitte Profile, envoie une notification
+            if oldValue == .profile && newValue != .profile {
+                NotificationCenter.default.post(name: .resetProfileNavigation, object: nil)
+            }
+        }
     }
 }

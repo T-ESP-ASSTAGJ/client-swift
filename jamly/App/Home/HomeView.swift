@@ -9,11 +9,17 @@ struct HomeView: View {
     @State private var showSearchView: Bool = false
     
     @Binding var selectedSegment: FeedSegment
-    @Binding var scrollPosition: Int?
+    @Binding var discoveryScrollPosition: Int?
+    @Binding var friendsScrollPosition: Int?
     
-    init(selectedSegment: Binding<FeedSegment>, scrollPosition: Binding<Int?>) {
+    init(
+        selectedSegment: Binding<FeedSegment>,
+        discoveryScrollPosition: Binding<Int?>,
+        friendsScrollPosition: Binding<Int?>
+    ) {
         self._selectedSegment = selectedSegment
-        self._scrollPosition = scrollPosition
+        self._discoveryScrollPosition = discoveryScrollPosition
+        self._friendsScrollPosition = friendsScrollPosition
     }
     
     var body: some View {
@@ -26,7 +32,11 @@ struct HomeView: View {
                 .ignoresSafeArea()
             
             // Feed en dessous (prend tout l'écran)
-            HomeFeed(scrollPosition: $scrollPosition, selectedSegment: $selectedSegment)
+            HomeFeed(
+                selectedSegment: $selectedSegment,
+                discoveryScrollPosition: $discoveryScrollPosition,
+                friendsScrollPosition: $friendsScrollPosition
+            )
             
             // Header au-dessus avec dégradé transparent
             Header(selectedSegment: $selectedSegment)

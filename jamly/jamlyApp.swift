@@ -48,8 +48,8 @@ struct jamlyApp: App {
                     
                 }
             
-                Task {
-                    await userStore.loadFeed()
+                await withTaskGroup(of: Void.self) { group in
+                    await userStore.loadBothFeeds()
                 }
                 
                 // Délai minimum pour voir le splash screen
@@ -115,16 +115,3 @@ struct AuthenticationFlow: View {
         }
     }
 }
-
-#Preview {
-    let userStore = UserStore()
-    let authManager = AuthManager(userStore: userStore)
-    let musicManager = MusicManager()
-    
-    return RootView()
-        .environmentObject(authManager)
-        .environmentObject(userStore)
-        .environmentObject(musicManager)
-        .preferredColorScheme(.dark)
-}
-

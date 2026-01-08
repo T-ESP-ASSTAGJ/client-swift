@@ -55,20 +55,6 @@ struct ProfileView: View {
         self.userId = userId
     }
 
-    let photos = [
-        ("photo1", "661K"),
-        ("photo2", "97K"),
-        ("photo3", "808K"),
-        ("photo4", "373K"),
-        ("photo5", "581K"),
-        ("photo6", "768K"),
-        ("photo7", "640K"),
-        ("photo8", "62K"),
-        ("photo9", "916K"),
-        ("photo10", "276K"),
-        ("photo11", "26K"),
-        ("photo12", "2K"),
-    ]
     
     let columns = [
         GridItem(.flexible(), spacing: 2),
@@ -164,6 +150,9 @@ struct ProfileView: View {
             } else {
                 EmptyView()
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .resetProfileNavigation)) { _ in
+            resetNavigation()
         }
         .task {
             // Charger le profil si c'est un autre utilisateur
@@ -492,6 +481,13 @@ struct ProfileView: View {
             }
         }
     }
+    
+    private func resetNavigation() {
+        selectedFollowView = nil
+        isShowingPostDetail = false
+        selectedPost = nil
+        showMusicPlaylists = false
+    }
 }
 
 // MARK: - Stat View
@@ -546,5 +542,9 @@ private func formatNumber(_ number: Int) -> String {
     default:
         return "\(number)"
     }
+}
+
+extension Notification.Name {
+    static let resetProfileNavigation = Notification.Name("resetProfileNavigation")
 }
 

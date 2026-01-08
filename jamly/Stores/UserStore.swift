@@ -14,10 +14,17 @@ class UserStore: ObservableObject {
     @Published var user: User?
     @Published var token: String?
     @Published var feed: [Post] = []
+    @Published var discoveryFeed: [Post] = []
+    @Published var friendsFeed: [Post] = []
     @Published var isLoadingFeed: Bool = false
     @Published var isAuthenticated: Bool = false
     @Published var isLoading = false
     @Published var error: AppError?
+    
+    // ✅ Cache séparé pour chaque feed
+    private var discoveryFeedCache: [Post] = []
+    private var friendsFeedCache: [Post] = []
+    private var lastLoadedMode: String = "public"
     
     // Track de la tâche de chargement du feed
     private var feedLoadTask: Task<Void, Never>?
@@ -82,59 +89,100 @@ class UserStore: ObservableObject {
         }
     }
     
-    func loadFeed(page: Int = 1, forceRefresh: Bool = false, mode: String = "public") async {
-        // ✅ Annule la tâche précédente si elle existe
-        feedLoadTask?.cancel()
+    func getCurrentFeed(for segment: FeedSegment) -> [Post] {
+        segment == .discovery ? discoveryFeed : friendsFeed
+    }
+    
+    /// Charge les deux feeds en parallèle au démarrage
+    func loadBothFeeds() async {
+        isLoadingFeed = true
         
-        // Si déjà en cours de chargement et pas de force refresh, ignore
-        guard !isLoadingFeed || forceRefresh else {
-            print("⏭️ Feed déjà en cours de chargement, skip")
+        async let publicFeedTask = FeedAction.getPublicFeed(page: 1)
+        async let privateFeedTask = FeedAction.getPrivateFeed(page: 1)
+        
+        do {
+            let (publicResponse, privateResponse) = try await (publicFeedTask, privateFeedTask)
+            
+            discoveryFeed = publicResponse.value
+            friendsFeed = privateResponse.value
+            discoveryFeedCache = publicResponse.value
+            friendsFeedCache = privateResponse.value
+            
+            // Par défaut on affiche le feed public
+            feed = discoveryFeed
+            lastLoadedMode = "public"
+            
+            print("✅ Both feeds loaded: Discovery(\(discoveryFeed.count)), Friends(\(friendsFeed.count))")
+        } catch {
+            print("❌ Error loading feeds: \(error)")
+            discoveryFeed = []
+            friendsFeed = []
+            feed = []
+        }
+        
+        isLoadingFeed = false
+    }
+    
+    func loadFeed(page: Int = 1, forceRefresh: Bool = false, mode: String = "public") async {
+        // ✅ Si c'est un refresh, recharger depuis l'API
+        if forceRefresh {
+            feedLoadTask?.cancel()
+            
+            feedLoadTask = Task { @MainActor in
+                isLoadingFeed = true
+                
+                do {
+                    if mode == "public" {
+                        let response = try await FeedAction.getPublicFeed(page: page)
+                        
+                        guard !Task.isCancelled else {
+                            print("❌ Public feed refresh cancelled")
+                            return
+                        }
+                        
+                        print("🔄 Public feed refreshed: \(response.value.count) posts")
+                        discoveryFeed = response.value
+                        discoveryFeedCache = response.value
+                        feed = response.value
+                    } else if mode == "private" {
+                        let response = try await FeedAction.getPrivateFeed(page: page)
+                        
+                        guard !Task.isCancelled else {
+                            print("❌ Private feed refresh cancelled")
+                            return
+                        }
+                        
+                        print("🔄 Private feed refreshed: \(response.value.count) posts")
+                        friendsFeed = response.value
+                        friendsFeedCache = response.value
+                        feed = response.value
+                    }
+                } catch {
+                    guard !Task.isCancelled else {
+                        print("❌ Feed refresh cancelled (error)")
+                        return
+                    }
+                    
+                    print("❌ Error refreshing feed: \(error)")
+                }
+                
+                isLoadingFeed = false
+            }
+            
+            await feedLoadTask?.value
             return
         }
         
-        feedLoadTask = Task { @MainActor in
-            isLoadingFeed = true
-            
-            do {
-                if(mode == "public") {
-                    let response = try await FeedAction.getPublicFeed(page: page)
-                    
-                    // ✅ Vérifie que la tâche n'a pas été annulée
-                    guard !Task.isCancelled else {
-                        print("❌ Public feed load cancelled")
-                        return
-                    }
-                    
-                    print("ℹ️ Public feed: \(response.value.count) post found !")
-                    feed = response.value
-                }else if(mode == "private") {
-                    let response = try await FeedAction.getPrivateFeed(page: page)
-                    
-                    // ✅ Vérifie que la tâche n'a pas été annulée
-                    guard !Task.isCancelled else {
-                        print("❌ Private feed load cancelled")
-                        return
-                    }
-                    
-                    print("ℹ️ Private feed: \(response.value.count) post found !")
-                    feed = response.value
-                }
-                
-            } catch {
-                // Ignore l'erreur si c'est juste une annulation
-                guard !Task.isCancelled else {
-                    print("❌ Feed load cancelled (error)")
-                    return
-                }
-                
-                print("❌ Error loading feed: \(error)")
-                feed = []
-            }
-            
-            isLoadingFeed = false
+        // ✅ Sinon, juste switcher entre les feeds en cache
+        if mode == "public" {
+            feed = discoveryFeed
+            lastLoadedMode = "public"
+            print("📦 Switched to discovery feed (\(discoveryFeed.count) posts)")
+        } else {
+            feed = friendsFeed
+            lastLoadedMode = "private"
+            print("📦 Switched to friends feed (\(friendsFeed.count) posts)")
         }
-        
-        await feedLoadTask?.value
     }
     
     /// Définit le token et sauvegarde en SecureStore
@@ -160,6 +208,9 @@ class UserStore: ObservableObject {
         token = nil
         isAuthenticated = false
         feed = []
+        discoveryFeedCache = []
+        friendsFeedCache = []
+        lastLoadedMode = "public"
         secureStore.delete()
         
         // Annule toute tâche en cours

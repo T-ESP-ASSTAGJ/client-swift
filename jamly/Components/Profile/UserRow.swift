@@ -19,6 +19,7 @@ struct UserRow<User: UserRowRepresentable>: View {
     let showFollowBack: Bool // Nouveau paramètre pour déterminer si on affiche "Follow back"
     var showFollowButton: Bool = true // Paramètre pour afficher/cacher le bouton
     let onToggleFollow: () async -> Void
+
     
     var body: some View {
         HStack(spacing: 8) {
