@@ -58,21 +58,22 @@ enum UserActions {
         return response
     }
     
-    static func getLikedPostsByUser(userId: Int) async throws -> APIResponse<[Post]> {
+    static func getLikedPostsByUser(userId: Int, page: Int = 1) async throws -> APIResponse<[Post]> {
         let response = try await APIClient.shared.request(
             "/users/\(userId)/likes",
             method: .get,
+            query: ["page": String(page)],
             responseType: [Post].self
         )
         
         return response
     }
     
-    static func getPostsByUser(userId: Int) async throws -> APIResponse<[Post]> {
+    static func getPostsByUser(userId: Int, page: Int = 1) async throws -> APIResponse<[Post]> {
         let response = try await APIClient.shared.request(
             "/posts",
             method: .get,
-            query: ["user": "\(userId)"],
+            query: ["user": "\(userId)", "page": String(page)],
             responseType: [Post].self
         )
         

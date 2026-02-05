@@ -229,6 +229,21 @@ struct ProfileView: View {
                                 selectedPost = post
                                 isShowingPostDetail = true
                             }
+                            .onAppear {
+                                if post.id == viewModel.posts.last?.id {
+                                    guard let targetUserId = userId ?? userStore.user?.id else { return }
+                                    viewModel.loadMorePosts(userId: targetUserId)
+                                }
+                            }
+                    }
+                    if viewModel.isLoadingMorePosts {
+                        VStack {
+                            Spacer()
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Spacer()
+                        }
+                        .frame(height: 200)
                     }
                 }
             }
@@ -256,6 +271,22 @@ struct ProfileView: View {
                                 selectedPost = post
                                 isShowingPostDetail = true
                             }
+                            .onAppear {
+                                if post.id == viewModel.likedPosts.last?.id {
+                                    guard let targetUserId = userId ?? userStore.user?.id else { return }
+                                    viewModel.loadMoreLikedPosts(userId: targetUserId)
+                                }
+                            }
+                    }
+                    if viewModel.isLoadingMoreLikes {
+                        Color.clear
+                            .gridCellColumns(3)
+                            .overlay {
+                                ProgressView()
+                                    .scaleEffect(1.2)
+                            }
+                            .frame(height: 60)
+                            .id("loading-more-posts")
                     }
                 }
             }

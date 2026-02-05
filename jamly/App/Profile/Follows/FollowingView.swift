@@ -123,6 +123,22 @@ struct FollowingView: View {
                     .onTapGesture {
                         selectedUserId = following.id
                     }
+                    .onAppear {
+                        if following.id == filteredFollowings.last?.id {
+                            Task {
+                                print("🚀 Dernier following atteint, chargement de la page suivante...")
+                                await followingViewModel.loadMoreFollowing()
+                            }
+                        }
+                    }
+                }
+                if followingViewModel.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.vertical, 20)
+                        Spacer()
+                    }
                 }
             }
         }

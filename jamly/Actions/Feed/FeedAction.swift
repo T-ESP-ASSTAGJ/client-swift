@@ -10,6 +10,7 @@ enum FeedAction{
         let response = try await APIClient.shared.request(
             "/feed/public",
             method: .get,
+            query: ["page": String(page)],
             responseType: [Post].self
         )
         
@@ -20,6 +21,7 @@ enum FeedAction{
         let response = try await APIClient.shared.request(
             "/feed/private",
             method: .get,
+            query: ["page": String(page)],
             responseType: [Post].self
         )
         
