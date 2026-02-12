@@ -83,10 +83,3 @@ struct ChatsView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        ChatsView()
-    }
-    .preferredColorScheme(.dark)
-}
