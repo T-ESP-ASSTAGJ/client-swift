@@ -27,7 +27,7 @@ struct MessageBubble: View {
             }
             
             // Avatar pour les messages reçus
-            if !isFromCurrentUser, let profilePicture = message.author.profilePicture {
+            if !isFromCurrentUser, let profilePicture = message.author.profile_picture {
                 AsyncImage(url: URL(string: profilePicture)) { image in
                     image
                         .resizable()
@@ -328,7 +328,7 @@ struct ChatDetailView: View {
                     author: Author(
                         id: 2,
                         username: conversation.groupName,
-                        profilePicture: conversation.participantsInfo.first?.profilePicture
+                        profile_picture: conversation.participantsInfo.first?.profile_picture
                     ),
                     type: "text",
                     content: "Salut ! Comment ça va ?",
@@ -340,7 +340,7 @@ struct ChatDetailView: View {
                 ),
                 Message(
                     id: 2,
-                    author: Author(id: currentUserId, username: "Moi", profilePicture: nil),
+                    author: Author(id: currentUserId, username: "Moi", profile_picture: nil),
                     type: "text",
                     content: "Ça va bien ! Tu as écouté ce son ?",
                     trackMetaData: nil,
@@ -351,7 +351,7 @@ struct ChatDetailView: View {
                 ),
                 Message(
                     id: 3,
-                    author: Author(id: currentUserId, username: "Moi", profilePicture: nil),
+                    author: Author(id: currentUserId, username: "Moi", profile_picture: nil),
                     type: "track",
                     content: "Blinding Lights - The Weeknd",
                     trackMetaData: ["Blinding Lights", "The Weeknd", "https://example.com/cover.jpg"],
@@ -391,7 +391,7 @@ struct ChatDetailView: View {
         // Simulation pour l'instant
         let newMessage = Message(
             id: messages.count + 1,
-            author: Author(id: currentUserId, username: "Moi", profilePicture: nil),
+            author: Author(id: currentUserId, username: "Moi", profile_picture: nil),
             type: "text",
             content: trimmedText,
             trackMetaData: nil,
@@ -420,7 +420,7 @@ extension ChatDetailView {
             author: dummyAuthor,
             created_at: ISO8601DateFormatter().string(from: Date())
         )
-        let participantAuthor = Author(id: 0, username: chatName, profilePicture: nil)
+        let participantAuthor = Author(id: 0, username: chatName, profile_picture: nil)
         
         self.conversation = Conversation(
             id: 0,

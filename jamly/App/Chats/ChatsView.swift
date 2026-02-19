@@ -83,8 +83,17 @@ struct ConversationRow: View {
     
     @ViewBuilder
     private var avatarView: some View {
-        if let profilePicture = conversation.participantsInfo[1].profilePicture,
-           !profilePicture.isEmpty {
+        if conversation.isGroup {
+            // Toujours le placeholder groupe
+            Circle()
+                .fill(Color.green.opacity(0.2))
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Image(systemName: "person.3.fill")
+                        .foregroundColor(.green)
+                )
+        } else if let profilePicture = conversation.participantsInfo[1].profile_picture,
+                  !profilePicture.isEmpty {
             // Photo de profil de l'utilisateur (conversation directe)
             AsyncImage(url: URL(string: profilePicture)) { image in
                 image
@@ -101,13 +110,12 @@ struct ConversationRow: View {
             .frame(width: 44, height: 44)
             .clipShape(Circle())
         } else {
-            // Placeholder (pour les groupes ou si pas de photo)
             Circle()
-                .fill(conversation.isGroup ? Color.green.opacity(0.2) : Color.blue.opacity(0.2))
+                .fill(Color.blue.opacity(0.2))
                 .frame(width: 44, height: 44)
                 .overlay(
-                    Image(systemName: conversation.isGroup ? "person.3.fill" : "person.fill")
-                        .foregroundColor(conversation.isGroup ? .green : .blue)
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.blue)
                 )
         }
     }

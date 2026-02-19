@@ -71,7 +71,7 @@ struct Conversation: Codable, Identifiable, Hashable {
             return nil
         } else {
             // Pour une conversation directe, photo de l'autre participant
-            return participantsInfo.first?.profilePicture
+            return participantsInfo.first?.profile_picture
         }
     }
 }

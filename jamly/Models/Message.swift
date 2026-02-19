@@ -68,7 +68,7 @@ struct Message: Codable, Identifiable {
 struct Author: Codable, Hashable {
     let id: Int
     let username: String
-    let profilePicture: String?
+    let profile_picture: String?
 }
 
 struct AuthorForLightMessage: Codable, Hashable {
