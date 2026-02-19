@@ -65,8 +65,22 @@ struct Message: Codable, Identifiable {
     }
 }
 
-struct Author: Codable {
+struct Author: Codable, Hashable {
     let id: Int
     let username: String
     let profilePicture: String?
+}
+
+struct AuthorForLightMessage: Codable, Hashable {
+    let id: Int
+    let username: String
+}
+
+struct LightMessage: Codable, Identifiable, Hashable {
+    let id: Int
+    let type: String
+    let content: String?
+    let preview: String
+    let author: AuthorForLightMessage
+    let created_at: String
 }
