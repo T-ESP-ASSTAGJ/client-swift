@@ -167,48 +167,7 @@ struct ChatDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Zone de messages avec défilement
-            ScrollViewReader { proxy in
-                ScrollView {
-                    if isLoading && messages.isEmpty {
-                        ProgressView()
-                            .padding()
-                    } else if messages.isEmpty {
-                        // État vide
-                        VStack(spacing: 12) {
-                            Image(systemName: "bubble.left.and.bubble.right")
-                                .font(.system(size: 50))
-                                .foregroundColor(.gray)
-                            Text("Any messages")
-                                .foregroundColor(.gray)
-                            Text("Send the first message !")
-                                .font(.caption)
-                                .foregroundColor(.gray.opacity(0.7))
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding()
-                    } else {
-                        LazyVStack(spacing: 12) {
-                            ForEach(messages) { message in
-                                MessageBubble(
-                                    message: message,
-                                    showSenderName: conversation.isGroup,
-                                    currentUserId: currentUserId
-                                )
-                                .id(message.id)
-                            }
-                        }
-                        .padding(.vertical)
-                    }
-                }
-                .onChange(of: messages.count) { oldValue, newValue in
-                    // Scroll automatique vers le dernier message
-                    if let lastMessage = messages.last {
-                        withAnimation {
-                            proxy.scrollTo(lastMessage.id, anchor: .bottom)
-                        }
-                    }
-                }
-            }
+            messageScrollView
         }
         .safeAreaInset(edge: .bottom) {
             messageInputSection
@@ -218,20 +177,67 @@ struct ChatDetailView: View {
         }
         .navigationTitle("Test")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if conversation.isGroup {
-                    Button {
-                        // TODO: Action pour voir les infos du groupe
-                    } label: {
-                        Image(systemName: "info.circle")
-                    }
-                }
-            }
-        }
         .onAppear {
             loadMessages()
         }
+    }
+    
+    // MARK: - Subviews
+    
+    /// Vue de scroll des messages
+    private var messageScrollView: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                messageContentView
+            }
+            .onChange(of: messages.count) { _ in
+                scrollToBottom(proxy: proxy)
+            }
+        }
+    }
+    
+    /// Contenu des messages (loading, empty, ou liste)
+    @ViewBuilder
+    private var messageContentView: some View {
+        if isLoading && messages.isEmpty {
+            ProgressView()
+                .padding()
+        } else if messages.isEmpty {
+            emptyMessagesView
+        } else {
+            messageListView
+        }
+    }
+    
+    /// État vide (aucun message)
+    private var emptyMessagesView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "bubble.left.and.bubble.right")
+                .font(.system(size: 50))
+                .foregroundColor(.gray)
+            Text("Any messages")
+                .foregroundColor(.gray)
+            Text("Send the first message !")
+                .font(.caption)
+                .foregroundColor(.gray.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+    
+    /// Liste des messages
+    private var messageListView: some View {
+        LazyVStack(spacing: 12) {
+            ForEach(messages) { message in
+                MessageBubble(
+                    message: message,
+                    showSenderName: true,
+                    currentUserId: currentUserId
+                )
+                .id(message.id)
+            }
+        }
+        .padding(.vertical)
     }
     
     // MARK: - Message Input Section
@@ -290,6 +296,14 @@ struct ChatDetailView: View {
     
     // MARK: - Actions
     
+    /// Scroll vers le dernier message
+    private func scrollToBottom(proxy: ScrollViewProxy) {
+        guard let lastMessage = messages.last else { return }
+        withAnimation {
+            proxy.scrollTo(lastMessage.id, anchor: .bottom)
+        }
+    }
+    
     /// Charge les messages de la conversation depuis l'API
     private func loadMessages() {
         isLoading = true
@@ -313,8 +327,8 @@ struct ChatDetailView: View {
                     id: 1,
                     author: Author(
                         id: 2,
-                        username: conversation.displayName,
-                        profilePicture: conversation.profilePicture
+                        username: conversation.groupName,
+                        profilePicture: conversation.participantsInfo.first?.profilePicture
                     ),
                     type: "text",
                     content: "Salut ! Comment ça va ?",
@@ -397,15 +411,25 @@ extension ChatDetailView {
     /// Initializer pour compatibilité avec l'ancien code (ChatsView)
     init(chatName: String) {
         // Créer une conversation temporaire pour la compatibilité
+        let dummyAuthor = AuthorForLightMessage(id: 0, username: chatName)
+        let dummyLastMessage = LightMessage(
+            id: 0,
+            type: "text",
+            content: "",
+            preview: "",
+            author: dummyAuthor,
+            created_at: ISO8601DateFormatter().string(from: Date())
+        )
+        let participantAuthor = Author(id: 0, username: chatName, profilePicture: nil)
+        
         self.conversation = Conversation(
             id: 0,
-            isGroup: false,
-            groupName: nil,
+            groupName: "Test",
             unreadCount: 0,
             memberCount: 2,
             type: "direct",
-            lastMessage: [],
-            participantsInfo: [[chatName, ""]]
+            lastMessage: dummyLastMessage,
+            participantsInfo: [participantAuthor]
         )
     }
 }

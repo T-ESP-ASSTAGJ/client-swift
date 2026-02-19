@@ -89,7 +89,7 @@
 		79FA25B52F057261008A9398 /* FollowerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FA25B42F05725B008A9398 /* FollowerViewModel.swift */; };
 		79FA25B92F057272008A9398 /* FollowingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FA25B82F05726E008A9398 /* FollowingViewModel.swift */; };
 		79FC690D2F3DE9FA00AD716C /* ConversationAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC690C2F3DE98B00AD716C /* ConversationAction.swift */; };
-        79FC69152F3E06D200AD716C /* ChatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC69142F3E06CF00AD716C /* ChatsViewModel.swift */; };
+		79FC691A2F3E286E00AD716C /* ChatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC69192F3E286E00AD716C /* ChatsViewModel.swift */; };
 		C338C8EF2EEC71C200916AED /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C338C8EE2EEC71BC00916AED /* SearchView.swift */; };
 		C39A5DCC2F04686800945A76 /* Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DCB2F04686800945A76 /* Search.swift */; };
 		C39A5DCE2F0468AE00945A76 /* SearchAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DCD2F0468AE00945A76 /* SearchAction.swift */; };
@@ -202,7 +202,7 @@
 		79FA25B42F05725B008A9398 /* FollowerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerViewModel.swift; sourceTree = "<group>"; };
 		79FA25B82F05726E008A9398 /* FollowingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingViewModel.swift; sourceTree = "<group>"; };
 		79FC690C2F3DE98B00AD716C /* ConversationAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAction.swift; sourceTree = "<group>"; };
-		79FC69142F3E06CF00AD716C /* ChatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsViewModel.swift; sourceTree = "<group>"; };
+		79FC69192F3E286E00AD716C /* ChatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsViewModel.swift; sourceTree = "<group>"; };
 		C338C8EE2EEC71BC00916AED /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		C39A5DCB2F04686800945A76 /* Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Search.swift; sourceTree = "<group>"; };
 		C39A5DCD2F0468AE00945A76 /* SearchAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchAction.swift; sourceTree = "<group>"; };
@@ -450,7 +450,7 @@
 		76381C542F044095008BB4B0 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				79FC69132F3E06C900AD716C /* Chats */,
+				79FC69182F3E286A00AD716C /* Chat */,
 				79FA25B62F057264008A9398 /* Following */,
 				79FA25B32F05724F008A9398 /* Follower */,
 				79FA25B22F057180008A9398 /* Search */,
@@ -764,22 +764,32 @@
 			path = Following;
 			sourceTree = "<group>";
 		};
-        79FC690B2F3DE98500AD716C /* Chat */ = {
-            isa = PBXGroup;
-            children = (
-                79FC690C2F3DE98B00AD716C /* ConversationAction.swift */,
-            );
-            path = Chat;
-            sourceTree = "<group>";
-        };
-        79FC69132F3E06C900AD716C /* Chats */ = {
-            isa = PBXGroup;
-            children = (
-                79FC69142F3E06CF00AD716C /* ChatsViewModel.swift */,
-            );
-            path = Chats;
-            sourceTree = "<group>";
-        };
+		C30E554E2F6307A8000BF585 /* ProfileSettingsView */ = {
+			isa = PBXGroup;
+			children = (
+				C30E55542F630917000BF585 /* AccountVisibilityView.swift */,
+				C30E55522F6308ED000BF585 /* MusicSettingsView.swift */,
+				C30E55502F6308BA000BF585 /* AccountSettingsView.swift */,
+			);
+			path = ProfileSettingsView;
+			sourceTree = "<group>";
+		};
+		79FC690B2F3DE98500AD716C /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				79FC690C2F3DE98B00AD716C /* ConversationAction.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		79FC69182F3E286A00AD716C /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				79FC69192F3E286E00AD716C /* ChatsViewModel.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
 		C338C8ED2EEC71B200916AED /* Search */ = {
 			isa = PBXGroup;
 			children = (
@@ -1018,7 +1028,6 @@
 				6853B3E4F4284555A0FF86BC /* AccountSettingsView.swift in Sources */,
 				3E88C00A65FB4A2FB5A46701 /* MusicSettingsView.swift in Sources */,
 				3F1E0D0AA7874CC798113E6B /* AccountVisibilityView.swift in Sources */,
-				79FC69152F3E06D200AD716C /* ChatsViewModel.swift in Sources */,
 				76D554372EEC2CB600244164 /* Header.swift in Sources */,
 				761C50422EE3ABFC0053AD1F /* jamlyApp.swift in Sources */,
 				B5C6D7E8F9001122334455BB /* Config.swift in Sources */,
@@ -1032,6 +1041,8 @@
 				79A65FBB2F02938F000E4FAE /* CommentAction.swift in Sources */,
 				796367382F3603C3000BA493 /* Message.swift in Sources */,
 				C39A5DCC2F04686800945A76 /* Search.swift in Sources */,
+				C30E554D2F63042A000BF585 /* ProfileSettingsMenuView.swift in Sources */,
+				79FC691A2F3E286E00AD716C /* ChatsViewModel.swift in Sources */,
 				C39A5DD32F046C0E00945A76 /* SearchHistoryManager.swift in Sources */,
 				76204DCC2EE78A8B004C9C93 /* CreatePostView.swift in Sources */,
 				76381C582F0440C6008BB4B0 /* PostViewModel.swift in Sources */,
