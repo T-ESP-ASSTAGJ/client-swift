@@ -34,7 +34,7 @@ struct FollowingUser: Codable, Identifiable {
     let profilePicture: String
 }
 
-struct CommonUser: Codable {
+struct CommonUser: Codable, Hashable {
     let id: Int
     let username: String
     let profilePicture: String?

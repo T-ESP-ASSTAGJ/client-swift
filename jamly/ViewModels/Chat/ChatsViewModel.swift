@@ -123,13 +123,13 @@ class ChatsViewModel: ObservableObject {
         } else {
             filteredConversations = conversations.filter { conversation in
                 // Recherche dans le nom
-                let nameMatch = conversation.groupName.localizedCaseInsensitiveContains(searchText)
+                let nameMatch = conversation.groupName?.localizedCaseInsensitiveContains(searchText)
                 
                 // Recherche dans le dernier message
                 let messageMatch = conversation.lastMessage?.preview
                     .localizedCaseInsensitiveContains(searchText)
                 
-                return nameMatch || (messageMatch != nil)
+                return nameMatch! || (messageMatch != nil)
             }
         }
     }
