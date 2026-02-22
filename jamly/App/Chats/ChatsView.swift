@@ -21,7 +21,7 @@ struct ConversationRow: View {
             // Infos
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(conversation.isGroup ? conversation.groupName : conversation.participantsInfo[1].username)
+                    Text((conversation.isGroup ? conversation.groupName ?? "Group" : conversation.participants[1].username))
                         .font(.headline)
                         .foregroundColor(.white)
                     
@@ -92,7 +92,7 @@ struct ConversationRow: View {
                     Image(systemName: "person.3.fill")
                         .foregroundColor(.green)
                 )
-        } else if let profilePicture = conversation.participantsInfo[1].profile_picture,
+        } else if let profilePicture = conversation.participants[1].profilePicture,
                   !profilePicture.isEmpty {
             // Photo de profil de l'utilisateur (conversation directe)
             AsyncImage(url: URL(string: profilePicture)) { image in
@@ -130,7 +130,7 @@ struct ConversationRow: View {
     private func formatTimestamp(_ message: LightMessage) -> String {
         // Parser la date string (format ISO8601)
         let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: message.created_at) else {
+        guard let date = formatter.date(from: message.createdAt) else {
             return "New"
         }
         
@@ -634,7 +634,7 @@ class NewConversationViewModel: ObservableObject {
             let participantIds = selectedUsers.map { $0.id }
             let finalGroupName = isGroup
                 ? groupName.trimmingCharacters(in: .whitespacesAndNewlines)
-                : selectedUsers.map { $0.username }.joined(separator: "")
+                : nil
 
             let response = try await ConversationAction.createConversation(
                 isGroup: isGroup,

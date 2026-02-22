@@ -7,60 +7,59 @@
 
 struct Conversation: Codable, Identifiable, Hashable {
     let id: Int
-    let groupName: String
+    let isGroup: Bool
+    let groupName: String?
     let unreadCount: Int
     let memberCount: Int
     let type: String
     let lastMessage: LightMessage?
-    let participantsInfo: [Author]
+    let participants: [CommonUser]
     
     enum CodingKeys: String, CodingKey {
-        case id, groupName, unreadCount, memberCount, type, lastMessage, participantsInfo
+        case id, isGroup, groupName, unreadCount, memberCount, type, lastMessage, participants
     }
     
     init(
         id: Int,
+        isGroup: Bool = false,
         groupName: String = "",
         unreadCount: Int = 0,
         memberCount: Int = 0,
         type: String = "direct",
         lastMessage: LightMessage? = nil,
-        participantsInfo: [Author] = []
+        participants: [CommonUser] = []
     ) {
         self.id = id
+        self.isGroup = isGroup
         self.groupName = groupName
         self.unreadCount = unreadCount
         self.memberCount = memberCount
         self.type = type
         self.lastMessage = lastMessage
-        self.participantsInfo = participantsInfo
+        self.participants = participants
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id               = try container.decode(Int.self, forKey: .id)
+        isGroup          = try container.decodeIfPresent(Bool.self, forKey: .isGroup) ?? false
         groupName        = try container.decodeIfPresent(String.self, forKey: .groupName) ?? ""
         unreadCount      = try container.decodeIfPresent(Int.self, forKey: .unreadCount) ?? 0
         memberCount      = try container.decodeIfPresent(Int.self, forKey: .memberCount) ?? 0
         type             = try container.decodeIfPresent(String.self, forKey: .type) ?? "direct"
         lastMessage      = try container.decodeIfPresent(LightMessage.self, forKey: .lastMessage)
-        participantsInfo = try container.decodeIfPresent([Author].self, forKey: .participantsInfo) ?? []
+        participants     = try container.decodeIfPresent([CommonUser].self, forKey: .participants) ?? []
     }
     
     // MARK: - Computed Properties
     
-    /// Indique si c'est une conversation de groupe
-    var isGroup: Bool {
-        type == "group"
-    }
-    
     /// Retourne le nom à afficher (groupe ou utilisateur)
     var displayName: String {
         if isGroup {
-            return groupName
+            return groupName ?? "Chat group"
         } else {
             // Pour une conversation directe, on retourne le nom de l'autre participant
-            return participantsInfo.first?.username ?? groupName
+            return participants.first?.username ?? "Unknown user"
         }
     }
     
@@ -71,7 +70,7 @@ struct Conversation: Codable, Identifiable, Hashable {
             return nil
         } else {
             // Pour une conversation directe, photo de l'autre participant
-            return participantsInfo.first?.profile_picture
+            return participants.first?.profilePicture
         }
     }
 }

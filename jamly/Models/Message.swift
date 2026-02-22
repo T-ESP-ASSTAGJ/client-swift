@@ -9,7 +9,7 @@ import Foundation
 
 struct Message: Codable, Identifiable {
     let id: Int
-    let author: Author
+    let author: CommonUser
     let type: String
     let content: String?
     let trackMetaData: [String]?
@@ -65,22 +65,9 @@ struct Message: Codable, Identifiable {
     }
 }
 
-struct Author: Codable, Hashable {
-    let id: Int
-    let username: String
-    let profile_picture: String?
-}
-
-struct AuthorForLightMessage: Codable, Hashable {
-    let id: Int
-    let username: String
-}
-
 struct LightMessage: Codable, Identifiable, Hashable {
     let id: Int
-    let type: String
-    let content: String?
     let preview: String
-    let author: AuthorForLightMessage
-    let created_at: String
+    let author: CommonUser
+    let createdAt: String
 }

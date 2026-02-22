@@ -27,7 +27,7 @@ struct MessageBubble: View {
             }
             
             // Avatar pour les messages reçus
-            if !isFromCurrentUser, let profilePicture = message.author.profile_picture {
+            if !isFromCurrentUser, let profilePicture = message.author.profilePicture {
                 AsyncImage(url: URL(string: profilePicture)) { image in
                     image
                         .resizable()
@@ -325,10 +325,10 @@ struct ChatDetailView: View {
             messages = [
                 Message(
                     id: 1,
-                    author: Author(
+                    author: CommonUser(
                         id: 2,
-                        username: conversation.groupName,
-                        profile_picture: conversation.participantsInfo.first?.profile_picture
+                        username: conversation.groupName ?? "test",
+                        profilePicture: conversation.participants.first?.profilePicture
                     ),
                     type: "text",
                     content: "Salut ! Comment ça va ?",
@@ -340,7 +340,7 @@ struct ChatDetailView: View {
                 ),
                 Message(
                     id: 2,
-                    author: Author(id: currentUserId, username: "Moi", profile_picture: nil),
+                    author: CommonUser(id: currentUserId, username: "Moi", profilePicture: nil),
                     type: "text",
                     content: "Ça va bien ! Tu as écouté ce son ?",
                     trackMetaData: nil,
@@ -351,7 +351,7 @@ struct ChatDetailView: View {
                 ),
                 Message(
                     id: 3,
-                    author: Author(id: currentUserId, username: "Moi", profile_picture: nil),
+                    author: CommonUser(id: currentUserId, username: "Moi", profilePicture: nil),
                     type: "track",
                     content: "Blinding Lights - The Weeknd",
                     trackMetaData: ["Blinding Lights", "The Weeknd", "https://example.com/cover.jpg"],
@@ -391,7 +391,7 @@ struct ChatDetailView: View {
         // Simulation pour l'instant
         let newMessage = Message(
             id: messages.count + 1,
-            author: Author(id: currentUserId, username: "Moi", profile_picture: nil),
+            author: CommonUser(id: currentUserId, username: "Moi", profilePicture: nil),
             type: "text",
             content: trimmedText,
             trackMetaData: nil,
@@ -411,16 +411,14 @@ extension ChatDetailView {
     /// Initializer pour compatibilité avec l'ancien code (ChatsView)
     init(chatName: String) {
         // Créer une conversation temporaire pour la compatibilité
-        let dummyAuthor = AuthorForLightMessage(id: 0, username: chatName)
+        let dummyAuthor = CommonUser(id: 0, username: chatName, profilePicture: nil)
         let dummyLastMessage = LightMessage(
             id: 0,
-            type: "text",
-            content: "",
             preview: "",
             author: dummyAuthor,
-            created_at: ISO8601DateFormatter().string(from: Date())
+            createdAt: "2021-01-01T00:00:00Z"
         )
-        let participantAuthor = Author(id: 0, username: chatName, profile_picture: nil)
+        let participants = CommonUser(id: 0, username: chatName, profilePicture: nil)
         
         self.conversation = Conversation(
             id: 0,
@@ -429,7 +427,7 @@ extension ChatDetailView {
             memberCount: 2,
             type: "direct",
             lastMessage: dummyLastMessage,
-            participantsInfo: [participantAuthor]
+            participants: [participants]
         )
     }
 }

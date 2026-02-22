@@ -7,7 +7,7 @@
 
 struct ConversationRequestResponse: Codable {
     let isGroup: Bool
-    let groupName: String
+    let groupName: String?
     let participants: [Int]
 }
 
@@ -52,7 +52,7 @@ enum ConversationAction {
     
     static func createConversation(
         isGroup: Bool,
-        groupName: String,
+        groupName: String?,
         participants: [Int]
     ) async throws -> APIResponse<Conversation> {
         let response = try await APIClient.shared.request(
