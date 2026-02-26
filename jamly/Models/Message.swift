@@ -7,19 +7,35 @@
 
 import Foundation
 
-struct Message: Codable, Identifiable {
+// MARK: - Track Metadata (optionnel, pour les messages créés)
+
+struct TrackMetadata: Codable, Hashable {
+    let title: String?
+    let artist: String?
+    let album: String?
+    let imageUrl: String?
+    let duration: Int?
+}
+
+// MARK: - Message
+
+struct Message: Codable, Identifiable, Hashable {
     let id: Int
     let author: CommonUser
     let type: String
     let content: String?
-    let trackMetaData: [String]?
-    let memberCount: Int
-    let isRead: Bool
-    let readAt: String
-    let conversationId: Int
+    
+    // Champs qui peuvent varier selon l'endpoint
+    let track: String?
+    let trackMetadata: TrackMetadata?
+    let readAt: String?
+    let conversationId: Int?
+    let updatedAt: String?
+    
+    let createdAt: String
     
     enum CodingKeys: String, CodingKey {
-        case id, author, type, content, trackMetaData, memberCount, isRead, readAt, conversationId
+        case id, author, type, content, track, trackMetadata, readAt, conversationId, updatedAt, createdAt
     }
     
     // MARK: - Computed Properties
@@ -28,36 +44,38 @@ struct Message: Codable, Identifiable {
         type == "track" || type == "music"
     }
     
+    var isRead: Bool {
+        readAt != nil
+    }
+    
     var trackTitle: String? {
-        guard isMusicMessage, let metadata = trackMetaData, metadata.count > 0 else {
-            return nil
-        }
-        return metadata[0]
+        trackMetadata?.title
     }
     
     var trackArtist: String? {
-        guard isMusicMessage, let metadata = trackMetaData, metadata.count > 1 else {
-            return nil
-        }
-        return metadata[1]
+        trackMetadata?.artist
     }
     
     var trackImageUrl: String? {
-        guard isMusicMessage, let metadata = trackMetaData, metadata.count > 2 else {
-            return nil
-        }
-        return metadata[2]
+        trackMetadata?.imageUrl
+    }
+    
+    /// Convertit la date ISO8601 en Date
+    var createdDate: Date {
+        ISO8601DateFormatter().date(from: createdAt) ?? Date()
     }
     
     var timeString: String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: readAt) else {
-            return ""
-        }
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
-        return timeFormatter.string(from: date)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: createdDate)
+    }
+    
+    var dateString: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.dateFormat = "d MMM 'à' HH:mm"
+        return formatter.string(from: createdDate)
     }
     
     func isFromCurrentUser(currentUserId: Int) -> Bool {
@@ -65,9 +83,31 @@ struct Message: Codable, Identifiable {
     }
 }
 
+// MARK: - Light Message (pour la liste des conversations)
+
 struct LightMessage: Codable, Identifiable, Hashable {
     let id: Int
-    let preview: String
+    let preview: String?
     let author: CommonUser
     let createdAt: String
+    let type: String?
+    let content: String?
+    
+    /// Retourne un aperçu du message
+    var displayPreview: String {
+        if let preview = preview {
+            return preview
+        }
+        
+        if let type = type, type == "track" || type == "music" {
+            return "🎵 Piste partagée"
+        }
+        
+        if let content = content {
+            return content
+        }
+        
+        return "Message"
+    }
 }
+

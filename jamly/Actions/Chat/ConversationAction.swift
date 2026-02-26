@@ -19,9 +19,18 @@ enum ConversationAction {
             query: ["page": String(page)],
             responseType: [Conversation].self
         )
+               
+        return response
+    }
+    
+    static func getConversationDetail(conversationId: Int) async throws -> APIResponse<ConversationDetail> {
+        let response = try await APIClient.shared.request(
+            "/conversations/\(conversationId)",
+            method: .get,
+            responseType: ConversationDetail.self
+        )
+
         
-        print(response)
-       
         return response
     }
     

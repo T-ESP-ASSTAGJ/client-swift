@@ -80,6 +80,7 @@
 		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
 		796367362F360183000BA493 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367352F360181000BA493 /* Conversation.swift */; };
 		796367382F3603C3000BA493 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367372F3603BD000BA493 /* Message.swift */; };
+		7965AA672F50867C005E6504 /* MessageAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7965AA662F50867C005E6504 /* MessageAction.swift */; };
 		796A842A2F097A760099766F /* SearchComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796A84292F097A760099766F /* SearchComponents.swift */; };
 		796C8C4C2F055F8400EBC3D9 /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796C8C4B2F055F8000EBC3D9 /* CommentViewModel.swift */; };
 		79A65FBB2F02938F000E4FAE /* CommentAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A65FBA2F02937D000E4FAE /* CommentAction.swift */; };
@@ -193,6 +194,7 @@
 		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
 		796367352F360181000BA493 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		796367372F3603BD000BA493 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		7965AA662F50867C005E6504 /* MessageAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAction.swift; sourceTree = "<group>"; };
 		796A84292F097A760099766F /* SearchComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchComponents.swift; sourceTree = "<group>"; };
 		796C8C4B2F055F8000EBC3D9 /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
 		79A65FBA2F02937D000E4FAE /* CommentAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentAction.swift; sourceTree = "<group>"; };
@@ -778,6 +780,7 @@
 			isa = PBXGroup;
 			children = (
 				79FC690C2F3DE98B00AD716C /* ConversationAction.swift */,
+				7965AA662F50867C005E6504 /* MessageAction.swift */,
 			);
 			path = Chat;
 			sourceTree = "<group>";
@@ -979,6 +982,7 @@
 				796367362F360183000BA493 /* Conversation.swift in Sources */,
 				766998A02EE4EA9600A73250 /* PlaylistDetailView.swift in Sources */,
 				76385AC32EE76651000B0320 /* PostAction.swift in Sources */,
+				7965AA672F50867C005E6504 /* MessageAction.swift in Sources */,
 				761C50632EE458880053AD1F /* AuthManager.swift in Sources */,
 				761C505E2EE458450053AD1F /* APIClient.swift in Sources */,
 				C3A4B15A2F01D3AA004F721A /* SearchResultsView.swift in Sources */,

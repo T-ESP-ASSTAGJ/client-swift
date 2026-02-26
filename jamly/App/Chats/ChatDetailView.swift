@@ -161,13 +161,25 @@ struct ChatDetailView: View {
     @State private var messages: [Message] = []
     @State private var newMessageText: String = ""
     @State private var isLoading: Bool = false
-    @State private var currentUserId: Int = 1 // TODO: Récupérer depuis UserDefaults ou AuthManager
+    @State private var errorMessage: String?
     @FocusState private var isTextFieldFocused: Bool
+    
+    // Dependencies
+    @EnvironmentObject private var userStore: UserStore
+    
+    private var currentUserId: Int {
+        userStore.user?.id ?? 0
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             // Zone de messages avec défilement
             messageScrollView
+            
+            // Affichage d'erreur si nécessaire
+            if let errorMessage {
+                errorBanner(message: errorMessage)
+            }
         }
         .safeAreaInset(edge: .bottom) {
             messageInputSection
@@ -175,11 +187,84 @@ struct ChatDetailView: View {
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
-        .navigationTitle("Test")
+        .navigationTitle(conversation.displayName(currentUserId: currentUserId))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                conversationHeader
+            }
+        }
         .onAppear {
             loadMessages()
         }
+    }
+    
+    // MARK: - Conversation Header
+    
+    private var conversationHeader: some View {
+        HStack(spacing: 12) {
+            // Photo de profil (pour les conversations directes)
+            if let profilePicture = conversation.displayProfilePicture(currentUserId: currentUserId) {
+                AsyncImage(url: URL(string: profilePicture)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                }
+                .frame(width: 32, height: 32)
+                .clipShape(Circle())
+            } else if conversation.isGroup {
+                // Icône pour les groupes
+                Circle()
+                    .fill(Color.blue.opacity(0.2))
+                    .frame(width: 32, height: 32)
+                    .overlay {
+                        Image(systemName: "person.3.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.blue)
+                    }
+            }
+            
+            // Nom
+            VStack(alignment: .leading, spacing: 2) {
+                Text(conversation.displayName(currentUserId: currentUserId))
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                if conversation.isGroup {
+                    Text("\(conversation.memberCount) membres")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Error Banner
+    
+    @ViewBuilder
+    private func errorBanner(message: String) -> some View {
+        HStack {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.white)
+            Text(message)
+                .font(.caption)
+                .foregroundColor(.white)
+            Spacer()
+            Button("Réessayer") {
+                errorMessage = nil
+                loadMessages()
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.red.opacity(0.9))
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .animation(.spring(), value: errorMessage)
     }
     
     // MARK: - Subviews
@@ -307,61 +392,22 @@ struct ChatDetailView: View {
     /// Charge les messages de la conversation depuis l'API
     private func loadMessages() {
         isLoading = true
+        errorMessage = nil
         
-        // TODO: Remplacer par un vrai appel API
-        // Exemple:
-        // Task {
-        //     do {
-        //         messages = try await APIManager.shared.getMessages(conversationId: conversation.id)
-        //         isLoading = false
-        //     } catch {
-        //         print("Erreur: \(error)")
-        //         isLoading = false
-        //     }
-        // }
-        
-        // Messages de test pour l'instant
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
-            messages = [
-                Message(
-                    id: 1,
-                    author: CommonUser(
-                        id: 2,
-                        username: conversation.groupName ?? "test",
-                        profilePicture: conversation.participants.first?.profilePicture
-                    ),
-                    type: "text",
-                    content: "Salut ! Comment ça va ?",
-                    trackMetaData: nil,
-                    memberCount: 2,
-                    isRead: true,
-                    readAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-3600)),
-                    conversationId: conversation.id
-                ),
-                Message(
-                    id: 2,
-                    author: CommonUser(id: currentUserId, username: "Moi", profilePicture: nil),
-                    type: "text",
-                    content: "Ça va bien ! Tu as écouté ce son ?",
-                    trackMetaData: nil,
-                    memberCount: 2,
-                    isRead: true,
-                    readAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-3500)),
-                    conversationId: conversation.id
-                ),
-                Message(
-                    id: 3,
-                    author: CommonUser(id: currentUserId, username: "Moi", profilePicture: nil),
-                    type: "track",
-                    content: "Blinding Lights - The Weeknd",
-                    trackMetaData: ["Blinding Lights", "The Weeknd", "https://example.com/cover.jpg"],
-                    memberCount: 2,
-                    isRead: false,
-                    readAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-3400)),
-                    conversationId: conversation.id
-                )
-            ]
-            isLoading = false
+        Task {
+            do {
+                let response = try await ConversationAction.getConversationDetail(conversationId: conversation.id)
+                await MainActor.run {
+                    messages = response.value.messages
+                    isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Erreur lors du chargement: \(error.localizedDescription)"
+                    isLoading = false
+                    print("❌ Error loading messages: \(error)")
+                }
+            }
         }
     }
     
@@ -371,39 +417,55 @@ struct ChatDetailView: View {
         
         guard !trimmedText.isEmpty else { return }
         
-        isLoading = true
-        
-        // TODO: Remplacer par un vrai appel API
-        // Exemple:
-        // let request = SendMessageRequest(conversationId: conversation.id, content: trimmedText)
-        // Task {
-        //     do {
-        //         let newMessage = try await APIManager.shared.sendMessage(request)
-        //         messages.append(newMessage)
-        //         newMessageText = ""
-        //         isLoading = false
-        //     } catch {
-        //         print("Erreur: \(error)")
-        //         isLoading = false
-        //     }
-        // }
-        
-        // Simulation pour l'instant
-        let newMessage = Message(
-            id: messages.count + 1,
-            author: CommonUser(id: currentUserId, username: "Moi", profilePicture: nil),
+        // Créer un message temporaire pour l'affichage optimiste
+        let now = ISO8601DateFormatter().string(from: Date())
+        let tempMessage = Message(
+            id: -1,
+            author: CommonUser(
+                id: currentUserId,
+                username: userStore.user?.username ?? "Vous",
+                profilePicture: userStore.user?.profilePicture
+            ),
             type: "text",
             content: trimmedText,
-            trackMetaData: nil,
-            memberCount: conversation.memberCount,
-            isRead: false,
-            readAt: ISO8601DateFormatter().string(from: Date()),
-            conversationId: conversation.id
+            track: nil,
+            trackMetadata: nil,
+            readAt: nil,
+            conversationId: conversation.id,
+            updatedAt: now,
+            createdAt: now
         )
         
-        messages.append(newMessage)
+        messages.append(tempMessage)
+        let messageToSend = trimmedText
         newMessageText = ""
-        isLoading = false
+        isTextFieldFocused = false
+        
+        Task {
+            do {
+                let response = try await MessageAction.sendTextMessage(
+                    conversationId: conversation.id,
+                    content: messageToSend
+                )
+                
+                await MainActor.run {
+                    // Remplacer le message temporaire par le vrai message de l'API
+                    if let index = messages.firstIndex(where: { $0.id == -1 }) {
+                        messages[index] = response.value
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    // En cas d'erreur, retirer le message temporaire
+                    messages.removeAll { $0.id == -1 }
+                    errorMessage = "Erreur lors de l'envoi: \(error.localizedDescription)"
+                    print("❌ Error sending message: \(error)")
+                    
+                    // Remettre le texte dans le champ si l'envoi a échoué
+                    newMessageText = messageToSend
+                }
+            }
+        }
     }
 }
 // MARK: - Backward Compatibility Extension
@@ -414,9 +476,11 @@ extension ChatDetailView {
         let dummyAuthor = CommonUser(id: 0, username: chatName, profilePicture: nil)
         let dummyLastMessage = LightMessage(
             id: 0,
-            preview: "",
+            preview: nil,
             author: dummyAuthor,
-            createdAt: "2021-01-01T00:00:00Z"
+            createdAt: "2021-01-01T00:00:00Z",
+            type: nil,
+            content: nil
         )
         let participants = CommonUser(id: 0, username: chatName, profilePicture: nil)
         
