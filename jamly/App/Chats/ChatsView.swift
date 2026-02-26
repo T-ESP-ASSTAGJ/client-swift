@@ -124,7 +124,7 @@ struct ConversationRow: View {
     
     private func formatLastMessage(_ message: LightMessage) -> String {
         // Format: "username: preview"
-        return "\(message.author.username): \(message.preview)"
+        return "\(message.author.username): \(message.displayPreview)"
     }
     
     private func formatTimestamp(_ message: LightMessage) -> String {
@@ -185,7 +185,7 @@ struct ChatsView: View {
         )
         .navigationTitle("Chats")
         .navigationDestination(item: $selectedConversation) { conversation in
-            ChatDetailView(chatName: conversation.displayName)
+            ChatDetailView(conversation: conversation)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

@@ -126,7 +126,7 @@ class ChatsViewModel: ObservableObject {
                 let nameMatch = conversation.groupName?.localizedCaseInsensitiveContains(searchText)
                 
                 // Recherche dans le dernier message
-                let messageMatch = conversation.lastMessage?.preview
+                let messageMatch = conversation.lastMessage?.preview?
                     .localizedCaseInsensitiveContains(searchText)
                 
                 return nameMatch! || (messageMatch != nil)

@@ -54,23 +54,57 @@ struct Conversation: Codable, Identifiable, Hashable {
     // MARK: - Computed Properties
     
     /// Retourne le nom à afficher (groupe ou utilisateur)
-    var displayName: String {
+    func displayName(currentUserId: Int) -> String {
         if isGroup {
             return groupName ?? "Chat group"
         } else {
             // Pour une conversation directe, on retourne le nom de l'autre participant
-            return participants.first?.username ?? "Unknown user"
+            let otherParticipant = participants.first { $0.id != currentUserId }
+            return otherParticipant?.username ?? participants.first?.username ?? "Unknown user"
         }
     }
     
     /// Retourne l'URL de la photo de profil à afficher
-    var displayProfilePicture: String? {
+    func displayProfilePicture(currentUserId: Int) -> String? {
         if isGroup {
             // Pour un groupe, pas de photo de profil
             return nil
         } else {
             // Pour une conversation directe, photo de l'autre participant
-            return participants.first?.profilePicture
+            let otherParticipant = participants.first { $0.id != currentUserId }
+            return otherParticipant?.profilePicture ?? participants.first?.profilePicture
         }
+    }
+}
+
+// MARK: - ConversationDetail
+
+/// Représente une conversation complète avec tous ses messages
+struct ConversationDetail: Codable, Identifiable {
+    let id: Int
+    let isGroup: Bool
+    let groupName: String?
+    let messages: [Message]
+    let createdAt: String
+    let updatedAt: String
+    let memberCount: Int
+    let participants: [CommonUser]
+    
+    enum CodingKeys: String, CodingKey {
+        case id, isGroup, groupName, messages, createdAt, updatedAt, memberCount, participants
+    }
+    
+    /// Dernier message de la conversation
+    var lastMessage: Message? {
+        messages.last
+    }
+    
+    /// Nom d'affichage de la conversation
+    var displayName: String {
+        if let groupName = groupName {
+            return groupName
+        }
+        // Pour une conversation directe, afficher le nom de l'autre participant
+        return participants.first?.username ?? "Chat"
     }
 }
