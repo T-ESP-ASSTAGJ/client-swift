@@ -15,7 +15,7 @@ struct LikePostBody: Encodable {
 }
 
 enum PostActions {
-    static func create(post: CreatePost) async throws -> APIResponse<CreatePostRequestResponse> {
+    static func create(post: CreatePostRequest) async throws -> APIResponse<CreatePostRequestResponse> {
         let response = try await APIClient.shared.request(
             "/posts",
             method: .post,

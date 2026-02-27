@@ -138,6 +138,68 @@ final class MusicManager: ObservableObject {
         await playTask?.value
     }
     
+    func getCatalogID(for track: Track) async -> String? {
+        do {
+            // Vérifie d'abord si c'est déjà un ID catalogue (pas "i.")
+            let trackID = track.id.rawValue
+            if !trackID.hasPrefix("i.") {
+                print("✅ Déjà un ID catalogue: \(trackID)")
+                return trackID
+            }
+            
+            print("🔍 Track de bibliothèque détecté, recherche dans le catalogue...")
+            
+            // Récupère les infos du track
+            let title = track.title
+            let artistName = track.artistName
+            
+            // Recherche dans le catalogue Apple Music
+            let searchTerm = "\(title) \(artistName)"
+            var searchRequest = MusicCatalogSearchRequest(term: searchTerm, types: [Song.self])
+            searchRequest.limit = 5  // Prend les 5 premiers résultats
+            
+            let response = try await searchRequest.response()
+            
+            let songs = response.songs
+            guard !songs.isEmpty else {
+                print("❌ Aucun résultat trouvé dans le catalogue")
+                return nil
+            }
+            
+            // Trouve la meilleure correspondance
+            // (idéalement même titre ET même artiste)
+            let exactMatch = songs.first { song in
+                song.title.lowercased() == title.lowercased() &&
+                song.artistName.lowercased() == artistName.lowercased()
+            }
+            
+            if let match = exactMatch {
+                let catalogID = match.id.rawValue
+                print("✅ Match exact trouvé!")
+                print("   Titre: \(match.title)")
+                print("   Artiste: \(match.artistName)")
+                print("   Catalog ID: \(catalogID)")
+                return catalogID
+            }
+            
+            // Si pas de match exact, prend le premier résultat
+            guard let firstSong = songs.first else {
+                print("❌ Aucun résultat trouvé dans le catalogue")
+                return nil
+            }
+            let catalogID = firstSong.id.rawValue
+            print("⚠️ Pas de match exact, meilleur résultat:")
+            print("   Titre: \(firstSong.title)")
+            print("   Artiste: \(firstSong.artistName)")
+            print("   Catalog ID: \(catalogID)")
+            return catalogID
+            
+        } catch {
+            print("❌ Erreur lors de la recherche: \(error)")
+            return nil
+        }
+    }
+    
     // ✅ Pause la musique
     func pause() {
         playTask?.cancel() // ✅ Annule aussi la tâche en cours

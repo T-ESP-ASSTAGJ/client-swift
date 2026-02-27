@@ -25,7 +25,7 @@ struct PostDetailView: View {
     init(post: Post) {
         self.post = post
         
-        print("Current post: \(post)")
+//        print("Current post: \(post)")
     }
     
     var body: some View {
@@ -33,7 +33,14 @@ struct PostDetailView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     // MARK - Post Card
-                    PostCard(post: post, isCurrentPost: true, showPostDetail: .constant(true), musicManager: musicManager)
+                    PostCard(
+                        post: post,
+                        isCurrentPost: true,
+                        onSeeMore: { },  // Vide car déjà dans le détail
+                        onOpenComments: { },
+                        showPostDetail: .constant(true),
+                        musicManager: musicManager
+                    )
                     
                     // MARK: - Track Card
                     trackCard
@@ -68,21 +75,9 @@ struct PostDetailView: View {
     private var trackCard: some View {
         HStack(spacing: 14) {
             // Cover art
-            if let coverImg = coverUIImage {
-                Image(uiImage: coverImg)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 56, height: 56)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            } else {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 56, height: 56)
-                    .overlay {
-                        ProgressView()
-                            .tint(.white)
-                    }
-            }
+            ProfilePostThumbnail(imageURL: post.track.coverImage)
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(post.track.title)
@@ -282,9 +277,9 @@ struct PostDetailView: View {
         }
         
         // Load comments
-        print("ID DU POST")
-        print(post.id)
-        print("ID DU POST")
+//        print("ID DU POST")
+//        print(post.id)
+//        print("ID DU POST")
         await commentViewModel.getComments(post: post)
     }
     

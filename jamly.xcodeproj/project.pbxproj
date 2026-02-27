@@ -40,6 +40,7 @@
 		7642FF742EE783BF0063DE3A /* MusicPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF732EE783BF0063DE3A /* MusicPickerView.swift */; };
 		7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7665D4782F02964100D420C1 /* ImageSourceSheet.swift */; };
 		766998A02EE4EA9600A73250 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7669989F2EE4EA9600A73250 /* PlaylistDetailView.swift */; };
+		766AF0B32F0D9D32006D36A0 /* ProfilePostThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 766AF0B22F0D9D32006D36A0 /* ProfilePostThumbnail.swift */; };
 		76883ED82EE50047006A3955 /* UserAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883ED62EE50047006A3955 /* UserAction.swift */; };
 		76883EDB2EE5004E006A3955 /* LoginAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883ED92EE5004E006A3955 /* LoginAction.swift */; };
 		76883EDE2EE50055006A3955 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76883EDC2EE50055006A3955 /* TabBar.swift */; };
@@ -133,6 +134,7 @@
 		7642FF732EE783BF0063DE3A /* MusicPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPickerView.swift; sourceTree = "<group>"; };
 		7665D4782F02964100D420C1 /* ImageSourceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSourceSheet.swift; sourceTree = "<group>"; };
 		7669989F2EE4EA9600A73250 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
+		766AF0B22F0D9D32006D36A0 /* ProfilePostThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePostThumbnail.swift; sourceTree = "<group>"; };
 		76883ED62EE50047006A3955 /* UserAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAction.swift; sourceTree = "<group>"; };
 		76883ED92EE5004E006A3955 /* LoginAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAction.swift; sourceTree = "<group>"; };
 		76883EDC2EE50055006A3955 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 		761C50892EE47C290053AD1F /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				766AF0B22F0D9D32006D36A0 /* ProfilePostThumbnail.swift */,
 				76119ABF2EFF11E500237349 /* Follows */,
 				76A2D3C22EE4B27A00AA6F6E /* Music */,
 				761C508A2EE47C350053AD1F /* ProfileView.swift */,
@@ -901,6 +904,7 @@
 				763EF3B72EE5E53F0096A522 /* ValidatorSchemas.swift in Sources */,
 				79A65FBD2F029600000E4FAE /* Comment.swift in Sources */,
 				796C8C4C2F055F8400EBC3D9 /* CommentViewModel.swift in Sources */,
+				766AF0B32F0D9D32006D36A0 /* ProfilePostThumbnail.swift in Sources */,
 				76883EE82EE50107006A3955 /* User.swift in Sources */,
 				76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */,
 				79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */,
@@ -1088,7 +1092,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZ3FC58SU8;
+				DEVELOPMENT_TEAM = 9668FMYQJ3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
@@ -1108,7 +1112,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly.drenyth;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1134,7 +1138,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QZ3FC58SU8;
+				DEVELOPMENT_TEAM = 9668FMYQJ3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
@@ -1154,7 +1158,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly.drenyth;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
