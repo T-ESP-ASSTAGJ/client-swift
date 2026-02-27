@@ -176,7 +176,9 @@ struct CreatePostView: View {
                     
                     // Publish Button
                     Button(action: {
-                        viewModel.publishPost()
+                        Task {
+                            await viewModel.publishPost()
+                        }
                     }) {
                         HStack {
                             if viewModel.isPublishing {
@@ -242,6 +244,7 @@ struct CreatePostView: View {
         .sheet(isPresented: $showMusicPicker) {
             MusicPickerView(
                 selectedSong: $viewModel.selectedSong,
+                selectedCatalogID: $viewModel.selectedCatalogId,
                 frontImage: $viewModel.frontImage,
                 backImage: $viewModel.backImage
             )
@@ -329,35 +332,118 @@ struct ImageSelectionCard: View {
     }
 }
 
-// MARK: - View Model
 class CreatePostViewModel: ObservableObject {
     @Published var frontImage: UIImage?
     @Published var backImage: UIImage?
     @Published var caption: String = ""
     @Published var selectedSong: Track?
+    @Published var selectedCatalogId: String?
+    @Published var location: String = "Paris"
     @Published var isPublishing = false
-    
-
+    @Published var errorMessage: String?
     
     var canPublish: Bool {
-        frontImage != nil && backImage != nil && selectedSong != nil
+        frontImage != nil && backImage != nil && selectedSong != nil && !caption.isEmpty
     }
     
-    func publishPost() {
-        isPublishing = true
+    // MARK: - Image to Base64 Conversion
+    private func imageToBase64(_ image: UIImage) -> String? {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else { return nil }
+        let base64String = imageData.base64EncodedString()
+        // Add data URI prefix that the backend ImageService expects
+        return "data:image/jpeg;base64,\(base64String)"
+    }
+    
+    private func artworkToBase64(artwork: Artwork, width: Int = 36, height: Int = 36) async -> String? {
+        guard let url = artwork.url(width: width, height: height) else { return nil }
         
-        print("📤 === PUBLISHING POST ===")
-        print("🖼️ Front Image: \(frontImage != nil ? "✅ Set (\(Int(frontImage!.size.width))x\(Int(frontImage!.size.height)))" : "❌ None")")
-        print("🖼️ Back Image: \(backImage != nil ? "✅ Set (\(Int(backImage!.size.width))x\(Int(backImage!.size.height)))" : "❌ None")")
-        print("📝 Caption: \(caption.isEmpty ? "❌ Empty" : "\"\(caption)\"")")
-        print("🎵 Song: \(selectedSong != nil ? "✅ \(selectedSong!.title) - \(selectedSong!.artistName)" : "❌ None")")
-        print("📤 =========================")
-        
-        // Simulate API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-            self?.isPublishing = false
-            print("Post published!")
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let base64 = data.base64EncodedString()
+            return "data:image/jpeg;base64,\(base64)"
+        } catch {
+            print("❌ Erreur téléchargement artwork: \(error)")
+            return nil
         }
+    }
+
+    
+    // MARK: - Publish Post
+    @MainActor func publishPost() async {
+        guard canPublish else {
+            errorMessage = "Veuillez remplir tous les champs requis"
+            return
+        }
+        
+        guard let song = selectedSong,
+              let catalogId = selectedCatalogId,
+              let frontBase64 = imageToBase64(frontImage!),
+              let backBase64 = imageToBase64(backImage!)
+        else {
+            errorMessage = "Erreur lors de la conversion des images"
+            return
+        }
+        
+        // Artwork géré séparément (car optionnel)
+        let coverBase64: String
+        if let artwork = song.artwork {
+            coverBase64 = await artworkToBase64(artwork: artwork) ?? ""
+        } else {
+            coverBase64 = ""
+        }
+        
+        isPublishing = true
+        errorMessage = nil
+        
+        logPublishingDetails(frontBase64, backBase64)
+        
+        let request = CreatePostRequest(
+            caption: caption,
+            songId: catalogId,
+            trackTitle: song.title,
+            artistName: song.artistName,
+            releaseYear: getYear(from: song.releaseDate),
+            frontImage: frontBase64,
+            backImage: backBase64,
+            coverImage: coverBase64,
+            location: location
+        )
+        
+        do {
+            _ = try await PostActions.create(post: request)
+            // Optionally reset the form on success
+            resetForm()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        
+        isPublishing = false
+    }
+    
+    // MARK: - Helper Methods
+    private func getYear(from date: Date?) -> Int {
+        guard let date = date else { return Calendar.current.component(.year, from: Date()) }
+        return Calendar.current.component(.year, from: date)
+    }
+    
+    private func resetForm() {
+        frontImage = nil
+        backImage = nil
+        caption = ""
+        selectedSong = nil
+        location = ""
+    }
+    
+    private func logPublishingDetails(_ frontBase64: String, _ backBase64: String) {
+        print("📤 === PUBLISHING POST ===")
+        print("🖼️ Front Image: ✅ Base64 with data URI prefix (\(frontBase64.count) chars)")
+        print("🖼️ Back Image: ✅ Base64 with data URI prefix (\(backBase64.count) chars)")
+        print("📝 Caption: \"\(caption)\"")
+        if let song = selectedSong {
+            print("🎵 Song: \(song.title) - \(song.artistName) (\(song.id.rawValue))")
+        }
+        print("📍 Location: \(location.isEmpty ? "Non défini" : location)")
+        print("📤 =========================")
     }
 }
 

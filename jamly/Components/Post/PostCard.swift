@@ -10,6 +10,8 @@ import SwiftUI
 struct PostCard: View {
     let post: Post
     let isCurrentPost: Bool
+    let onSeeMore: () -> Void
+    let onOpenComments: () -> Void  // ✅ NOUVEAU: Callback pour ouvrir les commentaires
     
     @Binding var showPostDetail: Bool
     
@@ -17,37 +19,36 @@ struct PostCard: View {
     
     @StateObject private var viewModel = PostViewModel()
     
-    @State private var coverUIImage: UIImage?
-    @State private var avatarUIImage: UIImage?
+    @State private var selectedUserId: Int?
+    @State private var frontImage: UIImage?
+    @State private var backImage: UIImage?
+    @State private var coverImage: UIImage?
     @State private var isSwapped = false
     
-    // ✅ États locaux pour le like
     @State private var isLiked: Bool
     @State private var likesCount: Int
+    @State private var commentsCount: Int  // ✅ NOUVEAU: État local pour le compteur
     
-    @State private var showCommentsSheet: Bool = false
-
-
-    // Seuil pour afficher "See more" (environ 2 lignes)
+    // ❌ SUPPRIMÉ: @State private var showCommentsSheet: Bool = false
+    
     private let captionTruncationThreshold = 80
-
+    
     private var shouldShowSeeMore: Bool {
         post.caption.count > captionTruncationThreshold
     }
-
-    init(post: Post, isCurrentPost: Bool, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
+    
+    init(post: Post, isCurrentPost: Bool, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
         self.post = post
         self.isCurrentPost = isCurrentPost
-
-        // Initialize property wrappers
+        self.onSeeMore = onSeeMore
+        self.onOpenComments = onOpenComments  // ✅ NOUVEAU
+        
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
-
-        print("Current post: \(post)")
-
-        // ✅ Initialiser avec les valeurs du post
+        
         self._isLiked = State(initialValue: post.isLiked)
         self._likesCount = State(initialValue: post.likesCount)
+        self._commentsCount = State(initialValue: post.commentsCount)  // ✅ NOUVEAU
     }
     
     var body: some View {
@@ -84,6 +85,10 @@ struct PostCard: View {
                             .foregroundColor(.secondary)
                         }
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedUserId = post.user.id
+                    }
                     
                     Spacer()
                     
@@ -103,7 +108,7 @@ struct PostCard: View {
                         // IMAGE PRINCIPALE AVEC BOUTON PAUSE CENTRÉ
                         ZStack {
                             Group {
-                                if let img = isSwapped ? avatarUIImage : coverUIImage {
+                                if let img = isSwapped ? backImage : frontImage {
                                     Image(uiImage: img)
                                         .resizable()
                                         .scaledToFill()
@@ -112,7 +117,6 @@ struct PostCard: View {
                                 }
                             }
                             
-                            // ✅ BOUTON PAUSE CENTRÉ
                             if !musicManager.isPlaying && isCurrentPost {
                                 ZStack {
                                     Image(systemName: "play.fill")
@@ -153,7 +157,6 @@ struct PostCard: View {
                             
                             Spacer()
                             
-                            // 👉 BOUTON MINIATURE DROITE
                             ZStack {
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -161,7 +164,7 @@ struct PostCard: View {
                                     }
                                 } label: {
                                     ZStack {
-                                        if let img = isSwapped ? coverUIImage : avatarUIImage {
+                                        if let img = isSwapped ? frontImage : backImage {
                                             Image(uiImage: img)
                                                 .resizable()
                                                 .scaledToFill()
@@ -184,31 +187,30 @@ struct PostCard: View {
                     
                     // ❤️ STATISTIQUES (en bas)
                     if !showPostDetail {
-                        HStack(spacing: 10) {
+                        HStack(spacing: 20) {
                             VStack {
-                                Button(action: {
-                                    toggleLike()
-                                }) {
+                                Button(action: toggleLike) {
                                     VStack(spacing: 5) {
                                         Image(systemName: isLiked ? "heart.fill" : "heart")
                                             .font(.system(size: 20, weight: .semibold))
                                             .foregroundColor(isLiked ? .red : .white)
+                                            .symbolEffect(.bounce, value: isLiked)
                                     }
-                                    .padding(.horizontal, 7)
-                                    .padding(.vertical, 7)
+                                    .padding(.horizontal, 6.5)
+                                    .padding(.vertical, 6.5)
                                 }
                                 .buttonStyle(.glass)
                                 .buttonBorderShape(.circle)
-
-                                Text(isLiked ? String(post.likesCount + 1) : String(post.likesCount))
+                                
+                                Text(String(likesCount))
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .opacity(0.8)
                             }
-
+                            
                             VStack {
                                 Button(action: {
-                                    showCommentsSheet = true
+                                    onOpenComments()  // ✅ CHANGÉ: Appelle le callback au lieu d'ouvrir la sheet
                                 }) {
                                     VStack(spacing: 5) {
                                         Image(systemName: "text.bubble")
@@ -220,8 +222,8 @@ struct PostCard: View {
                                 }
                                 .buttonStyle(.glass)
                                 .buttonBorderShape(.circle)
-
-                                Text(String(post.commentsCount))
+                                
+                                Text(String(commentsCount))  // ✅ CHANGÉ: Utilise l'état local
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .opacity(0.8)
@@ -229,16 +231,14 @@ struct PostCard: View {
                         }
                         .offset(y: -20)
                     }
-                    }
+                }
                 
                 // 📝 FOOTER: Track Info + Caption
-                if !showPostDetail{
+                if !showPostDetail {
                     VStack(alignment: .leading, spacing: 12) {
-                        // Track info (toujours affiché)
                         HStack(alignment: .center) {
                             HStack(spacing: 8) {
-                                // Mini cover art
-                                if let coverImg = coverUIImage {
+                                if let coverImg = coverImage {
                                     Image(uiImage: coverImg)
                                         .resizable()
                                         .scaledToFill()
@@ -249,23 +249,22 @@ struct PostCard: View {
                                         .fill(Color.gray.opacity(0.3))
                                         .frame(width: 36, height: 36)
                                 }
-
+                                
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(post.track.title)
                                         .font(.footnote.weight(.semibold))
                                         .foregroundColor(.white)
                                         .lineLimit(1)
-
+                                    
                                     Text(post.track.artistName)
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.7))
                                         .lineLimit(1)
                                 }
                             }
-
+                            
                             Spacer()
-
-                            // Bouton Apple Music
+                            
                             Button {
                                 // Action pour ouvrir dans Apple Music
                             } label: {
@@ -286,61 +285,54 @@ struct PostCard: View {
                                         .stroke(.white.opacity(0.1), lineWidth: 1)
                                 }
                         )
-
-                        // Caption (si présent)
+                        
                         if !post.caption.isEmpty {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(post.caption)
                                     .font(.subheadline)
                                     .foregroundColor(.white)
                                     .lineLimit(2)
-
-                                // "See more" ouvre PostDetailView
-                                if shouldShowSeeMore {
-                                    Button {
-                                        showPostDetail = true
-                                    } label: {
-                                        Text("See more")
-                                            .font(.subheadline.weight(.medium))
-                                            .foregroundColor(.white.opacity(0.5))
-                                    }
+                                
+                                
+                                Button {
+                                    onSeeMore()
+                                } label: {
+                                    Text("See more")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundColor(.white.opacity(0.5))
                                 }
+                                
                             }
                         }
                     }
                     .padding(.horizontal, 15)
                     .padding(.vertical, 15)
                 }
-
+                
                 Spacer()
             }
         }
         .padding(.top, !showPostDetail ? 20 : 0)
-        .navigationDestination(isPresented: $showPostDetail) {
-            PostDetailView(post: post)
+        .navigationDestination(item: $selectedUserId) { userId in
+            ProfileView(userId: userId)
         }
-        .sheet(isPresented: $showCommentsSheet) {
-            CommentsSheetView(post: post)
-        }
+        // ❌ SUPPRIMÉ: .sheet(isPresented: $showCommentsSheet)
     }
-
-    // ✅ Fonction toggle propre
+    
     private func toggleLike() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             if isLiked {
-                // Unlike
                 isLiked = false
                 likesCount -= 1
                 viewModel.unlikePost(post: post)
             } else {
-                // Like
                 isLiked = true
                 likesCount += 1
                 viewModel.likePost(post: post)
             }
         }
     }
-
+    
     private var truncatedCaption: String {
         if post.caption.count > captionTruncationThreshold {
             return String(post.caption.prefix(captionTruncationThreshold)) + "..."
@@ -349,28 +341,43 @@ struct PostCard: View {
     }
     
     func preloadImages() async {
-        if coverUIImage != nil && avatarUIImage != nil { return }
+        if frontImage != nil && backImage != nil && coverImage != nil { return }
         
-        async let coverData = fetchImageData(from: post.backImage)
-        async let avatarData = fetchImageData(from: post.frontImage)
+        async let frontData = fetchImageData(from: post.frontImage)
+        async let backData = fetchImageData(from: post.backImage)
+        async let coverData = fetchImageData(from: post.track.coverImage)
         
-        if let data = await coverData, let uiImage = UIImage(data: data) {
-            coverUIImage = uiImage
+        if let data = await frontData, let uiImage = UIImage(data: data) {
+            await MainActor.run { self.frontImage = uiImage }
         }
-        if let data = await avatarData, let uiImage = UIImage(data: data) {
-            avatarUIImage = uiImage
+        if let data = await backData, let uiImage = UIImage(data: data) {
+            await MainActor.run { self.backImage = uiImage }
+        }
+        if let data = await coverData, let uiImage = UIImage(data: data) {
+            await MainActor.run { self.coverImage = uiImage }
         }
     }
     
     func fetchImageData(from urlString: String) async -> Data? {
-        guard let url = URL(string: urlString) else { return nil }
+        let fullURL = buildFullImageURL(urlString)
+        guard let url = URL(string: fullURL) else { return nil }
+        
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            return data
+            let (data, response) = try await URLSession.shared.data(from: url)
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                return data
+            }
+            return nil
         } catch {
-            print("Erreur chargement image:", error)
             return nil
         }
     }
+    
+    private func buildFullImageURL(_ urlString: String) -> String {
+        if urlString.starts(with: "http://") || urlString.starts(with: "https://") {
+            return urlString
+        }
+        let baseURL = "http:/10.68.245.78:80"
+        return baseURL + urlString
+    }
 }
-

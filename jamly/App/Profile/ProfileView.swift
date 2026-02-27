@@ -264,13 +264,15 @@ struct ProfileView: View {
             } else if viewModel.likedPosts.isEmpty {
                 emptyState(message: "No liked posts yet")
             } else {
-                LazyVGrid(columns: columns, spacing: 2) {
-                    ForEach(viewModel.likedPosts, id: \.id) { post in
-                        gridItem(views: "0", cover: post.backImage)
-                            .onTapGesture {
-                                selectedPost = post
-                                isShowingPostDetail = true
-                            }
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 2) {
+                        ForEach(viewModel.likedPosts, id: \.id) { post in
+                            gridItem(views: formatNumber(0), cover: post.backImage)
+                                .onTapGesture {
+                                    selectedPost = post
+                                    isShowingPostDetail = true
+                                }
+                        }
                             .onAppear {
                                 if post.id == viewModel.likedPosts.last?.id {
                                     guard let targetUserId = userId ?? userStore.user?.id else { return }
@@ -290,9 +292,7 @@ struct ProfileView: View {
                     }
                 }
             }
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             guard let targetUserId = userId ?? userStore.user?.id else { return }
             viewModel.getLikedPosts(id: targetUserId)
@@ -312,19 +312,10 @@ struct ProfileView: View {
     private func gridItem(views: String, cover: String) -> some View {
         GeometryReader { geo in
             ZStack(alignment: .bottomLeading) {
-                AsyncImage(url: URL(string: cover)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geo.size.width, height: geo.size.width)
-                        .clipped()
-                } placeholder: {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay {
-                            ProgressView()
-                        }
-                }
+                
+                ProfilePostThumbnail(imageURL: cover)
+                    .frame(width: geo.size.width, height: geo.size.width)
+                    .clipped()
                 
                 HStack(spacing: 4) {
                     Image(systemName: "eye.fill")

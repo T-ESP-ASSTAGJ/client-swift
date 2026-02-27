@@ -25,6 +25,7 @@ struct MusicPickerView: View {
     @State private var isLoadingSongs = false
     
     @Binding var selectedSong: Track?
+    @Binding var selectedCatalogID: String?
     @Binding var frontImage: UIImage?
     @Binding var backImage: UIImage?
     
@@ -136,7 +137,7 @@ struct MusicPickerView: View {
                                 hasFrontImage: frontImage != nil,
                                 hasBackImage: backImage != nil
                             ) { placement in
-                                handleTrackSelection(track: track, placement: placement)
+                                Task { await handleTrackSelection(track: track, placement: placement) }
                             }
                         }
                         
@@ -203,7 +204,7 @@ struct MusicPickerView: View {
                                 hasFrontImage: frontImage != nil,
                                 hasBackImage: backImage != nil
                             ) { placement in
-                                handleTrackSelection(track: track, placement: placement)
+                                Task { await handleTrackSelection(track: track, placement: placement) }
                             }
                         }
                     }
@@ -214,8 +215,12 @@ struct MusicPickerView: View {
     }
     
     // MARK: - Helper Functions
-    
-    private func handleTrackSelection(track: Track, placement: CoverPlacement?) {
+    private func handleTrackSelection(track: Track, placement: CoverPlacement?) async {
+        if let catalogID = await musicManager.getCatalogID(for: track) {
+            print("✅ ID à envoyer à ton API: \(catalogID)")
+            selectedCatalogID = catalogID
+        }
+        
         selectedSong = track
         
         // Si l'utilisateur veut utiliser la cover
@@ -292,7 +297,7 @@ struct TrackRow: View {
     let track: Track
     let hasFrontImage: Bool
     let hasBackImage: Bool
-    let onSelect: (CoverPlacement?) -> Void
+    let onSelect: (CoverPlacement?) async -> Void
     
     @State private var showCoverAlert = false
     
@@ -302,7 +307,7 @@ struct TrackRow: View {
             if track.artwork != nil {
                 showCoverAlert = true
             } else {
-                onSelect(nil)
+                Task { await onSelect(nil) }
             }
         }) {
             HStack(spacing: 12) {
@@ -350,15 +355,15 @@ struct TrackRow: View {
             titleVisibility: .visible
         ) {
             Button(hasFrontImage ? "Replace the front image" : "Front image") {
-                onSelect(.front)
+                Task { await onSelect(.front) }
             }
             
             Button(hasBackImage ? "Replace the back image" : "Back image") {
-                onSelect(.back)
+                Task { await onSelect(.back) }
             }
             
             Button("No") {
-                onSelect(nil)
+                Task { await onSelect(nil) }
             }
             
             Button("Cancel", role: .cancel) { }
@@ -372,6 +377,7 @@ struct TrackRow: View {
 #Preview {
     MusicPickerView(
         selectedSong: .constant(nil),
+        selectedCatalogID: .constant(nil),
         frontImage: .constant(nil),
         backImage: .constant(nil)
     )
