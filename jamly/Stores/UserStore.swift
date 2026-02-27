@@ -17,6 +17,7 @@ class UserStore: ObservableObject {
     @Published var discoveryFeed: [Post] = []
     @Published var friendsFeed: [Post] = []
     @Published var isLoadingFeed: Bool = false
+    @Published var isLoadingMoreFeed: Bool = false
     @Published var isAuthenticated: Bool = false
     @Published var isLoading = false
     @Published var error: AppError?
@@ -25,6 +26,12 @@ class UserStore: ObservableObject {
     private var discoveryFeedCache: [Post] = []
     private var friendsFeedCache: [Post] = []
     private var lastLoadedMode: String = "public"
+    
+    // Pagination
+    private var currentDiscoveryPage: Int = 1
+    private var currentFriendsPage: Int = 1
+    private var hasMoreDiscoveryPosts: Bool = true
+    private var hasMoreFriendsPosts: Bool = true
     
     // Track de la tâche de chargement du feed
     private var feedLoadTask: Task<Void, Never>?
@@ -112,6 +119,12 @@ class UserStore: ObservableObject {
             feed = discoveryFeed
             lastLoadedMode = "public"
             
+            // Reset pagination
+            currentDiscoveryPage = 1
+            currentFriendsPage = 1
+            hasMoreDiscoveryPosts = true
+            hasMoreFriendsPosts = true
+            
             print("✅ Both feeds loaded: Discovery(\(discoveryFeed.count)), Friends(\(friendsFeed.count))")
         } catch {
             print("❌ Error loading feeds: \(error)")
@@ -144,6 +157,8 @@ class UserStore: ObservableObject {
                         discoveryFeed = response.value
                         discoveryFeedCache = response.value
                         feed = response.value
+                        currentDiscoveryPage = 1
+                        hasMoreDiscoveryPosts = true
                     } else if mode == "private" {
                         let response = try await FeedAction.getPrivateFeed(page: page)
                         
@@ -156,6 +171,8 @@ class UserStore: ObservableObject {
                         friendsFeed = response.value
                         friendsFeedCache = response.value
                         feed = response.value
+                        currentFriendsPage = 1
+                        hasMoreFriendsPosts = true
                     }
                 } catch {
                     guard !Task.isCancelled else {
@@ -185,6 +202,76 @@ class UserStore: ObservableObject {
         }
     }
     
+    /// Charge plus de posts pour le feed actuel
+    func loadMoreFeed() async {
+        // Ne charge pas si on est déjà en train de charger
+        guard !isLoadingMoreFeed else {
+            print("⚠️ Already loading more posts")
+            return
+        }
+        
+        // Vérifie s'il y a encore des posts à charger
+        let hasMore = lastLoadedMode == "public" ? hasMoreDiscoveryPosts : hasMoreFriendsPosts
+        guard hasMore else {
+            print("⚠️ No more posts to load")
+            return
+        }
+        
+        isLoadingMoreFeed = true
+        
+        do {
+            if lastLoadedMode == "public" {
+                let nextPage = currentDiscoveryPage + 1
+                let response = try await FeedAction.getPublicFeed(page: nextPage)
+                
+                guard !Task.isCancelled else {
+                    print("❌ Load more cancelled")
+                    isLoadingMoreFeed = false
+                    return
+                }
+                
+                let newPosts = response.value
+                print("✅ Loaded \(newPosts.count) more discovery posts (page \(nextPage))")
+                
+                if newPosts.isEmpty {
+                    hasMoreDiscoveryPosts = false
+                    print("⚠️ No more discovery posts available")
+                } else {
+                    discoveryFeed.append(contentsOf: newPosts)
+                    discoveryFeedCache = discoveryFeed
+                    feed = discoveryFeed
+                    currentDiscoveryPage = nextPage
+                }
+            } else {
+                let nextPage = currentFriendsPage + 1
+                let response = try await FeedAction.getPrivateFeed(page: nextPage)
+                
+                guard !Task.isCancelled else {
+                    print("❌ Load more cancelled")
+                    isLoadingMoreFeed = false
+                    return
+                }
+                
+                let newPosts = response.value
+                print("✅ Loaded \(newPosts.count) more friends posts (page \(nextPage))")
+                
+                if newPosts.isEmpty {
+                    hasMoreFriendsPosts = false
+                    print("⚠️ No more friends posts available")
+                } else {
+                    friendsFeed.append(contentsOf: newPosts)
+                    friendsFeedCache = friendsFeed
+                    feed = friendsFeed
+                    currentFriendsPage = nextPage
+                }
+            }
+        } catch {
+            print("❌ Error loading more posts: \(error)")
+        }
+        
+        isLoadingMoreFeed = false
+    }
+    
     /// Définit le token et sauvegarde en SecureStore
     func setToken(_ token: String) {
         print("🔐 Setting token and authenticating user")
@@ -208,9 +295,15 @@ class UserStore: ObservableObject {
         token = nil
         isAuthenticated = false
         feed = []
+        discoveryFeed = []
+        friendsFeed = []
         discoveryFeedCache = []
         friendsFeedCache = []
         lastLoadedMode = "public"
+        currentDiscoveryPage = 1
+        currentFriendsPage = 1
+        hasMoreDiscoveryPosts = true
+        hasMoreFriendsPosts = true
         secureStore.delete()
         
         // Annule toute tâche en cours

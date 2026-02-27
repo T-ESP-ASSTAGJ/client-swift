@@ -117,6 +117,22 @@ struct FollowersView: View {
                     .onTapGesture {
                         selectedUserId = follower.id
                     }
+                    .onAppear {
+                        if follower.id == filteredFollowers.last?.id {
+                            print("🚀 Dernier follower atteint, chargement de la page suivante...")
+                            Task {
+                                await followerViewModel.loadMoreFollowers()
+                            }
+                        }
+                    }
+                }
+                if followerViewModel.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.vertical, 20)
+                        Spacer()
+                    }
                 }
             }
         }

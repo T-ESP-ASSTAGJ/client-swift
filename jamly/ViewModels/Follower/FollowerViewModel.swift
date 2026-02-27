@@ -34,16 +34,52 @@ final class FollowerViewModel: ObservableObject {
         defer { isLoading = false }
         
         do {
+            print("📥 Loading followers for user \(userId), page \(currentPage)")
             let response = try await FollowerAction.getFollowerUsers(
-                userId: userId
+                userId: userId,
+                page: currentPage
             )
             
             followers = response.value
+            hasMorePages = response.value.count >= 20
             
-            print("✅ Loaded followers: \(followers.count) results")
+            print("✅ Loaded \(followers.count) followers")
+            print("📄 Has more pages: \(hasMorePages)")
+        
             
         } catch {
             errorMessage = "Failed to load followers"
         }
+    }
+    
+    func loadMoreFollowers() async {
+        guard !isLoadingMore, !isLoading, hasMorePages, let userId = currentUserId else {
+            print("⚠️ LoadMore blocked - isLoadingMore: \(isLoadingMore), isLoading: \(isLoading), hasMore: \(hasMorePages), userId: \(currentUserId?.description ?? "nil")")
+            return
+        }
+        
+        isLoadingMore = true
+        errorMessage = nil
+        
+        do {
+            currentPage += 1
+            print("📥 Loading MORE followers, page \(currentPage)")
+            let response = try await FollowerAction.getFollowerUsers(
+                userId: userId,
+                page: currentPage
+            )
+            
+            print("✅ Loaded \(response.value.count) more followers")
+            followers.append(contentsOf: response.value)
+            hasMorePages = response.value.count >= 20
+            print("📄 Has more pages: \(hasMorePages)")
+            
+        } catch {
+            errorMessage = "Failed to load more followers: \(error.localizedDescription)"
+            print("❌ Error loading more followers: \(error)")
+            currentPage -= 1
+        }
+        
+        isLoadingMore = false
     }
 }

@@ -37,15 +37,48 @@ final class FollowingViewModel: ObservableObject {
         
         do {
             let response = try await FollowingAction.getFollowingUsers(
-                userId: userId
+                userId: userId,
+                page: currentPage
             )
             
             followingUsers = response.value
+            hasMorePages = response.value.count >= 20
             
             print("✅ Loaded following: \(followingUsers.count) results")
             
         } catch {
             errorMessage = "Failed to load following"
         }
+    }
+    
+    func loadMoreFollowing() async {
+        guard !isLoadingMore, !isLoading, hasMorePages, let userId = currentUserId else {
+            print("⚠️ LoadMore blocked - isLoadingMore: \(isLoadingMore), isLoading: \(isLoading), hasMore: \(hasMorePages), userId: \(currentUserId?.description ?? "nil")")
+            return
+        }
+        
+        isLoadingMore = true
+        errorMessage = nil
+        
+        do {
+            currentPage += 1
+            print("📥 Loading MORE following, page \(currentPage)")
+            let response = try await FollowingAction.getFollowingUsers(
+                userId: userId,
+                page: currentPage
+            )
+            
+            print("✅ Loaded \(response.value.count) more following")
+            followingUsers.append(contentsOf: response.value)
+            hasMorePages = response.value.count >= itemsPerPage
+            print("📄 Has more pages: \(hasMorePages)")
+            
+        } catch {
+            errorMessage = "Failed to load more following: \(error.localizedDescription)"
+            print("❌ Error loading more following: \(error)")
+            currentPage -= 1
+        }
+        
+        isLoadingMore = false
     }
 }

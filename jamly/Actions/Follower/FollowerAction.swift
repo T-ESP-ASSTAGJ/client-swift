@@ -8,10 +8,11 @@
 
 enum FollowerAction {
     // TODO pagination
-    static func getFollowerUsers(userId: Int) async throws -> APIResponse<[FollowerUser]> {
+    static func getFollowerUsers(userId: Int, page: Int = 1) async throws -> APIResponse<[FollowerUser]> {
         let response = try await APIClient.shared.request(
             "/users/\(userId)/followers",
             method: .get,
+            query: ["page": String(1)],
             responseType: [FollowerUser].self
         )
         

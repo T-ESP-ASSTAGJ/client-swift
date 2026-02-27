@@ -44,6 +44,21 @@ struct CommentsSheetView: View {
                             ForEach(commentViewModel.comments) { comment in
                                 CommentRow(comment: comment)
                                     .padding(.horizontal)
+                                    .onAppear {
+                                        if comment.id == commentViewModel.comments.last?.id {
+                                            Task {
+                                                await commentViewModel.loadMoreComments()
+                                            }
+                                        }
+                                    }
+                            }
+                        }
+                        if commentViewModel.isLoadingMore {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                    .padding(.vertical, 20)
+                                Spacer()
                             }
                         }
                     }

@@ -14,119 +14,195 @@ struct HomeFeed: View {
     
     var body: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .top) {
-                ScrollView {
-                    if userStore.isLoadingFeed {
-                        ProgressView()
-                            .frame(width: geometry.size.width, height: geometry.size.height)
-                    } else if userStore.feed.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "music.note.list")
-                                .font(.system(size: 48))
-                                .foregroundColor(.gray)
-                            Text("No post found for now. Try creating a new one! ")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                        }
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                    } else {
-                        LazyVStack(spacing: 0) {
-                            ForEach(userStore.feed, id: \.id) { post in
-                                PostCard(
-                                    post: post,
-                                    isCurrentPost: post.id == currentScrollPosition,
-                                    showPostDetail: $showPostDetail,   // ✅ showPostDetail avant musicManager
-                                    musicManager: musicManager
-                                )
-                                .frame(width: geometry.size.width, height: geometry.size.height)
-                                .id(post.id)
-                                .onTapGesture {
-                                    if post.id == currentScrollPosition {
-                                        withAnimation {
-                                            if musicManager.isPlaying {
-                                                musicManager.pause()
-                                            } else {
-                                                Task {
-                                                    await musicManager.play()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .scrollTargetLayout()
-                    }
+            feedScrollView(geometry: geometry)
+                .onAppear {
+                    handleOnAppear()
                 }
-                .scrollIndicators(.hidden)
-                .scrollTargetBehavior(.paging)
-                .scrollPosition(id: currentScrollPositionBinding)  // ✅ Utilise le binding
-                .onChange(of: currentScrollPosition) { oldValue, newValue in
-                    pendingMusicChange?.cancel()
-                    
-                    pendingMusicChange = Task {
-                        try? await Task.sleep(for: .milliseconds(200))
-                        guard !Task.isCancelled else { return }
-                        
-                        if let postId = newValue,
-                           let post = userStore.feed.first(where: { $0.id == postId }) {
-                            await playPostMusic(post)
-                        }
-                    }
+                .onChange(of: selectedSegment) { oldValue, newValue in
+                    handleSegmentChange()
                 }
-                .refreshable {
-                    await loadFeedBasedOnSegment()
+                .onDisappear {
+                    handleOnDisappear()
                 }
+        }
+    }
+    
+    // MARK: - Sub-views
+    
+    @ViewBuilder
+    private func feedScrollView(geometry: GeometryProxy) -> some View {
+        ZStack(alignment: .top) {
+            ScrollView {
+                feedContentView(geometry: geometry)
+            }
+            .scrollIndicators(.hidden)
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: currentScrollPositionBinding)
+            .onChange(of: currentScrollPosition) { oldValue, newValue in
+                handleScrollPositionChange(newValue)
+            }
+            .refreshable {
+                await loadFeedBasedOnSegment()
             }
         }
-        .onAppear {
-            Task {
-                if userStore.feed.isEmpty {
-                    await userStore.loadBothFeeds()
-                }
-                // ✅ Simplifié : juste initialise si nil
-                if currentScrollPosition == nil, let firstPost = userStore.feed.first {
-                    if selectedSegment == FeedSegment.friends {
-                        friendsScrollPosition = firstPost.id
-                    } else {
-                        discoveryScrollPosition = firstPost.id
-                    }
-                }
-                
-                // Reprend la musique
-                if let currentId = currentScrollPosition,
-                   let post = userStore.feed.first(where: { $0.id == currentId }) {
-                    await playPostMusic(post)
-                }
-            }
+    }
+    
+    @ViewBuilder
+    private func feedContentView(geometry: GeometryProxy) -> some View {
+        if userStore.isLoadingFeed {
+            loadingView(geometry: geometry)
+        } else if userStore.feed.isEmpty {
+            emptyStateView(geometry: geometry)
+        } else {
+            postListView(geometry: geometry)
         }
-        .onChange(of: selectedSegment) { oldValue, newValue in
-            musicManager.pause()
-            pendingMusicChange?.cancel()
+    }
+    
+    private func loadingView(geometry: GeometryProxy) -> some View {
+        ProgressView()
+            .frame(width: geometry.size.width, height: geometry.size.height)
+    }
+    
+    private func emptyStateView(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "music.note.list")
+                .font(.system(size: 48))
+                .foregroundColor(.gray)
+            Text("No post found for now. Try creating a new one! ")
+                .font(.headline)
+                .foregroundColor(.gray)
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height)
+    }
+    
+    private func postListView(geometry: GeometryProxy) -> some View {
+        LazyVStack(spacing: 0) {
+            ForEach(userStore.feed, id: \.id) { post in
+                postCardView(post: post, geometry: geometry)
+            }
             
-            // ✅ Juste switcher entre les feeds (pas de reload)
-            let mode = selectedSegment == .friends ? "private" : "public"
-            Task {
-                await userStore.loadFeed(page: 1, forceRefresh: false, mode: mode)
-                
-                // ✅ Toujours revenir au premier post lors du changement de segment
-                if let firstPost = userStore.feed.first {
-                    if selectedSegment == .friends {
-                        friendsScrollPosition = firstPost.id
-                    } else {
-                        discoveryScrollPosition = firstPost.id
-                    }
-                    
-                    // Jouer la musique du premier post
-                    await playPostMusic(firstPost)
-                }
+            if userStore.isLoadingMoreFeed {
+                loadingMoreView(geometry: geometry)
             }
         }
-        .onDisappear {
-            if !showPostDetail {
-                musicManager.pause()
+        .scrollTargetLayout()
+    }
+    
+    private func postCardView(post: Post, geometry: GeometryProxy) -> some View {
+        PostCard(
+            post: post,
+            isCurrentPost: post.id == currentScrollPosition,
+            showPostDetail: $showPostDetail,
+            musicManager: musicManager
+        )
+        .frame(width: geometry.size.width, height: geometry.size.height)
+        .id(post.id)
+        .onAppear {
+            handlePostAppear(post)
+        }
+        .onTapGesture {
+            handlePostTap(post)
+        }
+    }
+    
+    private func loadingMoreView(geometry: GeometryProxy) -> some View {
+        VStack {
+            Spacer()
+            ProgressView()
+                .scaleEffect(1.5)
+            Spacer()
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height)
+    }
+    
+    // MARK: - Event Handlers
+    
+    private func handleOnAppear() {
+        Task {
+            if userStore.feed.isEmpty {
+                await userStore.loadBothFeeds()
             }
-            pendingMusicChange?.cancel()
+            
+            // Initialize scroll position if needed
+            if currentScrollPosition == nil, let firstPost = userStore.feed.first {
+                if selectedSegment == FeedSegment.friends {
+                    friendsScrollPosition = firstPost.id
+                } else {
+                    discoveryScrollPosition = firstPost.id
+                }
+            }
+            
+            // Resume music
+            if let currentId = currentScrollPosition,
+               let post = userStore.feed.first(where: { $0.id == currentId }) {
+                await playPostMusic(post)
+            }
+        }
+    }
+    
+    private func handleSegmentChange() {
+        musicManager.pause()
+        pendingMusicChange?.cancel()
+        
+        let mode = selectedSegment == .friends ? "private" : "public"
+        Task {
+            await userStore.loadFeed(page: 1, forceRefresh: false, mode: mode)
+            
+            // Always return to first post when changing segment
+            if let firstPost = userStore.feed.first {
+                if selectedSegment == .friends {
+                    friendsScrollPosition = firstPost.id
+                } else {
+                    discoveryScrollPosition = firstPost.id
+                }
+                
+                // Play music for first post
+                await playPostMusic(firstPost)
+            }
+        }
+    }
+    
+    private func handleOnDisappear() {
+        if !showPostDetail {
+            musicManager.pause()
+        }
+        pendingMusicChange?.cancel()
+    }
+    
+    private func handleScrollPositionChange(_ newValue: Int?) {
+        pendingMusicChange?.cancel()
+        
+        pendingMusicChange = Task {
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled else { return }
+            
+            if let postId = newValue,
+               let post = userStore.feed.first(where: { $0.id == postId }) {
+                await playPostMusic(post)
+            }
+        }
+    }
+    
+    private func handlePostAppear(_ post: Post) {
+        if post.id == userStore.feed.last?.id {
+            print("Dernier post atteint, chargement de la nouvelle page")
+            Task {
+                await userStore.loadMoreFeed()
+            }
+        }
+    }
+    
+    private func handlePostTap(_ post: Post) {
+        if post.id == currentScrollPosition {
+            withAnimation {
+                if musicManager.isPlaying {
+                    musicManager.pause()
+                } else {
+                    Task {
+                        await musicManager.play()
+                    }
+                }
+            }
         }
     }
     
