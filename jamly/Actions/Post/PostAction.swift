@@ -57,4 +57,16 @@ enum PostActions {
         
         return response
     }
+    
+    static func viewPost(post: Post) async throws -> APIResponse<EmptyResponse> {
+        let postId = post.id
+    
+        let response = try await APIClient.shared.request(
+            "/posts/\(postId)/view",
+            method: .patch,
+            responseType: EmptyResponse.self
+        )
+        
+        return response
+    }
 }

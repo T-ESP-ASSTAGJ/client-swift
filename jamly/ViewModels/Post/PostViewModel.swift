@@ -73,6 +73,32 @@ final class PostViewModel: ObservableObject {
             }
         }
     }
+    
+    func viewPost(post:Post){
+        Task{
+            errorMessage = nil
+            
+            do {
+                let response = try await PostActions.viewPost(post: post)
+                
+                switch response.statusCode {
+                case 200:
+                    state = .success
+                    
+                case 422:
+                    state = .error
+                    errorMessage = "An error occurred. Please try again."
+                    
+                default:
+                    state = .error
+                    errorMessage = "An error occurred."
+                }
+            } catch {
+                state = .error
+                errorMessage = "An error occurred."
+            }
+        }
+    }
 }
 
 
