@@ -11,6 +11,8 @@ struct HomeFeed: View {
     
     @State private var showPostDetail: Bool = false
     @State private var pendingMusicChange: Task<Void, Never>?
+    @State private var selectedPostForDetail: Post?
+    @State private var selectedPostForComments: Post?
     
     var body: some View {
         GeometryReader { geometry in
@@ -25,6 +27,26 @@ struct HomeFeed: View {
                     handleOnDisappear()
                 }
         }
+        .navigationDestination(item: $selectedPostForDetail) { post in
+            PostDetailView(post: post)
+        }
+        .sheet(item: $selectedPostForComments) { post in
+            CommentsSheetView(post: post)
+                .presentationDragIndicator(.visible)
+        }
+    
+        .onChange(of: selectedPostForComments) { oldValue, newValue in
+            // Quand la sheet se ferme, relancer la musique du post actuel
+            if oldValue != nil && newValue == nil {
+                if let currentId = currentScrollPosition,
+                   let post = userStore.feed.first(where: { $0.id == currentId }) {
+                    Task {
+                        await playPostMusic(post)
+                    }
+                }
+            }
+        }
+        
     }
     
     // MARK: - Sub-views
@@ -68,7 +90,7 @@ struct HomeFeed: View {
             Image(systemName: "music.note.list")
                 .font(.system(size: 48))
                 .foregroundColor(.gray)
-            Text("No post found for now. Try creating a new one! ")
+            Text("No post found for now. Try creating a new one!")
                 .font(.headline)
                 .foregroundColor(.gray)
         }
@@ -92,6 +114,8 @@ struct HomeFeed: View {
         PostCard(
             post: post,
             isCurrentPost: post.id == currentScrollPosition,
+            onSeeMore: { selectedPostForDetail = post },
+            onOpenComments: { selectedPostForComments = post },
             showPostDetail: $showPostDetail,
             musicManager: musicManager
         )
@@ -163,13 +187,16 @@ struct HomeFeed: View {
     }
     
     private func handleOnDisappear() {
-        if !showPostDetail {
+        if selectedPostForDetail == nil {
             musicManager.pause()
         }
         pendingMusicChange?.cancel()
     }
     
     private func handleScrollPositionChange(_ newValue: Int?) {
+        // Ignore les changements si la sheet des commentaires est ouverte
+        guard selectedPostForComments == nil else { return }
+        
         pendingMusicChange?.cancel()
         
         pendingMusicChange = Task {
@@ -206,34 +233,20 @@ struct HomeFeed: View {
         }
     }
     
-    // ✅ Fonction helper pour charger le bon feed
+    // MARK: - Helper Functions
+    
     private func loadFeedBasedOnSegment() async {
         let mode = selectedSegment == .friends ? "private" : "public"
         await userStore.loadFeed(page: 1, forceRefresh: true, mode: mode)
     }
     
     private func playPostMusic(_ post: Post) async {
-        guard let trackId = getTestTrackId(for: post) else {
+        let trackId = post.track.songId
+        if trackId.isEmpty {
             musicManager.pause()
             return
         }
-        
         await musicManager.playTrackById(trackId)
-    }
-    
-    private func getTestTrackId(for post: Post) -> String? {
-        let testTrackIds = [
-            "1440873687",
-            "1554171602",
-            "1851616662",
-            "1853899855"
-        ]
-        
-        if let index = userStore.feed.firstIndex(where: { $0.id == post.id }) {
-            return testTrackIds[index % testTrackIds.count]
-        }
-        
-        return testTrackIds.first
     }
     
     private var currentScrollPositionBinding: Binding<Int?> {

@@ -58,6 +58,7 @@
 		76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */; };
 		76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */; };
 		76BB5C482EE4F699007B92EB /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 76BB5C472EE4F699007B92EB /* Inject */; };
+		76C3FE132F59B49E0031874C /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C3FE122F59B49E0031874C /* OnBoardingView.swift */; };
 		76C8951A2F089F2D0087166B /* ChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C895192F089F2D0087166B /* ChatDetailView.swift */; };
 		76D554372EEC2CB600244164 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D554362EEC2CB600244164 /* Header.swift */; };
 		7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7918D9F02F095C6500F33AB2 /* UserRow.swift */; };
@@ -153,6 +154,7 @@
 		76A2D3BD2EE4AF2A00AA6F6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		76A2D3C02EE4B24500AA6F6E /* MusicManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicManager.swift; sourceTree = "<group>"; };
 		76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlaylistsView.swift; sourceTree = "<group>"; };
+		76C3FE122F59B49E0031874C /* OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnBoardingView.swift; sourceTree = "<group>"; };
 		76C895192F089F2D0087166B /* ChatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatDetailView.swift; sourceTree = "<group>"; };
 		76D554362EEC2CB600244164 /* Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
 		7918D9F02F095C6500F33AB2 /* UserRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRow.swift; sourceTree = "<group>"; };
@@ -561,13 +563,14 @@
 			isa = PBXGroup;
 			children = (
 				761C50472EE3AC330053AD1F /* Auth */,
+				76C3FE112F59B4870031874C /* Branding */,
 				762D6ADF2EE6FB9E0022C539 /* Chats */,
 				79A162DA2EEC7275004CBDCF /* Comments */,
 				76C6771A2EE4DF88009F4D80 /* Discover */,
 				761C50342EE3ABFC0053AD1F /* Home */,
 				76385AC92EE76A56000B0320 /* Post */,
-				C338C8ED2EEC71B200916AED /* Search */,
 				761C50892EE47C290053AD1F /* Profile */,
+				C338C8ED2EEC71B200916AED /* Search */,
 				761C50482EE3AC590053AD1F /* Tabs */,
 			);
 			path = App;
@@ -588,6 +591,14 @@
 				76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */,
 			);
 			path = Music;
+			sourceTree = "<group>";
+		};
+		76C3FE112F59B4870031874C /* Branding */ = {
+			isa = PBXGroup;
+			children = (
+				76C3FE122F59B49E0031874C /* OnBoardingView.swift */,
+			);
+			path = Branding;
 			sourceTree = "<group>";
 		};
 		76C6771A2EE4DF88009F4D80 /* Discover */ = {
@@ -887,6 +898,7 @@
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */,
+				76C3FE132F59B49E0031874C /* OnBoardingView.swift in Sources */,
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */,
 				763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */,

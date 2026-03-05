@@ -274,7 +274,7 @@ struct ProfileView: View {
                                 }
                         }
                             .onAppear {
-                                if post.id == viewModel.likedPosts.last?.id {
+                                if selectedPost?.id == viewModel.likedPosts.last?.id {
                                     guard let targetUserId = userId ?? userStore.user?.id else { return }
                                     viewModel.loadMoreLikedPosts(userId: targetUserId)
                                 }
