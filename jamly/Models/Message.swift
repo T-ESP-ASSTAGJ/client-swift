@@ -111,3 +111,7 @@ struct LightMessage: Codable, Identifiable, Hashable {
     }
 }
 
+struct MercureMessageWrapper: Codable {
+    let type: String
+    let message: Message
+}

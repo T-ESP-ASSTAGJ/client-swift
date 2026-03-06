@@ -87,6 +87,8 @@
 		79A65FBD2F029600000E4FAE /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A65FBC2F0295FE000E4FAE /* Comment.swift */; };
 		79CA2F1F2F032BD5002C55CC /* FollowingAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F1E2F032BD2002C55CC /* FollowingAction.swift */; };
 		79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F212F033082002C55CC /* FollowerAction.swift */; };
+		79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */; };
+		79F034052F5B0D8400BF7673 /* MercureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F034042F5B0D8400BF7673 /* MercureService.swift */; };
 		79FA25B52F057261008A9398 /* FollowerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FA25B42F05725B008A9398 /* FollowerViewModel.swift */; };
 		79FA25B92F057272008A9398 /* FollowingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FA25B82F05726E008A9398 /* FollowingViewModel.swift */; };
 		79FC690D2F3DE9FA00AD716C /* ConversationAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC690C2F3DE98B00AD716C /* ConversationAction.swift */; };
@@ -201,6 +203,8 @@
 		79A65FBC2F0295FE000E4FAE /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		79CA2F1E2F032BD2002C55CC /* FollowingAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingAction.swift; sourceTree = "<group>"; };
 		79CA2F212F033082002C55CC /* FollowerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerAction.swift; sourceTree = "<group>"; };
+		79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MercureConfig.swift; sourceTree = "<group>"; };
+		79F034042F5B0D8400BF7673 /* MercureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MercureService.swift; sourceTree = "<group>"; };
 		79FA25B42F05725B008A9398 /* FollowerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerViewModel.swift; sourceTree = "<group>"; };
 		79FA25B82F05726E008A9398 /* FollowingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingViewModel.swift; sourceTree = "<group>"; };
 		79FC690C2F3DE98B00AD716C /* ConversationAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAction.swift; sourceTree = "<group>"; };
@@ -321,6 +325,7 @@
 		761C503A2EE3ABFC0053AD1F /* jamly */ = {
 			isa = PBXGroup;
 			children = (
+				79F034062F5B258C00BF7673 /* Services */,
 				761C50532EE447380053AD1F /* Actions */,
 				76A2D3BE2EE4B22800AA6F6E /* App */,
 				761C50352EE3ABFC0053AD1F /* Assets.xcassets */,
@@ -742,6 +747,23 @@
 			path = Follower;
 			sourceTree = "<group>";
 		};
+		79F034062F5B258C00BF7673 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				79F034072F5B259700BF7673 /* Mercure */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		79F034072F5B259700BF7673 /* Mercure */ = {
+			isa = PBXGroup;
+			children = (
+				79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */,
+				79F034042F5B0D8400BF7673 /* MercureService.swift */,
+			);
+			path = Mercure;
+			sourceTree = "<group>";
+		};
 		79FA25B22F057180008A9398 /* Search */ = {
 			isa = PBXGroup;
 			children = (
@@ -989,11 +1011,13 @@
 				79FA25B92F057272008A9398 /* FollowingViewModel.swift in Sources */,
 				761C505C2EE458420053AD1F /* APIError.swift in Sources */,
 				76883EEC2EE501AC006A3955 /* UserStore.swift in Sources */,
+				79F034052F5B0D8400BF7673 /* MercureService.swift in Sources */,
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
 				7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */,
 				796A842A2F097A760099766F /* SearchComponents.swift in Sources */,
 				768FFC872F03307C00388CB7 /* PostDetailedView.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
+				79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */,
 				76C3FE132F59B49E0031874C /* OnBoardingView.swift in Sources */,

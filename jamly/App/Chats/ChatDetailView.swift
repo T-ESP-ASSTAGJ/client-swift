@@ -166,6 +166,7 @@ struct ChatDetailView: View {
     
     // Dependencies
     @EnvironmentObject private var userStore: UserStore
+    @StateObject private var mercureService = MercureService.shared
     
     private var currentUserId: Int {
         userStore.user?.id ?? 0
@@ -196,6 +197,66 @@ struct ChatDetailView: View {
         }
         .onAppear {
             loadMessages()
+            setupMercure()
+        }
+        .onDisappear {
+            mercureService.unsubscribe()
+        }
+    }
+    
+    // MARK: - Mercure Setup
+    
+    /// Configure Mercure pour recevoir les messages en temps réel
+    private func setupMercure() {
+        let topic = "/conversations/\(conversation.id)"
+        
+        mercureService.subscribe(topics: [topic]) { receivedTopic, data in
+            handleMercureMessage(data: data)
+        }
+    }
+    
+    /// Traite un message reçu via Mercure
+    private func handleMercureMessage(data: Data) {
+        do {
+            let decoder = JSONDecoder()
+            
+            // Votre backend envoie un wrapper avec "type" et "message"
+            let wrapper = try decoder.decode(MercureMessageWrapper.self, from: data)
+            let newMessage = wrapper.message
+            
+            print("✅ Message Mercure parsé: \(newMessage.content ?? "no content")")
+            print("   Message ID: \(newMessage.id)")
+            print("   Auteur: \(newMessage.author.username)")
+            
+            // Vérifier si c'est notre propre message (déjà affiché en optimiste)
+            if newMessage.isFromCurrentUser(currentUserId: currentUserId) {
+                // C'est notre message : remplacer le message temporaire (ID -1)
+                if let tempIndex = messages.firstIndex(where: { $0.id == -1 }) {
+                    messages[tempIndex] = newMessage
+                    print("✅ Message temporaire remplacé par le message réel")
+                } else if !messages.contains(where: { $0.id == newMessage.id }) {
+                    // Le message temporaire a déjà été remplacé, mais pas par Mercure
+                    messages.append(newMessage)
+                    print("✅ Message ajouté (envoyé par nous)")
+                } else {
+                    print("⚠️ Message déjà présent (ignoré)")
+                }
+            } else {
+                // Message d'un autre utilisateur : l'ajouter s'il n'existe pas
+                if !messages.contains(where: { $0.id == newMessage.id }) {
+                    messages.append(newMessage)
+                    print("✅ Message ajouté (reçu d'un autre utilisateur)")
+                } else {
+                    print("⚠️ Message déjà présent (ignoré)")
+                }
+            }
+        } catch {
+            print("❌ Erreur parsing message Mercure: \(error)")
+            
+            // Debug : afficher le JSON brut
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("   JSON reçu: \(jsonString)")
+            }
         }
     }
     
