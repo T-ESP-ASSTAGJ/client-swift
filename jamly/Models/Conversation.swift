@@ -64,6 +64,12 @@ struct Conversation: Codable, Identifiable, Hashable {
         }
     }
     
+    /// Retourne l'autre participant dans une conversation directe
+    func otherParticipant(currentUserId: Int) -> CommonUser? {
+        guard !isGroup else { return nil }
+        return participants.first { $0.id != currentUserId }
+    }
+    
     /// Retourne l'URL de la photo de profil à afficher
     func displayProfilePicture(currentUserId: Int) -> String? {
         if isGroup {
@@ -71,8 +77,7 @@ struct Conversation: Codable, Identifiable, Hashable {
             return nil
         } else {
             // Pour une conversation directe, photo de l'autre participant
-            let otherParticipant = participants.first { $0.id != currentUserId }
-            return otherParticipant?.profilePicture ?? participants.first?.profilePicture
+            return otherParticipant(currentUserId: currentUserId)?.profilePicture
         }
     }
 }
