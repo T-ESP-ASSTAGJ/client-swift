@@ -129,8 +129,7 @@ struct ProfileView: View {
                             .foregroundColor(.white)
                     }
                     .padding(.trailing, 3)
-                }
-                if isOwnProfile {
+
                     Button {
                         authManager.logout()
                     } label: {
