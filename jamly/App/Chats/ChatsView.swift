@@ -11,7 +11,23 @@ import Combine
 // MARK: - Conversation Row
 
 struct ConversationRow: View {
+    @EnvironmentObject private var userStore: UserStore
     let conversation: Conversation
+    
+    // Computed property pour obtenir l'ID de l'utilisateur courant
+    private var currentUserId: Int {
+        userStore.user?.id ?? 0
+    }
+    
+    // Computed property pour le nom d'affichage
+    private var displayName: String {
+        conversation.displayName(currentUserId: currentUserId)
+    }
+    
+    // Computed property pour l'autre participant (si conversation directe)
+    private var otherUser: CommonUser? {
+        conversation.otherParticipant(currentUserId: currentUserId)
+    }
     
     var body: some View {
         HStack(spacing: 15) {
@@ -21,7 +37,7 @@ struct ConversationRow: View {
             // Infos
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text((conversation.isGroup ? conversation.groupName ?? "Group" : conversation.participants[1].username))
+                    Text(displayName)
                         .font(.headline)
                         .foregroundColor(.white)
                     
@@ -84,7 +100,7 @@ struct ConversationRow: View {
     @ViewBuilder
     private var avatarView: some View {
         if conversation.isGroup {
-            // Toujours le placeholder groupe
+            // Avatar pour les groupes
             Circle()
                 .fill(Color.green.opacity(0.2))
                 .frame(width: 44, height: 44)
@@ -92,9 +108,10 @@ struct ConversationRow: View {
                     Image(systemName: "person.3.fill")
                         .foregroundColor(.green)
                 )
-        } else if let profilePicture = conversation.participants[1].profilePicture,
+        } else if let otherUser = otherUser,
+                  let profilePicture = otherUser.profilePicture,
                   !profilePicture.isEmpty {
-            // Photo de profil de l'utilisateur (conversation directe)
+            // Photo de profil de l'autre utilisateur dans une conversation directe
             AsyncImage(url: URL(string: profilePicture)) { image in
                 image
                     .resizable()
@@ -110,6 +127,7 @@ struct ConversationRow: View {
             .frame(width: 44, height: 44)
             .clipShape(Circle())
         } else {
+            // Avatar par défaut
             Circle()
                 .fill(Color.blue.opacity(0.2))
                 .frame(width: 44, height: 44)
@@ -231,8 +249,8 @@ struct ChatsView: View {
                 conversationToDelete = nil
             }
         } message: {
-            if let conversation = conversationToDelete {
-                Text("Are you sure you want to delete the chat \(conversation.displayName) ?")
+            if conversationToDelete != nil {
+                Text("Are you sure you want to delete this conversation?")
             }
         }
     }
@@ -276,9 +294,28 @@ struct ChatsView: View {
                     }
                     .tint(.blue)
                 }
+                .onAppear {
+                    if viewModel.shouldLoadMore(for: conversation) {
+                        Task {
+                            await viewModel.loadMoreConversations()
+                        }
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .listStyle(.plain)
+            .overlay(alignment: .bottom) {
+                if viewModel.isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .tint(.white)
+                            .padding()
+                        Spacer()
+                    }
+                    .background(Color.black.opacity(0.5))
+                }
+            }
         }
     }
     

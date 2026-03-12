@@ -21,6 +21,10 @@ class ChatsViewModel: ObservableObject {
             filterConversations()
         }
     }
+    @Published var isLoadingMore = false
+    
+    private var currentPage = 1
+    private var hasMorePages = true
     
     // MARK: - Lifecycle
     
@@ -46,6 +50,49 @@ class ChatsViewModel: ObservableObject {
         }
         
         isLoading = false
+    }
+    
+    func loadMoreConversations() async {
+        // Ne pas charger si déjà en cours ou si plus de pages disponibles
+        guard !isLoading, !isLoadingMore, hasMorePages else { return }
+        
+        isLoadingMore = true
+        
+        do {
+            let nextPage = currentPage + 1
+            let response = try await ConversationAction.getConversations(page: nextPage)
+            let newConversations = response.value
+            
+            // Éviter les doublons
+            let existingIds = Set(conversations.map { $0.id })
+            let uniqueNew = newConversations.filter { !existingIds.contains($0.id) }
+            
+            if !uniqueNew.isEmpty {
+                conversations.append(contentsOf: uniqueNew)
+                filterConversations()
+                currentPage = nextPage
+                
+                // Vérifier s'il y a potentiellement d'autres pages
+                hasMorePages = newConversations.count >= 20
+                
+                print("✅ Loaded \(uniqueNew.count) more conversations (page \(nextPage))")
+            } else {
+                hasMorePages = false
+                print("ℹ️ No more conversations to load")
+            }
+        } catch {
+            print("❌ Error loading more conversations: \(error)")
+        }
+        
+        isLoadingMore = false
+    }
+    
+    func shouldLoadMore(for conversation: Conversation) -> Bool {
+        // Charger plus quand on atteint les 3 dernières conversations
+        guard let lastConversation = filteredConversations.suffix(3).first else {
+            return false
+        }
+        return conversation.id == lastConversation.id
     }
     
     /// Rafraîchir les conversations (pull-to-refresh)

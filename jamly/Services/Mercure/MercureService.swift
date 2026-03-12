@@ -19,8 +19,6 @@ class MercureService: NSObject, ObservableObject {
     // ⚠️ TOKEN HARDCODED TEMPORAIREMENT
     private let mercureToken = "eyJhbGciOiJIUzI1NiJ9.eyJtZXJjdXJlIjp7InB1Ymxpc2giOlsiKiJdLCJzdWJzY3JpYmUiOlsiaHR0cHM6Ly9leGFtcGxlLmNvbS9teS1wcml2YXRlLXRvcGljIiwie3NjaGVtZX06Ly97K2hvc3R9L2RlbW8vYm9va3Mve2lkfS5qc29ubGQiLCIvLndlbGwta25vd24vbWVyY3VyZS9zdWJzY3JpcHRpb25zey90b3BpY317L3N1YnNjcmliZXJ9Il0sInBheWxvYWQiOnsidXNlciI6Imh0dHBzOi8vZXhhbXBsZS5jb20vdXNlcnMvZHVuZ2xhcyIsInJlbW90ZUFkZHIiOiIxMjcuMC4wLjEifX19.KKPIikwUzRuB3DTpVw6ajzwSChwFw5omBMmMcWKiDcM"
     
-    private let hubURL = "http://10.68.251.169/.well-known/mercure"
-    
     private override init() {
         super.init()
     }
@@ -34,8 +32,8 @@ class MercureService: NSObject, ObservableObject {
         print("   Topics: \(topics.joined(separator: ", "))")
         
         // Construire l'URL avec les topics
-        guard var components = URLComponents(string: hubURL) else {
-            print("❌ URL invalide: \(hubURL)")
+        guard var components = URLComponents(string: MercureConfig.hubURL) else {
+            print("❌ URL invalide: \(MercureConfig.hubURL)")
             return
         }
         
@@ -76,7 +74,6 @@ class MercureService: NSObject, ObservableObject {
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     }
     
-    /// Se désabonner
     func unsubscribe() {
         dataTask?.cancel()
         dataTask = nil
@@ -105,11 +102,9 @@ extension MercureService: URLSessionDataDelegate {
             if !buffer.hasSuffix("\n") {
                 if lines.count > 1 {
                     buffer = lines.last ?? ""
-                    processLines(Array(lines.dropLast()))
                 }
             } else {
                 buffer = ""
-                processLines(lines)
             }
         }
     }
@@ -128,32 +123,9 @@ extension MercureService: URLSessionDataDelegate {
                 print("   Error code: \(nsError.code)")
                 isConnected = false
                 
-                // TODO: Ajouter une reconnexion automatique ici si nécessaire
             } else {
-                // Connexion fermée proprement
                 print("✅ Connexion Mercure fermée proprement")
                 isConnected = false
-            }
-        }
-    }
-    
-    private func processLines(_ lines: [String]) {
-        for line in lines {
-            if line.isEmpty { continue }
-            
-            if line.hasPrefix("data: ") {
-                let jsonString = String(line.dropFirst(6))
-                
-                print("📨 Message Mercure reçu")
-                print("   JSON: \(jsonString)")
-                
-                // Parser le JSON pour extraire le topic (si disponible)
-                if let data = jsonString.data(using: .utf8) {
-                    // Appeler tous les handlers (on ne peut pas toujours déterminer le topic exact)
-                    for (_, handler) in eventHandlers {
-                        handler(data)
-                    }
-                }
             }
         }
     }
