@@ -1,4 +1,5 @@
 import SwiftUI
+import MusicKit
 
 enum ProfileTab: Int, CaseIterable {
     case posts = 0
@@ -26,6 +27,7 @@ struct ProfileView: View {
     @State private var selectedTab: ProfileTab = .posts
     @State private var selectedFollowView: FollowViews? = nil
     @State private var showMusicPlaylists = false
+    @State private var showProfileEdit = false
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     @State private var isFollowingTarget: Bool = false
@@ -129,12 +131,23 @@ struct ProfileView: View {
                             .foregroundColor(.white)
                     }
                     .padding(.trailing, 3)
+                    Button {
+                        showProfileEdit = true
+                    } label: {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 15))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.trailing, 3)
                 }
             }
         }
         .navigationDestination(isPresented: $showMusicPlaylists) {
             MusicPlaylistsView()
                 .environmentObject(musicManager)
+        }
+        .navigationDestination(isPresented: $showProfileEdit) {
+            ProfileSettingsMenuView()
         }
         .navigationDestination(item: $selectedFollowView) { view in
             switch view {
@@ -302,7 +315,80 @@ struct ProfileView: View {
     // MARK: - Music Grid
     private var musicGrid: some View {
         VStack(spacing: 0) {
-            emptyState(message: "No music yet")
+            if musicManager.isConnected && !musicManager.playlists.isEmpty {
+                // Show playlists
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(musicManager.playlists.prefix(10), id: \.id) { playlist in
+                            HStack(spacing: 12) {
+                                // Artwork
+                                if let artwork = playlist.artwork {
+                                    ArtworkImage(artwork, width: 60, height: 60)
+                                        .cornerRadius(8)
+                                } else {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 60, height: 60)
+                                        .overlay(
+                                            Image(systemName: "music.note")
+                                                .foregroundColor(.white)
+                                        )
+                                }
+                                
+                                // Info
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(playlist.name)
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundColor(.white)
+                                        .lineLimit(1)
+                                    
+                                    if let count = playlist.tracks?.count {
+                                        Text("\(count) track\(count == 1 ? "" : "s")")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding()
+                            .background(Color.white.opacity(0.05))
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding()
+                }
+                .onAppear {
+                    print("🎵 ProfileView - Showing playlists: \(musicManager.playlists.count)")
+                }
+            } else if !musicManager.isConnected {
+                // Not connected
+                VStack(spacing: 16) {
+                    Image(systemName: "music.note.list")
+                        .font(.system(size: 50))
+                        .foregroundColor(.gray)
+                    
+                    Text("Connect Apple Music")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("Go to Music Settings to connect your Apple Music account")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 60)
+                .onAppear {
+                    print("🎵 ProfileView - Not connected (isConnected: \(musicManager.isConnected))")
+                }
+            } else {
+                emptyState(message: "No music yet")
+                    .onAppear {
+                        print("🎵 ProfileView - Connected but no playlists (isConnected: \(musicManager.isConnected), count: \(musicManager.playlists.count))")
+                    }
+            }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -509,6 +595,7 @@ struct ProfileView: View {
         isShowingPostDetail = false
         selectedPost = nil
         showMusicPlaylists = false
+        showProfileEdit = false
     }
 }
 

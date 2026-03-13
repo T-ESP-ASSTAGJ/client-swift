@@ -43,10 +43,7 @@ struct jamlyApp: App {
                 await userStore.initialize()
                 
                 // ✅ Charge les playlists EN ARRIÈRE-PLAN seulement si déjà autorisé
-                Task.detached(priority: .background) {
-                    await loadMusicIfAuthorized()
-                    
-                }
+                await loadMusicIfAuthorized()
             
                 await withTaskGroup(of: Void.self) { group in
                     await userStore.loadBothFeeds()
@@ -78,16 +75,20 @@ struct jamlyApp: App {
     }
     
     // ✅ Charge la musique seulement si déjà autorisé (pas de prompt)
+    @MainActor
     private func loadMusicIfAuthorized() async {
         // Vérifie le statut actuel SANS demander l'autorisation
         let currentStatus = await musicManager.checkAuthorizationStatus()
         
-        // Si déjà autorisé, charge les playlists en arrière-plan
+        // Si déjà autorisé, marque comme connecté et charge les playlists
         if currentStatus == .authorized {
             print("🎵 Apple Music déjà autorisé, chargement des playlists...")
+            musicManager.isConnected = true
             await musicManager.loadPlaylists()
+            print("🎵 isConnected = \(musicManager.isConnected), playlists count = \(musicManager.playlists.count)")
         } else {
             print("🎵 Apple Music pas encore autorisé, skip le chargement")
+            print("🎵 Status: \(currentStatus)")
         }
     }
 }

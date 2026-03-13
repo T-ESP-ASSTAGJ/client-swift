@@ -24,6 +24,9 @@ final class MusicManager: ObservableObject {
     @Published var currentTrack: Song?
     @Published var isPlaying = false
     
+    // ✅ NEW: Track if user has manually connected/disconnected the service
+    @Published var isConnected: Bool = false
+    
     private var playTask: Task<Void, Never>?
     
     // ✅ NOUVEAU: Vérifie le statut actuel SANS demander l'autorisation
@@ -39,8 +42,23 @@ final class MusicManager: ObservableObject {
         authorizationStatus = status
         
         if status == .authorized {
+            isConnected = true
             await loadPlaylists()
         }
+    }
+    
+    // ✅ NEW: Disconnect from Apple Music (clears playlists and state)
+    func disconnect() {
+        isConnected = false
+        playlists = []
+        tracks = []
+        pause()
+        
+        // Reset authorization status to trigger fresh check on next connect
+        authorizationStatus = .notDetermined
+        
+        print("🎵 Disconnected from Apple Music - playlists cleared")
+        print("⚠️ Note: To fully revoke access, go to iOS Settings > [Your App] > Media & Apple Music")
     }
     
     func loadPlaylists() async {
