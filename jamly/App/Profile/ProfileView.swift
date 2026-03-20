@@ -129,6 +129,16 @@ struct ProfileView: View {
                             .foregroundColor(.white)
                     }
                     .padding(.trailing, 3)
+
+                    Button {
+                        authManager.logout()
+                    } label: {
+                        Image(systemName: "door.right.hand.open")
+                            .font(.system(size: 15))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.trailing, 3)
+                    
                 }
             }
         }
@@ -224,7 +234,7 @@ struct ProfileView: View {
             } else {
                 LazyVGrid(columns: columns, spacing: 2) {
                     ForEach(viewModel.posts, id: \.id) { post in
-                        gridItem(views: formatNumber(0), cover: post.backImage)
+                        gridItem(views: formatNumber(post.viewsCount), cover: post.backImage)
                             .onTapGesture {
                                 selectedPost = post
                                 isShowingPostDetail = true

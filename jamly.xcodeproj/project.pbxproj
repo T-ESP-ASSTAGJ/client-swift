@@ -817,7 +817,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "Jamly" */;
+			buildConfigurationList = 761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "jamly" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1274,7 +1274,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "Jamly" */ = {
+		761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "jamly" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				761C500D2EE392D70053AD1F /* Debug */,

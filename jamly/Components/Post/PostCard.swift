@@ -24,13 +24,13 @@ struct PostCard: View {
     @State private var backImage: UIImage?
     @State private var coverImage: UIImage?
     @State private var isSwapped = false
-    
+
     @State private var isLiked: Bool
     @State private var likesCount: Int
     @State private var commentsCount: Int
     
     private let captionTruncationThreshold = 80
-    
+
     init(post: Post, isCurrentPost: Bool, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
         self.post = post
         self.isCurrentPost = isCurrentPost
@@ -39,7 +39,7 @@ struct PostCard: View {
         
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
-        
+
         self._isLiked = State(initialValue: post.isLiked)
         self._likesCount = State(initialValue: post.likesCount)
         self._commentsCount = State(initialValue: post.commentsCount)
@@ -49,19 +49,19 @@ struct PostCard: View {
         ZStack {
             VStack(spacing: 0) {
                 userHeader
-                
+
                 ZStack(alignment: .bottom) {
                     mainImageSection
-                    
+
                     if !showPostDetail {
                         statsButtons
                     }
                 }
-                
+
                 if !showPostDetail {
                     footerSection
                 }
-                
+
                 Spacer()
             }
         }
@@ -70,9 +70,9 @@ struct PostCard: View {
             ProfileView(userId: userId)
         }
     }
-    
+
     // MARK: - User Header
-    
+
     private var userHeader: some View {
         HStack {
             AsyncImage(url: URL(string: post.user.profilePicture)) { image in
@@ -89,7 +89,7 @@ struct PostCard: View {
                         ProgressView()
                     }
             }
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(post.user.username)
                     .font(.subheadline.weight(.semibold))
@@ -108,9 +108,9 @@ struct PostCard: View {
             .onTapGesture {
                 selectedUserId = post.user.id
             }
-            
+
             Spacer()
-            
+
             Text("23 minutes ago")
                 .font(.caption)
                 .foregroundColor(.white)
@@ -120,9 +120,9 @@ struct PostCard: View {
         .padding(.horizontal, 15)
         .padding(.bottom, 15)
     }
-    
+
     // MARK: - Main Image Section
-    
+
     private var mainImageSection: some View {
         ZStack(alignment: .topTrailing) {
             ZStack {
@@ -135,7 +135,7 @@ struct PostCard: View {
                         Color.gray.opacity(0.2)
                     }
                 }
-                
+
                 if !musicManager.isPlaying && isCurrentPost {
                     Image(systemName: "play.fill")
                         .font(.system(size: 36, weight: .semibold))
@@ -149,7 +149,7 @@ struct PostCard: View {
             }
             .frame(width: 370, height: 400)
             .clipShape(RoundedRectangle(cornerRadius: 24))
-            
+
             HStack(alignment: .top) {
                 playingBadge
                 Spacer()
@@ -161,12 +161,12 @@ struct PostCard: View {
             await preloadImages()
         }
     }
-    
+
     private var playingBadge: some View {
         HStack(spacing: 6) {
             Image(systemName: "music.note")
                 .font(.system(size: 11, weight: .semibold))
-            
+
             Text("Playing")
                 .font(.caption.weight(.medium))
         }
@@ -184,7 +184,7 @@ struct PostCard: View {
         .opacity(isCurrentPost && musicManager.isPlaying ? 1 : 0)
         .animation(.easeInOut(duration: 0.2), value: musicManager.isPlaying)
     }
-    
+
     private var thumbnailButton: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -206,9 +206,9 @@ struct PostCard: View {
         .padding(.top, 20)
         .padding(.horizontal, 16)
     }
-    
+
     // MARK: - Stats Buttons
-    
+
     private var statsButtons: some View {
         HStack(spacing: 20) {
             VStack {
@@ -221,13 +221,13 @@ struct PostCard: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
-                
+
                 Text(String(likesCount))
                     .font(.headline)
                     .foregroundColor(.white)
                     .opacity(0.8)
             }
-            
+
             VStack {
                 Button(action: onOpenComments) {
                     Image(systemName: "text.bubble")
@@ -237,7 +237,7 @@ struct PostCard: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
-                
+
                 Text(String(commentsCount))
                     .font(.headline)
                     .foregroundColor(.white)
@@ -246,13 +246,13 @@ struct PostCard: View {
         }
         .offset(y: -20)
     }
-    
+
     // MARK: - Footer Section
-    
+
     private var footerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             trackInfo
-            
+
             if !post.caption.isEmpty {
                 captionSection
             }
@@ -260,7 +260,7 @@ struct PostCard: View {
         .padding(.horizontal, 15)
         .padding(.vertical, 15)
     }
-    
+
     private var trackInfo: some View {
         HStack(alignment: .center) {
             HStack(spacing: 8) {
@@ -275,22 +275,22 @@ struct PostCard: View {
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 36, height: 36)
                 }
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(post.track.title)
                         .font(.footnote.weight(.semibold))
                         .foregroundColor(.white)
                         .lineLimit(1)
-                    
+
                     Text(post.track.artistName)
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
                         .lineLimit(1)
                 }
             }
-            
+
             Spacer()
-            
+
             Button {
                 // Action pour ouvrir dans Apple Music
             } label: {
@@ -312,14 +312,14 @@ struct PostCard: View {
                 }
         )
     }
-    
+
     private var captionSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(post.caption)
                 .font(.subheadline)
                 .foregroundColor(.white)
                 .lineLimit(2)
-            
+
             Button(action: onSeeMore) {
                 Text("See more")
                     .font(.subheadline.weight(.medium))
@@ -327,7 +327,7 @@ struct PostCard: View {
             }
         }
     }
-    
+
     // MARK: - Actions
     
     private func toggleLike() {
@@ -367,7 +367,7 @@ struct PostCard: View {
     func fetchImageData(from urlString: String) async -> Data? {
         let fullURL = buildFullImageURL(urlString)
         guard let url = URL(string: fullURL) else { return nil }
-        
+
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
@@ -378,7 +378,7 @@ struct PostCard: View {
             return nil
         }
     }
-    
+
     private func buildFullImageURL(_ urlString: String) -> String {
         if urlString.starts(with: "http://") || urlString.starts(with: "https://") {
             return urlString

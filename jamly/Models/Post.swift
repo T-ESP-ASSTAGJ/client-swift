@@ -28,8 +28,9 @@ struct Post: Codable, Identifiable, Hashable {
     let commentsCount: Int
     let likesCount: Int
     let isLiked: Bool
+    let viewsCount: Int
     let createdAt: String
-    
+
     struct User: Codable {
         let id: Int
         let username: String
@@ -46,12 +47,12 @@ struct Post: Codable, Identifiable, Hashable {
         let releaseYear: Int
         let createdAt: String
     }
-    
+
     // Hashable & Equatable conformance based on stable identifier
     static func == (lhs: Post, rhs: Post) -> Bool {
         lhs.id == rhs.id
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
