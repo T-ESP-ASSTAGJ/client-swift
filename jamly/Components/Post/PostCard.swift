@@ -69,6 +69,9 @@ struct PostCard: View {
         .navigationDestination(item: $selectedUserId) { userId in
             ProfileView(userId: userId)
         }
+        .onAppear {
+            viewModel.viewPost(post: post)
+        }
     }
 
     // MARK: - User Header
