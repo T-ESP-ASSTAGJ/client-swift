@@ -76,6 +76,7 @@ struct MusicPlaylistsView: View {
                 Task { await musicManager.requestAuthorization() }
             }
             .buttonStyle(.borderedProminent)
+            .foregroundColor(.black)
         }
         .padding()
     }
