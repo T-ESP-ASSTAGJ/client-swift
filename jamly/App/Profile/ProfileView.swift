@@ -30,6 +30,8 @@ struct ProfileView: View {
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     @State private var isFollowingTarget: Bool = false
+@State private var showNotifications = false
+    @State private var unreadNotificationsCount = 2 // TODO: Remplacer par vraie valeur depuis API
 
     // MARK: - Computed Properties
 
@@ -155,6 +157,9 @@ struct ProfileView: View {
         }
         .navigationDestination(isPresented: $showProfileEdit) {
             ProfileSettingsMenuView()
+        }
+        .navigationDestination(isPresented: $showNotifications) {
+            NotificationsView()
         }
         .navigationDestination(item: $selectedFollowView) { view in
             switch view {
@@ -374,6 +379,7 @@ struct ProfileView: View {
         selectedPost = nil
         showMusicPlaylists = false
         showProfileEdit = false
+        showNotifications = false
     }
 }
 

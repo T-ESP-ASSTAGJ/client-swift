@@ -89,5 +89,10 @@ struct MainTabView: View {
                 shouldRefreshDiscovery = true
             }
         }
+        .onAppear {
+            Task {
+                await NotificationManager.shared.resetBadge()
+            }
+        }
     }
 }

@@ -64,6 +64,11 @@
 		76BB5C482EE4F699007B92EB /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 76BB5C472EE4F699007B92EB /* Inject */; };
 		76C8951A2F089F2D0087166B /* ChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C895192F089F2D0087166B /* ChatDetailView.swift */; };
 		76D554372EEC2CB600244164 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D554362EEC2CB600244164 /* Header.swift */; };
+		7917F0922F6D52BE003C6389 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7917F0912F6D52BE003C6389 /* NotificationManager.swift */; };
+		7917F0942F6D52C7003C6389 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7917F0932F6D52C7003C6389 /* AppDelegate.swift */; };
+		7917F0CD2F6D6465003C6389 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7917F0CC2F6D6465003C6389 /* GoogleService-Info.plist */; };
+		7917F0D02F6D65C3003C6389 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 7917F0CF2F6D65C3003C6389 /* FirebaseMessaging */; };
+		7917F0D22F6D65C7003C6389 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7917F0D12F6D65C7003C6389 /* FirebaseCore */; };
 		7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7918D9F02F095C6500F33AB2 /* UserRow.swift */; };
 		7919EE392EF87C4B00C3C63A /* CommentsSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */; };
 		7933238A2EF80A230040755F /* CommentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* CommentRow.swift */; };
@@ -75,6 +80,7 @@
 		796C8C4C2F055F8400EBC3D9 /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796C8C4B2F055F8000EBC3D9 /* CommentViewModel.swift */; };
 		79A65FBB2F02938F000E4FAE /* CommentAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A65FBA2F02937D000E4FAE /* CommentAction.swift */; };
 		79A65FBD2F029600000E4FAE /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A65FBC2F0295FE000E4FAE /* Comment.swift */; };
+		79C3DF452F6DA0FE00AC99BF /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C3DF442F6DA0FE00AC99BF /* NotificationsView.swift */; };
 		79CA2F1F2F032BD5002C55CC /* FollowingAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F1E2F032BD2002C55CC /* FollowingAction.swift */; };
 		79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F212F033082002C55CC /* FollowerAction.swift */; };
 		79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */; };
@@ -191,6 +197,9 @@
 		76A2D3C32EE4B28200AA6F6E /* MusicPlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlaylistsView.swift; sourceTree = "<group>"; };
 		76C895192F089F2D0087166B /* ChatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatDetailView.swift; sourceTree = "<group>"; };
 		76D554362EEC2CB600244164 /* Header.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
+		7917F0912F6D52BE003C6389 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		7917F0932F6D52C7003C6389 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		7917F0CC2F6D6465003C6389 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7918D9F02F095C6500F33AB2 /* UserRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRow.swift; sourceTree = "<group>"; };
 		7919EE382EF87C4B00C3C63A /* CommentsSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsSheetView.swift; sourceTree = "<group>"; };
 		793323892EF80A230040755F /* CommentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRow.swift; sourceTree = "<group>"; };
@@ -202,6 +211,7 @@
 		796C8C4B2F055F8000EBC3D9 /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
 		79A65FBA2F02937D000E4FAE /* CommentAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentAction.swift; sourceTree = "<group>"; };
 		79A65FBC2F0295FE000E4FAE /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		79C3DF442F6DA0FE00AC99BF /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		79CA2F1E2F032BD2002C55CC /* FollowingAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingAction.swift; sourceTree = "<group>"; };
 		79CA2F212F033082002C55CC /* FollowerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerAction.swift; sourceTree = "<group>"; };
 		79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MercureConfig.swift; sourceTree = "<group>"; };
@@ -258,6 +268,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7917F0D02F6D65C3003C6389 /* FirebaseMessaging in Frameworks */,
+				7917F0D22F6D65C7003C6389 /* FirebaseCore in Frameworks */,
 				76BB5C482EE4F699007B92EB /* Inject in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -328,6 +340,7 @@
 				761C503A2EE3ABFC0053AD1F /* jamly */,
 				761C4FFE2EE392D70053AD1F /* jamlyTests */,
 				761C50082EE392D70053AD1F /* jamlyUITests */,
+				7917F0CE2F6D65B6003C6389 /* Frameworks */,
 				761C4FED2EE392D60053AD1F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -353,6 +366,7 @@
 		761C503A2EE3ABFC0053AD1F /* jamly */ = {
 			isa = PBXGroup;
 			children = (
+				7917F0CC2F6D6465003C6389 /* GoogleService-Info.plist */,
 				C37E89152F923F63000E4E44 /* error.txt */,
 				79F034062F5B258C00BF7673 /* Services */,
 				761C50532EE447380053AD1F /* Actions */,
@@ -363,6 +377,7 @@
 				76119AB92EFEE13E00237349 /* Extensions */,
 				76A2D3BD2EE4AF2A00AA6F6E /* Info.plist */,
 				76A2D3BC2EE4AF0800AA6F6E /* jamly.entitlements */,
+				7917F0932F6D52C7003C6389 /* AppDelegate.swift */,
 				761C50382EE3ABFC0053AD1F /* jamlyApp.swift */,
 				B5C6D7E8F9001122334455AA /* Config.swift */,
 				76883EE62EE500F7006A3955 /* Models */,
@@ -372,6 +387,7 @@
 				76883EE52EE500E2006A3955 /* Stores */,
 				761C50612EE458870053AD1F /* Utils */,
 				76381C542F044095008BB4B0 /* ViewModels */,
+				79C3DF442F6DA0FE00AC99BF /* NotificationsView.swift */,
 			);
 			path = jamly;
 			sourceTree = "<group>";
@@ -650,6 +666,7 @@
 		76A2D3BE2EE4B22800AA6F6E /* App */ = {
 			isa = PBXGroup;
 			children = (
+				79C3DF432F6D9A1800AC99BF /* Notifications */,
 				761C50472EE3AC330053AD1F /* Auth */,
 				AA000001000000000000AA02 /* Branding */,
 				762D6ADF2EE6FB9E0022C539 /* Chats */,
@@ -688,6 +705,13 @@
 				763EF3C32EE614C00096A522 /* DiscoverView.swift */,
 			);
 			path = Discover;
+			sourceTree = "<group>";
+		};
+		7917F0CE2F6D65B6003C6389 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		7918D9F22F095F0F00F33AB2 /* Profile */ = {
@@ -740,6 +764,14 @@
 				79A65FBA2F02937D000E4FAE /* CommentAction.swift */,
 			);
 			path = Comment;
+			sourceTree = "<group>";
+		};
+		79C3DF432F6D9A1800AC99BF /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				7917F0912F6D52BE003C6389 /* NotificationManager.swift */,
+			);
+			path = Notifications;
 			sourceTree = "<group>";
 		};
 		79CA2F1D2F032BBA002C55CC /* Following */ = {
@@ -878,6 +910,8 @@
 			name = jamly;
 			packageProductDependencies = (
 				76BB5C472EE4F699007B92EB /* Inject */,
+				7917F0CF2F6D65C3003C6389 /* FirebaseMessaging */,
+				7917F0D12F6D65C7003C6389 /* FirebaseCore */,
 			);
 			productName = jamly;
 			productReference = 761C4FEC2EE392D60053AD1F /* jamly.app */;
@@ -963,6 +997,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				76BB5C462EE4F699007B92EB /* XCRemoteSwiftPackageReference "Inject" */,
+				7917F0CB2F6D5BD8003C6389 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 761C4FED2EE392D60053AD1F /* Products */;
@@ -981,6 +1016,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7917F0CD2F6D6465003C6389 /* GoogleService-Info.plist in Resources */,
 				761C503B2EE3ABFC0053AD1F /* Assets.xcassets in Resources */,
 				76883EFE2EE5CF03006A3955 /* Poppins-SemiBold.ttf in Resources */,
 				763EF3AD2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf in Resources */,
@@ -1041,6 +1077,7 @@
 				768FFC872F03307C00388CB7 /* PostDetailedView.swift in Sources */,
 				AA100002AA10000200AA0002 /* ReportPostSheetView.swift in Sources */,
 				AA100004AA10000400AA0004 /* Report.swift in Sources */,
+				7917F0942F6D52C7003C6389 /* AppDelegate.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
@@ -1070,8 +1107,10 @@
 				796C8C4C2F055F8400EBC3D9 /* CommentViewModel.swift in Sources */,
 				766AF0B32F0D9D32006D36A0 /* ProfilePostThumbnail.swift in Sources */,
 				76883EE82EE50107006A3955 /* User.swift in Sources */,
+				79C3DF452F6DA0FE00AC99BF /* NotificationsView.swift in Sources */,
 				76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */,
 				79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */,
+				7917F0922F6D52BE003C6389 /* NotificationManager.swift in Sources */,
 				7919EE392EF87C4B00C3C63A /* CommentsSheetView.swift in Sources */,
 				76C8951A2F089F2D0087166B /* ChatDetailView.swift in Sources */,
 				793323952EF840D80040755F /* PostView.swift in Sources */,
@@ -1485,6 +1524,14 @@
 				minimumVersion = 1.5.2;
 			};
 		};
+		7917F0CB2F6D5BD8003C6389 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.11.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1492,6 +1539,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 76BB5C462EE4F699007B92EB /* XCRemoteSwiftPackageReference "Inject" */;
 			productName = Inject;
+		};
+		7917F0CF2F6D65C3003C6389 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7917F0CB2F6D5BD8003C6389 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		7917F0D12F6D65C7003C6389 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7917F0CB2F6D5BD8003C6389 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
