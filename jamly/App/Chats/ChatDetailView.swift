@@ -162,6 +162,7 @@ struct ChatDetailView: View {
     @State private var newMessageText: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
+    @State private var hasScrolledToBottom: Bool = false
     @FocusState private var isTextFieldFocused: Bool
     
     // Dependencies
@@ -197,7 +198,9 @@ struct ChatDetailView: View {
         }
         .onAppear {
             loadMessages()
-            setupMercure()
+            Task {
+                await setupMercure()
+            }
         }
         .onDisappear {
             mercureService.unsubscribe()
@@ -207,10 +210,10 @@ struct ChatDetailView: View {
     // MARK: - Mercure Setup
     
     /// Configure Mercure pour recevoir les messages en temps réel
-    private func setupMercure() {
+    private func setupMercure() async {
         let topic = "/conversations/\(conversation.id)"
         
-        mercureService.subscribe(topics: [topic]) { receivedTopic, data in
+        await mercureService.subscribe(topics: [topic]) { receivedTopic, data in
             handleMercureMessage(data: data)
         }
     }
@@ -332,12 +335,39 @@ struct ChatDetailView: View {
     
     /// Vue de scroll des messages
     private var messageScrollView: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                messageContentView
+        ZStack {
+            // Empty state visible même quand la ScrollView est masquée
+            if messages.isEmpty && !isLoading {
+                emptyMessagesView
             }
-            .onChange(of: messages.count) { _ in
-                scrollToBottom(proxy: proxy)
+            
+            ScrollViewReader { proxy in
+                ScrollView {
+                    messageContentView
+                    
+                    // Marqueur invisible pour l'ancrage en bas
+                    Color.clear
+                        .frame(height: 1)
+                        .id("bottom")
+                }
+                .opacity(hasScrolledToBottom || messages.isEmpty ? 1 : 0) // Toujours visible si vide
+                .onChange(of: messages.count) { newCount in
+                    if !hasScrolledToBottom && newCount > 0 {
+                        // Premier chargement : scroll instantané sans animation
+                        DispatchQueue.main.async {
+                            proxy.scrollTo("bottom", anchor: .bottom)
+                            // Afficher après un mini délai pour que le scroll soit fait
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                hasScrolledToBottom = true
+                            }
+                        }
+                    } else if newCount > 0 {
+                        // Nouveaux messages : scroll avec animation
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            proxy.scrollTo("bottom", anchor: .bottom)
+                        }
+                    }
+                }
             }
         }
     }
@@ -348,9 +378,7 @@ struct ChatDetailView: View {
         if isLoading && messages.isEmpty {
             ProgressView()
                 .padding()
-        } else if messages.isEmpty {
-            emptyMessagesView
-        } else {
+        } else if !messages.isEmpty {
             messageListView
         }
     }
@@ -441,14 +469,6 @@ struct ChatDetailView: View {
     }
     
     // MARK: - Actions
-    
-    /// Scroll vers le dernier message
-    private func scrollToBottom(proxy: ScrollViewProxy) {
-        guard let lastMessage = messages.last else { return }
-        withAnimation {
-            proxy.scrollTo(lastMessage.id, anchor: .bottom)
-        }
-    }
     
     /// Charge les messages de la conversation depuis l'API
     private func loadMessages() {
