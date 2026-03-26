@@ -136,6 +136,10 @@ struct ProfileView: View {
                         showProfileEdit = true
                     } label: {
                         Image(systemName: "person.crop.circle")
+                            .font(.system(size: 15))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.trailing, 3)
 
                     Button {
                         authManager.logout()
