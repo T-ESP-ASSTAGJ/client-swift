@@ -81,4 +81,39 @@ enum UserActions {
         
         return response
     }
+    
+    static func updateProfile(username: String?, phoneNumber: String?, bio: String?, profilePicture: String?) async throws -> APIResponse<User> {
+        struct UpdateProfileRequest: Codable {
+            let username: String?
+            let phoneNumber: String?
+            let bio: String?
+            let profilePicture: String?
+        }
+        
+        let body = UpdateProfileRequest(
+            username: username,
+            phoneNumber: phoneNumber,
+            bio: bio,
+            profilePicture: profilePicture
+        )
+        
+        let response = try await APIClient.shared.request(
+            "/users/me",
+            method: .patch,
+            body: body,
+            responseType: User.self
+        )
+        
+        return response
+    }
+    
+    static func deleteAccount(userId: Int) async throws -> APIResponse<EmptyResponse> {
+        let response = try await APIClient.shared.request(
+            "/users/\(userId)",
+            method: .delete,
+            responseType: EmptyResponse.self
+        )
+        
+        return response
+    }
 }

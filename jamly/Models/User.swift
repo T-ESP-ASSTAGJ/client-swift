@@ -10,11 +10,13 @@ struct User: Codable {
     let username: String
     let email: String
     let profilePicture: String?
+    let phoneNumber: String?
+    let bio: String?
     let followingCount: Int
     let followersCount: Int
     
     enum CodingKeys: String, CodingKey {
-        case id, username, email, profilePicture, followingCount, followersCount
+        case id, username, email, profilePicture, phoneNumber, bio, followingCount, followersCount
     }
 }
 

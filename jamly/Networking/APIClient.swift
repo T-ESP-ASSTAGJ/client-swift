@@ -84,6 +84,11 @@ final class APIClient {
         // 3) Headers
         var headers: [String: String] = additionalHeaders
         
+        // Override Content-Type for PATCH requests
+        if method == .patch {
+            headers["Content-Type"] = "application/merge-patch+json"
+        }
+
         if let token = secureStore.retrieve(key: "token") {
             headers["Authorization"] = "Bearer \(token)"
         }
