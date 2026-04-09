@@ -17,6 +17,7 @@ struct MainTabView: View {
     
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
+    @EnvironmentObject private var musicManager: MusicManager
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -57,9 +58,11 @@ struct MainTabView: View {
         }
         .accentColor(.white)
         .onChange(of: selectedTab) { oldValue, newValue in
-            // ✅ Quand on quitte Profile, envoie une notification
             if oldValue == .profile && newValue != .profile {
                 NotificationCenter.default.post(name: .resetProfileNavigation, object: nil)
+            }
+            if oldValue == .home && newValue != .home {
+                musicManager.pause()
             }
         }
     }
