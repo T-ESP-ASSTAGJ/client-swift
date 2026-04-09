@@ -11,7 +11,6 @@ import Combine
 
 @MainActor
 final class MusicManager: ObservableObject {
-    // ✅ Expose le player pour qu'on puisse l'utiliser dans HomeFeed
     let player = ApplicationMusicPlayer.shared
     
     @Published var authorizationStatus: MusicAuthorization.Status = .notDetermined
@@ -20,7 +19,6 @@ final class MusicManager: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    // ✅ Track actuellement en lecture
     @Published var currentTrack: Song?
     @Published var isPlaying = false
     
@@ -29,14 +27,14 @@ final class MusicManager: ObservableObject {
     
     private var playTask: Task<Void, Never>?
     
-    // ✅ NOUVEAU: Vérifie le statut actuel SANS demander l'autorisation
+    // NOUVEAU: Vérifie le statut actuel SANS demander l'autorisation
     func checkAuthorizationStatus() async -> MusicAuthorization.Status {
         let status = MusicAuthorization.currentStatus
         authorizationStatus = status
         return status
     }
     
-    // ✅ Demande l'autorisation (avec prompt si notDetermined)
+    // Demande l'autorisation (avec prompt si notDetermined)
     func requestAuthorization() async {
         let status = await MusicAuthorization.request()
         authorizationStatus = status
@@ -62,7 +60,7 @@ final class MusicManager: ObservableObject {
     }
     
     func loadPlaylists() async {
-        // ✅ Ne charge que si autorisé
+        // Charge les playlists que si autorisé
         guard authorizationStatus == .authorized else {
             print("⚠️ Pas autorisé, skip loadPlaylists")
             return
@@ -93,7 +91,6 @@ final class MusicManager: ObservableObject {
                 }
             }
             
-            // ⚠️ IMPORTANT: Assigne les playlists chargées !
             playlists = detailedPlaylists
             
             print("✅ Loaded \(playlists.count) playlists with details")
@@ -105,7 +102,7 @@ final class MusicManager: ObservableObject {
     }
     
     func playTrackById(_ trackId: String) async {
-        // ✅ Annule la tâche précédente si elle existe
+        // Annule la tâche précédente si elle existe
         playTask?.cancel()
         
         playTask = Task { @MainActor in
@@ -116,7 +113,7 @@ final class MusicManager: ObservableObject {
                     return
                 }
                 
-                // ✅ Vérifie que la tâche n'a pas été annulée
+                // Vérifie que la tâche n'a pas été annulée
                 guard !Task.isCancelled else {
                     print("⏭️ Lecture annulée")
                     return
@@ -126,7 +123,7 @@ final class MusicManager: ObservableObject {
                 var request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: musicItemID)
                 let response = try await request.response()
                 
-                // ✅ Vérifie encore que la tâche n'a pas été annulée
+                // Vérifie encore que la tâche n'a pas été annulée
                 guard !Task.isCancelled else {
                     print("⏭️ Lecture annulée après recherche")
                     return
@@ -218,14 +215,14 @@ final class MusicManager: ObservableObject {
         }
     }
     
-    // ✅ Pause la musique
+    // Pause la musique
     func pause() {
-        playTask?.cancel() // ✅ Annule aussi la tâche en cours
+        playTask?.cancel() // Annule aussi la tâche en cours
         player.pause()
         isPlaying = false
     }
     
-    // ✅ Resume la musique
+    // Resume la musique
     func play() async {
         do {
             try await player.play()
