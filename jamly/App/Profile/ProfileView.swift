@@ -4,7 +4,7 @@ import MusicKit
 enum ProfileTab: Int, CaseIterable {
     case posts = 0
     case likes = 1
-    case music = 2
+    case stats = 2
 }
 
 enum FollowViews: Identifiable {
@@ -16,12 +16,10 @@ struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
     @EnvironmentObject var musicManager: MusicManager
-    
+
     @StateObject private var viewModel = ProfileViewModel()
-    
-    // MARK: - Profile Mode
+
     /// Si userId est fourni, on affiche le profil d'un autre utilisateur
-    /// Sinon, on affiche le profil de l'utilisateur connecté
     let userId: Int?
 
     @State private var selectedTab: ProfileTab = .posts
@@ -31,87 +29,88 @@ struct ProfileView: View {
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     @State private var isFollowingTarget: Bool = false
-    
+
     // MARK: - Computed Properties
 
-    /// Retourne l'utilisateur à afficher (celui du profil visité ou le user connecté)
     private var displayedUser: User? {
-        if userId != nil {
-            return viewModel.profileUser
-        } else {
-            return userStore.user
-        }
+        userId != nil ? viewModel.profileUser : userStore.user
     }
 
-    /// Indique si on affiche son propre profil
     private var isOwnProfile: Bool {
-        guard let userId = userId, let currentUserId = userStore.user?.id else {
-            return true // Par défaut, c'est notre profil
-        }
+        guard let userId, let currentUserId = userStore.user?.id else { return true }
         return userId == currentUserId
     }
-
-    // MARK: - Init
 
     init(userId: Int? = nil) {
         self.userId = userId
     }
 
-    
-    let columns = [
+    private let columns = [
         GridItem(.flexible(), spacing: 2),
         GridItem(.flexible(), spacing: 2),
         GridItem(.flexible(), spacing: 2)
     ]
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView {
                 VStack(spacing: 0) {
-                    // Header (photo de profil et infos)
-                    headerSection
-                    
-                    // Follow/Unfollow button (seulement si ce n'est pas notre profil)
+                    ProfileHeaderView(user: displayedUser, selectedFollowView: $selectedFollowView)
+
                     if !isOwnProfile {
-                        followButtonSection
-                            .padding(.horizontal)
-                            .padding(.bottom, 16)
+                        ProfileFollowButton(
+                            isFollowing: isFollowingTarget,
+                            onFollow: {
+                                Task {
+                                    guard let targetUserId = userId else { return }
+                                    await userStore.followUser(userId: targetUserId)
+                                    isFollowingTarget = true
+                                    viewModel.getFollowers(userId: targetUserId)
+                                    viewModel.fetchUserProfile(userId: targetUserId)
+                                }
+                            },
+                            onUnfollow: {
+                                Task {
+                                    guard let targetUserId = userId else { return }
+                                    await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
+                                    isFollowingTarget = false
+                                    viewModel.getFollowers(userId: targetUserId)
+                                    viewModel.fetchUserProfile(userId: targetUserId)
+                                }
+                            }
+                        )
+                        .padding(.horizontal)
+                        .padding(.bottom, 16)
                     }
 
-                    // Tabs avec GeometryReader pour sticky
                     GeometryReader { geometry in
                         let minY = geometry.frame(in: .global).minY - 110
-                        
                         tabsSection
                             .offset(y: minY < 0 ? -minY : 0)
                             .zIndex(10)
                     }
                     .frame(height: 52)
                     .zIndex(10)
-                    
-                    // Pager Content
+
                     TabView(selection: $selectedTab) {
-                        // MARK: - Posts Tab
                         postsGrid
                             .tag(ProfileTab.posts)
-                        
-                        // MARK: - Likes Tab
+
                         likesGrid
                             .tag(ProfileTab.likes)
-                        
-                        // MARK: - Music Tab
+
                         if isOwnProfile {
-                            musicGrid
-                                .tag(ProfileTab.music)
+                            ProfileStatsView()
+                                .tag(ProfileTab.stats)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .frame(height: calculateGridHeight())
+                    .clipped()
                 }
             }
             .coordinateSpace(name: "scroll")
-            
-            // Top bar background
+
             VStack {
                 ZStack { }
                     .frame(maxWidth: .infinity)
@@ -120,9 +119,8 @@ struct ProfileView: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                // N'afficher le bouton musique que sur son propre profil
-                if isOwnProfile {
+            if isOwnProfile {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showMusicPlaylists = true
                     } label: {
@@ -130,27 +128,20 @@ struct ProfileView: View {
                             .font(.system(size: 15))
                             .foregroundColor(.white)
                     }
-                    .padding(.trailing, 3)
-                  
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showProfileEdit = true
                     } label: {
                         Image(systemName: "person.crop.circle")
-
-                    Button {
-                        authManager.logout()
-                    } label: {
-                        Image(systemName: "door.right.hand.open")
                             .font(.system(size: 15))
                             .foregroundColor(.white)
                     }
-                    .padding(.trailing, 3)
                 }
             }
         }
         .navigationDestination(isPresented: $showMusicPlaylists) {
-            MusicPlaylistsView()
-                .environmentObject(musicManager)
+            MusicPlaylistsView().environmentObject(musicManager)
         }
         .navigationDestination(isPresented: $showProfileEdit) {
             ProfileSettingsMenuView()
@@ -166,61 +157,43 @@ struct ProfileView: View {
         .navigationDestination(isPresented: $isShowingPostDetail) {
             if let post = selectedPost {
                 PostDetailView(post: post)
-            } else {
-                EmptyView()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .resetProfileNavigation)) { _ in
             resetNavigation()
         }
         .task {
-            // Charger le profil si c'est un autre utilisateur
-            if let userId = userId {
+            if let userId {
                 viewModel.fetchUserProfile(userId: userId)
-                // Charger les followers pour vérifier si on suit déjà cet utilisateur
                 viewModel.getFollowers(userId: userId)
             }
         }
-        .onChange(of: viewModel.followers) { oldValue, newValue in
-            // Vérifier si l'utilisateur connecté est dans les followers
-            if !isOwnProfile, let currentUserId = userStore.user?.id {
-                isFollowingTarget = newValue.contains(where: { $0.id == currentUserId })
-            }
+        .onChange(of: viewModel.followers) { _, newValue in
+            guard !isOwnProfile, let currentUserId = userStore.user?.id else { return }
+            isFollowingTarget = newValue.contains { $0.id == currentUserId }
         }
     }
-    
-    // MARK: - Tabs Section (Sticky)
+
+    // MARK: - Tabs Section
+
     private var tabsSection: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                TabButton(
-                    icon: "square.grid.3x3.fill",
-                    isSelected: selectedTab == .posts
-                ) {
+                TabButton(icon: "square.grid.3x3.fill", isSelected: selectedTab == .posts) {
                     selectedTab = .posts
                 }
-                
-                TabButton(
-                    icon: "heart.fill",
-                    isSelected: selectedTab == .likes
-                ) {
+                TabButton(icon: "heart.fill", isSelected: selectedTab == .likes) {
                     selectedTab = .likes
                 }
-                
                 if isOwnProfile {
-                    TabButton(
-                        icon: "music.note.list",
-                        isSelected: selectedTab == .music
-                    ) {
-                        selectedTab = .music
+                    TabButton(icon: "music.note.list", isSelected: selectedTab == .stats) {
+                        selectedTab = .stats
                     }
                 }
             }
-            
-            // Indicateur animé
+
             GeometryReader { geo in
                 let tabWidth = geo.size.width / CGFloat(isOwnProfile ? 3 : 2)
-                
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: tabWidth, height: 2)
@@ -232,8 +205,9 @@ struct ProfileView: View {
         .frame(maxWidth: .infinity)
         .background(Color.black)
     }
-    
+
     // MARK: - Posts Grid
+
     private var postsGrid: some View {
         VStack(spacing: 0) {
             if viewModel.isLoading {
@@ -258,8 +232,7 @@ struct ProfileView: View {
                     if viewModel.isLoadingMorePosts {
                         VStack {
                             Spacer()
-                            ProgressView()
-                                .scaleEffect(1.5)
+                            ProgressView().scaleEffect(1.5)
                             Spacer()
                         }
                         .frame(height: 200)
@@ -274,8 +247,9 @@ struct ProfileView: View {
             viewModel.getPosts(id: targetUserId)
         }
     }
-    
+
     // MARK: - Likes Grid
+
     private var likesGrid: some View {
         VStack(spacing: 0) {
             if viewModel.isLoading {
@@ -292,22 +266,18 @@ struct ProfileView: View {
                                     isShowingPostDetail = true
                                 }
                         }
-                            .onAppear {
-                                if selectedPost?.id == viewModel.likedPosts.last?.id {
-                                    guard let targetUserId = userId ?? userStore.user?.id else { return }
-                                    viewModel.loadMoreLikedPosts(userId: targetUserId)
-                                }
+                        .onAppear {
+                            if selectedPost?.id == viewModel.likedPosts.last?.id {
+                                guard let targetUserId = userId ?? userStore.user?.id else { return }
+                                viewModel.loadMoreLikedPosts(userId: targetUserId)
                             }
+                        }
                     }
                     if viewModel.isLoadingMoreLikes {
                         Color.clear
                             .gridCellColumns(3)
-                            .overlay {
-                                ProgressView()
-                                    .scaleEffect(1.2)
-                            }
+                            .overlay { ProgressView().scaleEffect(1.2) }
                             .frame(height: 60)
-                            .id("loading-more-posts")
                     }
                 }
             }
@@ -317,104 +287,19 @@ struct ProfileView: View {
             viewModel.getLikedPosts(id: targetUserId)
         }
     }
-    
-    // MARK: - Music Grid
-    private var musicGrid: some View {
-        VStack(spacing: 0) {
-            if musicManager.isConnected && !musicManager.playlists.isEmpty {
-                // Show playlists
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(musicManager.playlists.prefix(10), id: \.id) { playlist in
-                            HStack(spacing: 12) {
-                                // Artwork
-                                if let artwork = playlist.artwork {
-                                    ArtworkImage(artwork, width: 60, height: 60)
-                                        .cornerRadius(8)
-                                } else {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.gray.opacity(0.3))
-                                        .frame(width: 60, height: 60)
-                                        .overlay(
-                                            Image(systemName: "music.note")
-                                                .foregroundColor(.white)
-                                        )
-                                }
-                                
-                                // Info
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(playlist.name)
-                                        .font(.subheadline.weight(.medium))
-                                        .foregroundColor(.white)
-                                        .lineLimit(1)
-                                    
-                                    if let count = playlist.tracks?.count {
-                                        Text("\(count) track\(count == 1 ? "" : "s")")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
-                                }
-                                
-                                Spacer()
-                            }
-                            .padding()
-                            .background(Color.white.opacity(0.05))
-                            .cornerRadius(12)
-                        }
-                    }
-                    .padding()
-                }
-                .onAppear {
-                    print("🎵 ProfileView - Showing playlists: \(musicManager.playlists.count)")
-                }
-            } else if !musicManager.isConnected {
-                // Not connected
-                VStack(spacing: 16) {
-                    Image(systemName: "music.note.list")
-                        .font(.system(size: 50))
-                        .foregroundColor(.gray)
-                    
-                    Text("Connect Apple Music")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    
-                    Text("Go to Music Settings to connect your Apple Music account")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 60)
-                .onAppear {
-                    print("🎵 ProfileView - Not connected (isConnected: \(musicManager.isConnected))")
-                }
-            } else {
-                emptyState(message: "No music yet")
-                    .onAppear {
-                        print("🎵 ProfileView - Connected but no playlists (isConnected: \(musicManager.isConnected), count: \(musicManager.playlists.count))")
-                    }
-            }
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-    
+
     // MARK: - Grid Item
+
     private func gridItem(views: String, cover: String) -> some View {
         GeometryReader { geo in
             ZStack(alignment: .bottomLeading) {
-                
                 ProfilePostThumbnail(imageURL: cover)
                     .frame(width: geo.size.width, height: geo.size.width)
                     .clipped()
-                
+
                 HStack(spacing: 4) {
-                    Image(systemName: "eye.fill")
-                        .font(.caption)
-                    Text(views)
-                        .font(.caption)
-                        .bold()
+                    Image(systemName: "eye.fill").font(.caption)
+                    Text(views).font(.caption).bold()
                 }
                 .foregroundColor(.white)
                 .padding(8)
@@ -422,180 +307,40 @@ struct ProfileView: View {
         }
         .aspectRatio(1, contentMode: .fit)
     }
-    
-    // MARK: - Empty State
+
+    // MARK: - Helpers
+
     private func emptyState(message: String) -> some View {
         VStack(spacing: 12) {
-            Spacer()
-                .frame(height: 80)
-            
-            Text(message)
-                .foregroundColor(.secondary)
-            
+            Spacer().frame(height: 80)
+            Text(message).foregroundColor(.secondary)
             Spacer()
         }
         .frame(maxWidth: .infinity)
-    }
-    
-    // MARK: - Loading State
-    private func loadingState() -> some View {
-        VStack(spacing: 12) {
-            Spacer()
-                .frame(height: 80)
-            
-            ProgressView()
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    // MARK: - Calculate Grid Height
-    private func calculateGridHeight() -> CGFloat {
-        let itemCount: Int
-        switch selectedTab {
-        case .posts:
-            itemCount = viewModel.posts.count
-        case .likes:
-            itemCount = viewModel.likedPosts.count
-        case .music:
-            itemCount = 0 // Pas de musique pour l'instant
-        }
-        let rowCount = ceil(Double(itemCount) / 3.0)
-        let screenWidth = UIScreen.main.bounds.width
-        let itemHeight = screenWidth / 3
-        return max(CGFloat(rowCount) * itemHeight + 5, 400)
-    }
-    
-    // MARK: - Header Section
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                ZStack {
-                    if let user = displayedUser, let profilePicture = user.profilePicture {
-                        AsyncImage(url: URL(string: profilePicture)) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 85, height: 85)
-                                .clipShape(Circle())
-                        } placeholder: {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 85, height: 85)
-                                .overlay {
-                                    ProgressView()
-                                }
-                        }
-                    } else {
-                        Circle()
-                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                            .frame(width: 85, height: 85)
-                            .overlay {
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 35))
-                                    .foregroundColor(.gray)
-                            }
-                    }
-                }
-                .padding(.vertical)
-                .padding(.horizontal, 7)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(displayedUser?.username ?? "")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    
-                    Text("@\(displayedUser?.username ?? "")")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
-                Spacer()
-            }
-            
-            HStack(spacing: 20) {
-                Button {
-                    selectedFollowView = .following
-                } label: {
-                    StatView(
-                        number: formatNumber(displayedUser?.followingCount ?? 0),
-                        label: "Following"
-                    )
-                }
-                
-                VStack {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                }
-                .frame(width: 1, height: 25)
-                
-                Button {
-                    selectedFollowView = .followers
-                } label: {
-                    StatView(
-                        number: formatNumber(displayedUser?.followersCount ?? 0),
-                        label: "Followers"
-                    )
-                }
-            }
-            .padding(.vertical, 0)
-            .padding(.horizontal, 15)
-        }
-        .padding(.bottom, 24)
     }
 
-    // MARK: - Follow Button Section
-    private var followButtonSection: some View {
-        HStack {
-            if let targetUserId = userId {
-                if isFollowingTarget {
-                    Button {
-                        Task {
-                            await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
-                            // Update local state
-                            isFollowingTarget = false
-                            // Refresh les followers pour synchroniser
-                            viewModel.getFollowers(userId: targetUserId)
-                            // Refresh le profil affiché
-                            viewModel.fetchUserProfile(userId: targetUserId)
-                        }
-                    } label: {
-                        Text("Unfollow")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.gray.opacity(0.3))
-                            .cornerRadius(8)
-                    }
-                } else {
-                    Button {
-                        Task {
-                            await userStore.followUser(userId: targetUserId)
-                            // Update local state
-                            isFollowingTarget = true
-                            // Refresh les followers pour synchroniser
-                            viewModel.getFollowers(userId: targetUserId)
-                            // Refresh le profil affiché
-                            viewModel.fetchUserProfile(userId: targetUserId)
-                        }
-                    } label: {
-                        Text("Follow")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.white)
-                            .cornerRadius(8)
-                    }
-                }
-            }
+    private func loadingState() -> some View {
+        VStack(spacing: 12) {
+            Spacer().frame(height: 80)
+            ProgressView()
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func calculateGridHeight() -> CGFloat {
+        switch selectedTab {
+        case .stats:
+            // Suffisant pour accueillir la carte + sections dynamiques
+            return UIScreen.main.bounds.height * 1.5
+        default:
+            let itemCount = selectedTab == .posts ? viewModel.posts.count : viewModel.likedPosts.count
+            let rowCount = ceil(Double(itemCount) / 3.0)
+            let itemHeight = UIScreen.main.bounds.width / 3
+            return max(CGFloat(rowCount) * itemHeight + 5, 400)
         }
     }
-    
+
     private func resetNavigation() {
         selectedFollowView = nil
         isShowingPostDetail = false
@@ -605,61 +350,8 @@ struct ProfileView: View {
     }
 }
 
-// MARK: - Stat View
-struct StatView: View {
-    let number: String
-    let label: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(number)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            
-            Text(label)
-                .font(.footnote)
-                .fontWeight(.regular)
-                .foregroundColor(.gray)
-        }
-    }
-}
-
-// MARK: - Tab Button
-struct TabButton: View {
-    let icon: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(isSelected ? .white : .gray)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-        }
-        .background(Color.black)
-    }
-}
-
-// MARK: - Format Number
-private func formatNumber(_ number: Int) -> String {
-    switch number {
-    case 0..<1_000:
-        return "\(number)"
-    case 1_000..<1_000_000:
-        let thousands = Double(number) / 1_000.0
-        return String(format: "%.1fK", thousands).replacingOccurrences(of: ".0", with: "")
-    case 1_000_000...:
-        let millions = Double(number) / 1_000_000.0
-        return String(format: "%.1fM", millions).replacingOccurrences(of: ".0", with: "")
-    default:
-        return "\(number)"
-    }
-}
+// MARK: - Notification
 
 extension Notification.Name {
     static let resetProfileNavigation = Notification.Name("resetProfileNavigation")
 }
-
