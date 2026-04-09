@@ -57,7 +57,7 @@ struct ProfilePostThumbnail: View {
         }
         
         // Sinon, ajouter le base URL
-        let baseURL = "http://10.68.245.78:80"
+        let baseURL = Config.baseURL
         return baseURL + urlString
     }
 }

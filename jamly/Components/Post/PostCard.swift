@@ -386,7 +386,7 @@ struct PostCard: View {
         if urlString.starts(with: "http://") || urlString.starts(with: "https://") {
             return urlString
         }
-        let baseURL = "http:/10.68.245.78:80"
+        let baseURL = Config.baseURL
         return baseURL + urlString
     }
 }
