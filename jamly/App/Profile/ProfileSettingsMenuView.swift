@@ -13,54 +13,64 @@ struct ProfileSettingsMenuView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            List {
-                Section {
-                    Button {
-                        showAccountParameters = true
-                    } label: {
-                        SettingsRow(icon: "person.circle", title: "Account Parameters")
-                    }
-                    .listRowBackground(Color.white.opacity(0.05))
+            VStack(spacing: 12) {
+                SettingsRow(
+                    icon: "person.circle.fill",
+                    title: "Account Parameters",
+                    subtitle: "Edit your profile info",
+                    color: .blue
+                ) {
+                    showAccountParameters = true
+                }
 
-                    Button {
-                        showMusicServices = true
-                    } label: {
-                        SettingsRow(icon: "music.note", title: "Music Services")
-                    }
-                    .listRowBackground(Color.white.opacity(0.05))
+                SettingsRow(
+                    icon: "music.note",
+                    title: "Music Services",
+                    subtitle: "Connect your streaming apps",
+                    color: .purple
+                ) {
+                    showMusicServices = true
+                }
 
-                    Button {
-                        showAccountVisibility = true
-                    } label: {
-                        SettingsRow(icon: "eye", title: "Account Visibility")
-                    }
-                    .listRowBackground(Color.white.opacity(0.05))
+                SettingsRow(
+                    icon: "eye.fill",
+                    title: "Account Visibility",
+                    subtitle: "Manage who can see your profile",
+                    color: .green
+                ) {
+                    showAccountVisibility = true
                 }
             }
-            .scrollContentBackground(.hidden)
+            .padding(.horizontal, 20)
+            .padding(.top, 24)
 
             Spacer()
 
-            Button(action: {
+            Button {
                 authManager.logout()
-            }) {
-                HStack {
+            } label: {
+                HStack(spacing: 10) {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
+                        .font(.system(size: 16, weight: .semibold))
                     Text("Disconnect")
+                        .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundColor(.red)
                 .frame(maxWidth: .infinity)
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                .padding(.vertical, 16)
+                .background(Color.red.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.red.opacity(0.25), lineWidth: 1)
                 )
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 32)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 36)
         }
         .background(Color.black)
         .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showAccountParameters) {
             AccountSettingsView()
                 .environmentObject(userStore)
@@ -76,25 +86,46 @@ struct ProfileSettingsMenuView: View {
     }
 }
 
-struct SettingsRow: View {
+// MARK: - Settings Row
+
+private struct SettingsRow: View {
     let icon: String
     let title: String
+    let subtitle: String
+    let color: Color
+    let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(.white)
-                .frame(width: 28)
+        Button(action: action) {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(color.opacity(0.15))
+                        .frame(width: 48, height: 48)
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(color)
+                }
 
-            Text(title)
-                .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text(subtitle)
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                }
 
-            Spacer()
+                Spacer()
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.gray)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.gray.opacity(0.6))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Color.white.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 }
