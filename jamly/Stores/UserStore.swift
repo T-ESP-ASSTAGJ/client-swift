@@ -360,6 +360,74 @@ class UserStore: ObservableObject {
         }
     }
     
+    func updateProfile(username: String?, phoneNumber: String?, bio: String?, profilePicture: String?) async -> Bool {
+        defer { isLoading = false }
+        isLoading = true
+        error = nil
+        
+        do {
+            let response = try await UserActions.updateProfile(
+                username: username,
+                phoneNumber: phoneNumber,
+                bio: bio,
+                profilePicture: profilePicture
+            )
+            
+            user = response.value
+            return true
+        } catch let apiError as APIError {
+            switch apiError {
+            case .unauthorized:
+                error = .unauthorized
+            case .networkError:
+                error = .networkError
+            case .serverError:
+                error = .serverError
+            default:
+                error = .unknown
+            }
+            return false
+        } catch {
+            self.error = .unknown
+            return false
+        }
+    }
+    
+    func deleteAccount() async -> Bool {
+        defer { isLoading = false }
+        isLoading = true
+        error = nil
+        
+        // Get user ID before deletion
+        guard let userId = user?.id else {
+            error = .unknown
+            return false
+        }
+        
+        do {
+            _ = try await UserActions.deleteAccount(userId: userId)
+            
+            // Log out the user after successful deletion
+            logout()
+            return true
+        } catch let apiError as APIError {
+            switch apiError {
+            case .unauthorized:
+                error = .unauthorized
+            case .networkError:
+                error = .networkError
+            case .serverError:
+                error = .serverError
+            default:
+                error = .unknown
+            }
+            return false
+        } catch {
+            self.error = .unknown
+            return false
+        }
+    }
+    
     func handleUnauthorized() {
         print("🔐 Unauthorized - logging out")
         logout()

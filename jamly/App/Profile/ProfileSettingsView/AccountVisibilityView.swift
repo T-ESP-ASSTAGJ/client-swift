@@ -52,7 +52,7 @@ struct AccountVisibilityView: View {
                                 }
                             }
                         }
-                        .listRowBackground(Color.white.opacity(0.05))
+                        .listRowBackground(Color.white.opacity(0.02))
                     }
                 }
 
@@ -66,8 +66,8 @@ struct AccountVisibilityView: View {
                                 .foregroundColor(.white)
                         }
                     }
-                    .tint(.white)
-                    .listRowBackground(Color.white.opacity(0.05))
+                    .tint(.green)
+                    .listRowBackground(Color.white.opacity(0.02))
 
                     Toggle(isOn: $showPlaylists) {
                         HStack(spacing: 12) {
@@ -78,8 +78,8 @@ struct AccountVisibilityView: View {
                                 .foregroundColor(.white)
                         }
                     }
-                    .tint(.white)
-                    .listRowBackground(Color.white.opacity(0.05))
+                    .tint(.green)
+                    .listRowBackground(Color.white.opacity(0.02))
 
                     Toggle(isOn: $allowTagging) {
                         HStack(spacing: 12) {
@@ -90,8 +90,8 @@ struct AccountVisibilityView: View {
                                 .foregroundColor(.white)
                         }
                     }
-                    .tint(.white)
-                    .listRowBackground(Color.white.opacity(0.05))
+                    .tint(.green)
+                    .listRowBackground(Color.white.opacity(0.02))
                 }
             }
             .scrollContentBackground(.hidden)

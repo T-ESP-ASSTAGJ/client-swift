@@ -296,7 +296,6 @@ struct ProfileView: View {
             viewModel.getLikedPosts(id: targetUserId)
         }
     }
-
     // MARK: - Grid Item
 
     private func gridItem(views: String, cover: String) -> some View {
