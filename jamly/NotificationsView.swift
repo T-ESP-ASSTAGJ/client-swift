@@ -58,7 +58,9 @@ struct NotificationsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                // Fond de l'app (noir ou systemBackground selon le mode)
+                Color(uiColor: .systemBackground)
+                    .ignoresSafeArea()
                 
                 if notifications.isEmpty {
                     emptyStateView
@@ -69,25 +71,35 @@ struct NotificationsView: View {
                                 NotificationRow(notification: notification) {
                                     handleNotificationTap(notification)
                                 }
-                                .background(notification.isRead ? Color.clear : Color.white.opacity(0.05))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(notification.isRead ? Color.clear : Color.blue.opacity(0.05))
+                                .transition(.opacity.combined(with: .move(edge: .trailing)))
                                 
-                                Divider()
-                                    .background(Color.gray.opacity(0.3))
+                                if notification.id != notifications.last?.id {
+                                    Divider()
+                                        .padding(.leading, 68)
+                                }
                             }
                         }
+                        .padding(.vertical, 8)
                     }
                 }
             }
             .navigationTitle("Notifications")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        markAllAsRead()
-                    } label: {
-                        Text("Mark all read")
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
+                    if !notifications.isEmpty && notifications.contains(where: { !$0.isRead }) {
+                        Button {
+                            withAnimation {
+                                markAllAsRead()
+                            }
+                        } label: {
+                            Text("Tout lire")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
                     }
                 }
             }
@@ -98,7 +110,6 @@ struct NotificationsView: View {
             }
             .task {
                 loadNotifications()
-                // Réinitialiser le badge de l'app
                 await NotificationManager.shared.resetBadge()
             }
         }
@@ -106,22 +117,26 @@ struct NotificationsView: View {
     
     // MARK: - Empty State
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "bell.slash.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
+        VStack(spacing: 20) {
+            Image(systemName: "bell.badge")
+                .font(.system(size: 80))
+                .foregroundColor(.gray.opacity(0.5))
+                .symbolRenderingMode(.hierarchical)
             
-            Text("No notifications yet")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-            
-            Text("When someone likes or comments on your posts,\nyou'll see it here.")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text("Aucune notification")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Quand quelqu'un aime ou commente vos posts,\nvous le verrez ici.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
         }
-        .padding()
+        .padding(40)
     }
     
     // MARK: - Actions
@@ -138,9 +153,11 @@ struct NotificationsView: View {
     }
     
     private func handleNotificationTap(_ notification: AppNotification) {
-        // Marquer comme lu
-        if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
-            notifications[index].isRead = true
+        // Marquer comme lu avec animation
+        withAnimation {
+            if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
+                notifications[index].isRead = true
+            }
         }
         
         // Navigation selon le type
@@ -167,81 +184,82 @@ struct NotificationRow: View {
     
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: 12) {
-                // Icône du type de notification
-                ZStack {
-                    Circle()
-                        .fill(notification.type.iconColor.opacity(0.2))
-                        .frame(width: 40, height: 40)
-                    
-                    Image(systemName: notification.type.icon)
-                        .font(.system(size: 16))
-                        .foregroundColor(notification.type.iconColor)
-                }
-                
-                // Contenu
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        // Photo de profil de l'expéditeur
-                        if let profilePic = notification.senderProfilePicture {
-                            AsyncImage(url: URL(string: profilePic)) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 32, height: 32)
-                                    .clipShape(Circle())
-                            } placeholder: {
-                                Circle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 32, height: 32)
-                            }
-                        } else {
+            HStack(alignment: .center, spacing: 12) {
+                // Photo de profil avec badge
+                ZStack(alignment: .bottomTrailing) {
+                    // Photo de profil
+                    if let profilePic = notification.senderProfilePicture {
+                        AsyncImage(url: URL(string: profilePic)) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } placeholder: {
                             Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 32, height: 32)
+                                .fill(Color.gray.opacity(0.2))
                                 .overlay {
                                     Image(systemName: "person.fill")
-                                        .font(.system(size: 14))
+                                        .font(.system(size: 18))
                                         .foregroundColor(.gray)
                                 }
                         }
-                        
-                        // Texte de la notification
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(buildAttributedMessage())
-                                .font(.subheadline)
-                                .foregroundColor(.white)
-                                .lineLimit(2)
-                            
-                            Text(notification.timestamp, style: .relative)
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-                        
-                        Spacer()
-                        
-                        // Thumbnail du post (si applicable)
-                        if let thumbnail = notification.postThumbnail {
-                            AsyncImage(url: URL(string: thumbnail)) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 50, height: 50)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } placeholder: {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 50, height: 50)
+                        .frame(width: 44, height: 44)
+                        .clipShape(Circle())
+                    } else {
+                        Circle()
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(width: 44, height: 44)
+                            .overlay {
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.gray)
                             }
-                        }
                     }
+                    
+                    // Icône du type de notification (sans fond)
+                    Image(systemName: notification.type.icon)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(notification.type.iconColor)
+                        .offset(x: 4, y: 4)
+                        .shadow(color: Color(uiColor: .systemBackground), radius: 3, x: 0, y: 0)
+                }
+                
+                // Contenu de la notification
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(buildAttributedMessage())
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .lineLimit(2)
+                    
+                    Text(notification.timestamp, style: .relative)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                
+                // Thumbnail du post (si applicable)
+                if let thumbnail = notification.postThumbnail {
+                    AsyncImage(url: URL(string: thumbnail)) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.gray.opacity(0.2))
+                    }
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                
+                // Indicateur non lu
+                if !notification.isRead {
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 8, height: 8)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
         .buttonStyle(PlainButtonStyle())
+        .contentShape(Rectangle())
     }
     
     private func buildAttributedMessage() -> AttributedString {
@@ -250,6 +268,7 @@ struct NotificationRow: View {
         
         var messageString = AttributedString(" " + notification.message)
         messageString.font = .subheadline
+        messageString.foregroundColor = .secondary
         
         return attributedString + messageString
     }

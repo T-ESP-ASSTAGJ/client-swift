@@ -11,7 +11,7 @@ enum TabItem: Int, CaseIterable, Hashable {
 // Container pour gérer la navigation du CreatePostView
 struct CreatePostViewContainer: View {
     @Binding var selectedTab: TabItem
-    
+
     var body: some View {
         NavigationStack {
             CreatePostView(selectedTab: $selectedTab)
@@ -25,8 +25,9 @@ struct MainTabView: View {
     @State private var friendsScrollPosition: Int?
     @State private var selectedSegment: FeedSegment = .discovery
     @State private var shouldRefreshDiscovery = false
+    @State private var selectedPostForDetail: Post?
+    @State private var isLoadingPost = false
 
-    
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
     @EnvironmentObject private var musicManager: MusicManager
@@ -76,6 +77,35 @@ struct MainTabView: View {
             }
         }
         .accentColor(.white)
+        .sheet(item: $selectedPostForDetail) { post in
+            NavigationStack {
+                PostDetailView(post: post)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Fermer") {
+                                selectedPostForDetail = nil
+                            }
+                            .foregroundColor(.white)
+                        }
+                    }
+            }
+        }
+        .overlay {
+            if isLoadingPost {
+                ZStack {
+                    Color.black.opacity(0.5)
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.5)
+                        Text("Chargement...")
+                            .foregroundColor(.white)
+                            .font(.subheadline)
+                    }
+                }
+                .ignoresSafeArea()
+            }
+        }
         .onChange(of: selectedTab) { oldValue, newValue in
             if oldValue == .profile && newValue != .profile {
                 NotificationCenter.default.post(name: .resetProfileNavigation, object: nil)
@@ -83,7 +113,7 @@ struct MainTabView: View {
             if oldValue == .home && newValue != .home {
                 musicManager.pause()
             }
-            
+
             if oldValue == .create && newValue == .home {
                 selectedSegment = .discovery
                 shouldRefreshDiscovery = true
@@ -93,6 +123,44 @@ struct MainTabView: View {
             Task {
                 await NotificationManager.shared.resetBadge()
             }
+            setupNotificationObservers()
         }
+        .onDisappear {
+            NotificationCenter.default.removeObserver(self)
+        }
+    }
+
+    // MARK: - Navigation depuis notifications
+
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            forName: .navigateToPost,
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let postId = notification.userInfo?["postId"] as? Int {
+                print("🚀 Navigation vers le post \(postId)")
+                // Pas besoin de changer d'onglet !
+                Task {
+                    await loadAndNavigateToPost(id: postId)
+                }
+            }
+        }
+    }
+
+    // MARK: - Load Post
+
+    private func loadAndNavigateToPost(id: Int) async {
+        isLoadingPost = true
+
+        do {
+            let response = try await PostActions.fetchPost(id: id)
+            selectedPostForDetail = response.value
+            print("✅ Post chargé avec succès")
+        } catch {
+            print("❌ Erreur lors du chargement du post: \(error)")
+        }
+
+        isLoadingPost = false
     }
 }

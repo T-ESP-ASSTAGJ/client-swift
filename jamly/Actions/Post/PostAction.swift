@@ -34,6 +34,16 @@ struct ReportEndpoint {
 }
 
 enum PostActions {
+    static func fetchPost(id: Int) async throws -> APIResponse<Post> {
+        let response = try await APIClient.shared.request(
+            "/posts/\(id)",
+            method: .get,
+            responseType: Post.self
+        )
+        
+        return response
+    }
+    
     static func create(post: CreatePostRequest) async throws -> APIResponse<CreatePostRequestResponse> {
         let response = try await APIClient.shared.request(
             PostEndpoint.posts,

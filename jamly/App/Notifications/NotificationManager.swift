@@ -10,6 +10,13 @@ import UserNotifications
 import UIKit
 import Combine
 
+// MARK: - Notification Names
+extension Notification.Name {
+    static let navigateToPost = Notification.Name("navigateToPost")
+    static let navigateToProfile = Notification.Name("navigateToProfile")
+    static let navigateToConversation = Notification.Name("navigateToConversation")
+}
+
 final class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
@@ -59,10 +66,16 @@ final class NotificationManager: ObservableObject {
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         self.deviceToken = tokenString
         
-        // Copie automatiquement dans le clipboard pour votre collègue
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("📱 DEVICE TOKEN REÇU")
+        print("   Token: \(tokenString)")
+        print("   Copié dans le clipboard ✓")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        
+        // Copie automatiquement dans le clipboard
         UIPasteboard.general.string = tokenString
         
-        // Optionnel : Envoyer au serveur
+        // Envoyer au serveur
         Task {
             await sendTokenToServer(tokenString)
         }
@@ -144,7 +157,13 @@ final class NotificationManager: ObservableObject {
         notificationCount += 1
         lastNotificationReceived = Date()
         lastNotificationPayload = userInfo
-    
+        
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("🔔 NOTIFICATION REÇUE #\(notificationCount)")
+        print("   Timestamp: \(Date())")
+        print("   Payload complet:")
+        print(userInfo)
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         
         // Traiter les données de la notification
         handleNotificationData(userInfo)
@@ -153,15 +172,34 @@ final class NotificationManager: ObservableObject {
     /// Appelé quand l'utilisateur tape sur une notification
     @MainActor
     func didTapNotification(_ userInfo: [AnyHashable: Any]) {
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("👆 NOTIFICATION TAPÉE")
+        print("   Timestamp: \(Date())")
+        print("   Payload complet:")
+        print(userInfo)
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         
         // Traiter l'action de la notification
         handleNotificationData(userInfo)
         
-        // TODO: Navigation vers le contenu approprié
-        // Par exemple, si c'est un nouveau post, ouvrir le post
-        if let postId = userInfo["post_id"] as? String {
-            // Ici vous pouvez publier une notification pour naviguer
-            // ou utiliser un deep link handler
+        // Navigation selon le type et entity_class
+        if let entityClass = userInfo["entity_class"] as? String,
+           let entityIdString = userInfo["entity_id"] as? String,
+           let entityId = Int(entityIdString) {
+            
+            print("📍 Navigation détectée:")
+            print("   Entity Class: \(entityClass)")
+            print("   Entity ID: \(entityId)")
+            
+            if entityClass == "App\\Entity\\Post" {
+                // Publier une notification pour naviguer vers le post
+                NotificationCenter.default.post(
+                    name: .navigateToPost,
+                    object: nil,
+                    userInfo: ["postId": entityId]
+                )
+                print("✅ Navigation vers le post \(entityId) demandée")
+            }
         }
     }
     
@@ -169,23 +207,59 @@ final class NotificationManager: ObservableObject {
     private func handleNotificationData(_ userInfo: [AnyHashable: Any]) {
         // Extraire les informations communes
         if let aps = userInfo["aps"] as? [String: Any] {
+            print("📦 APS Data:")
+            
             if let alert = aps["alert"] as? [String: Any] {
                 let title = alert["title"] as? String ?? ""
                 let body = alert["body"] as? String ?? ""
+                print("   Title: \(title)")
+                print("   Body: \(body)")
+            } else if let alertString = aps["alert"] as? String {
+                print("   Alert: \(alertString)")
+            }
+            
+            if let badge = aps["badge"] as? Int {
+                print("   Badge: \(badge)")
+            }
+            
+            if let sound = aps["sound"] {
+                print("   Sound: \(sound)")
             }
         }
         
         // Extraire les données custom
+        print("📝 Custom Data:")
+        for (key, value) in userInfo where key as? String != "aps" {
+            print("   \(key): \(value)")
+        }
+        
         if let type = userInfo["type"] as? String {
-            print("🏷️ Type: \(type)")
+            print("🏷️ Type de notification: \(type)")
             
             switch type {
-            case "new_like":
+            case "like", "new_like":
                 print("❤️ Nouveau like reçu")
-            case "new_comment":
+                if let entityId = userInfo["entity_id"] as? String {
+                    print("   Entity ID: \(entityId)")
+                }
+                if let entityClass = userInfo["entity_class"] as? String {
+                    print("   Entity Class: \(entityClass)")
+                }
+            case "comment", "new_comment":
                 print("💬 Nouveau commentaire")
-            case "new_follower":
+                if let entityId = userInfo["entity_id"] as? String {
+                    print("   Entity ID: \(entityId)")
+                }
+            case "follow", "new_follower":
                 print("👤 Nouveau follower")
+                if let userId = userInfo["user_id"] as? String {
+                    print("   User ID: \(userId)")
+                }
+            case "message", "new_message":
+                print("💌 Nouveau message")
+                if let conversationId = userInfo["conversation_id"] as? String {
+                    print("   Conversation ID: \(conversationId)")
+                }
             default:
                 print("ℹ️ Type inconnu: \(type)")
             }
