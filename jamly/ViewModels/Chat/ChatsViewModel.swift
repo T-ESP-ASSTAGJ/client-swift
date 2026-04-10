@@ -139,28 +139,6 @@ class ChatsViewModel: ObservableObject {
         }
     }
     
-    /// Basculer le statut lu/non lu d'une conversation
-    func toggleReadStatus(_ conversation: Conversation) async {
-        let shouldMarkAsRead = conversation.unreadCount > 0
-        
-        do {
-            let response = try await ConversationAction.markAsRead(id: conversation.id, isRead: shouldMarkAsRead)
-            
-            // Mettre à jour la conversation localement avec la réponse de l'API
-            if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
-                withAnimation {
-                    conversations[index] = response.value
-                    filterConversations()
-                }
-            }
-            
-            print("✅ Conversation \(conversation.id) marked as \(shouldMarkAsRead ? "read" : "unread")")
-        } catch {
-            errorMessage = "Impossible de modifier le statut"
-            print("❌ Error toggling read status: \(error)")
-        }
-    }
-    
     // MARK: - Private Methods
     
     /// Filtrer les conversations selon le texte de recherche

@@ -367,9 +367,9 @@ struct ChatsView: View {
     
     /// Bascule le statut lu/non lu d'une conversation
     private func toggleReadStatus(_ conversation: Conversation) {
-        Task {
-            await viewModel.toggleReadStatus(conversation)
-        }
+//        Task {
+//            await viewModel.toggleReadStatus(conversation)
+//        }
     }
 }
 // MARK: - New Conversation View

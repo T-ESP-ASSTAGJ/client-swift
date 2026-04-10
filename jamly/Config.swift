@@ -7,13 +7,9 @@
 
 enum Config {
 #if DEBUG
-    static let baseURL = "http://10.68.250.254:80"
+    static let baseURL = "http://10.68.253.64:80"
 #else
     static let baseURL = "https://api.jamly.app"
 #endif
-
-    static let appleMusicHost = "music.apple.com"
-    static let appleMusicBaseURL = "https://music.apple.com"
-    static let appleMusicPlaylistPath = "/playlist/"
 }
 
