@@ -75,12 +75,6 @@ struct MessageBubble: View {
                     Text(message.timeString)
                         .font(.caption2)
                         .foregroundColor(.gray)
-                    
-                    if isFromCurrentUser {
-                        Image(systemName: message.isRead ? "checkmark.circle.fill" : "checkmark.circle")
-                            .font(.caption2)
-                            .foregroundColor(message.isRead ? .blue : .gray)
-                    }
                 }
                 .padding(.horizontal, 4)
             }
@@ -91,9 +85,9 @@ struct MessageBubble: View {
         }
         .padding(.horizontal)
     }
-    
+
     // MARK: - Helper Methods
-    
+
     /// Check if message content is an Apple Music playlist link
     private func isPlaylistLink(_ content: String?) -> Bool {
         guard let content = content else { return false }
@@ -266,6 +260,9 @@ struct ChatDetailView: View {
     @State private var showTrackPicker = false
     @FocusState private var isTextFieldFocused: Bool
     
+    // ✅ Pour le debouncing du markAsRead
+    @State private var markAsReadTask: Task<Void, Never>?
+
     // Dependencies
     @EnvironmentObject private var userStore: UserStore
     @StateObject private var mercureService = MercureService.shared
@@ -300,11 +297,13 @@ struct ChatDetailView: View {
         .onAppear {
             loadMessages()
             Task {
-                await setupMercure()
+                _ = await (setupMercure(), markConversationAsRead())
             }
         }
         .onDisappear {
             mercureService.unsubscribe()
+            // ✅ Annuler la tâche de markAsRead en cours si on quitte la vue
+            markAsReadTask?.cancel()
         }
     }
     
@@ -334,6 +333,13 @@ struct ChatDetailView: View {
             } else {
                 if !messages.contains(where: { $0.id == newMessage.id }) {
                     messages.append(newMessage)
+                    print("✅ Message ajouté (reçu d'un autre utilisateur)")
+
+                    // ✅ Marquer automatiquement comme lu puisqu'on est dans le chat
+                    // Utilise debouncing pour éviter trop d'appels réseau
+                    markConversationAsReadDebounced()
+                } else {
+                    print("⚠️ Message déjà présent (ignoré)")
                 }
             }
         } catch {
@@ -540,7 +546,7 @@ struct ChatDetailView: View {
                     }
                 )
             }
-            
+
             // Champ de texte
             TextField("Message...", text: $newMessageText, axis: .vertical)
                 .focused($isTextFieldFocused)
@@ -582,6 +588,23 @@ struct ChatDetailView: View {
     
     // MARK: - Actions
     
+    /// Marque la conversation comme lue (avec debouncing pour éviter trop d'appels)
+    private func markConversationAsReadDebounced() {
+        // Annule l'appel précédent s'il existe
+        markAsReadTask?.cancel()
+
+        // Crée un nouveau task avec délai
+        markAsReadTask = Task {
+            // Attend 1 seconde pour grouper les appels
+            try? await Task.sleep(for: .seconds(1))
+
+            // Si la tâche n'a pas été annulée, exécute le markAsRead
+            guard !Task.isCancelled else { return }
+
+            await markConversationAsRead()
+        }
+    }
+
     /// Charge les messages de la conversation depuis l'API
     private func loadMessages() {
         isLoading = true
@@ -603,6 +626,16 @@ struct ChatDetailView: View {
         }
     }
     
+    private func markConversationAsRead() async {
+        do {
+            _ = try await ConversationAction.markAsRead(id: conversation.id)
+            print("✅ Conversation \(conversation.id) marquée comme lue")
+        } catch {
+            print("❌ Erreur lors du marquage comme lu: \(error.localizedDescription)")
+        }
+    }
+
+
     /// Envoie un nouveau message via l'API
     private func sendMessage() {
         let trimmedText = newMessageText.trimmingCharacters(in: .whitespacesAndNewlines)
