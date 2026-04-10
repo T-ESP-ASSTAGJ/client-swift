@@ -7,6 +7,12 @@
 
 import Foundation
 
+struct MessageEndpoint {
+    static let messages = "/messages"
+    
+    static func sendMessage(_ id: Int) -> String { "/conversations/\(id)/messages" }
+}
+
 // MARK: - Request Bodies
 
 struct SendTextMessageRequest: Codable {
@@ -35,7 +41,7 @@ enum MessageAction {
         )
         
         let response = try await APIClient.shared.request(
-            "/messages",
+            MessageEndpoint.messages,
             method: .post,
             body: body,
             responseType: Message.self
@@ -56,7 +62,7 @@ enum MessageAction {
         )
         
         let response = try await APIClient.shared.request(
-            "/conversations/\(conversationId)/messages",
+            MessageEndpoint.sendMessage(conversationId),
             method: .post,
             body: body,
             responseType: Message.self

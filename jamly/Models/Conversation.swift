@@ -5,6 +5,14 @@
 //  Created by Jonathan Dumesnil on 06/02/2026.
 //
 
+struct ConversationConfig {
+    let id: Int
+    let isGroup: Bool = false
+    let groupName: String = ""
+    let unreadCount: Int = 0
+    let memberCount: Int = 0
+}
+
 struct Conversation: Codable, Identifiable, Hashable {
     let id: Int
     let isGroup: Bool
@@ -20,20 +28,16 @@ struct Conversation: Codable, Identifiable, Hashable {
     }
     
     init(
-        id: Int,
-        isGroup: Bool = false,
-        groupName: String = "",
-        unreadCount: Int = 0,
-        memberCount: Int = 0,
+        config: ConversationConfig,
         type: String = "direct",
         lastMessage: LightMessage? = nil,
         participants: [CommonUser] = []
     ) {
-        self.id = id
-        self.isGroup = isGroup
-        self.groupName = groupName
-        self.unreadCount = unreadCount
-        self.memberCount = memberCount
+        self.id = config.id
+        self.isGroup = config.isGroup
+        self.groupName = config.groupName
+        self.unreadCount = config.unreadCount
+        self.memberCount = config.memberCount
         self.type = type
         self.lastMessage = lastMessage
         self.participants = participants

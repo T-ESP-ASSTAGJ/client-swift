@@ -565,11 +565,10 @@ extension ChatDetailView {
         )
         let participants = CommonUser(id: 0, username: chatName, profilePicture: nil)
         
+        let config = ConversationConfig(id: 0)
+        
         self.conversation = Conversation(
-            id: 0,
-            groupName: "Test",
-            unreadCount: 0,
-            memberCount: 2,
+            config: config,
             type: "direct",
             lastMessage: dummyLastMessage,
             participants: [participants]

@@ -5,6 +5,15 @@
 //  Created by Jonathan Dumesnil on 12/02/2026.
 //
 
+struct ConversationEndpoint {
+    static let conversations = "/conversations"
+    static let createConversation = "/conversations"
+    
+    static func conversation(_ id: Int) -> String { "/conversations/\(id)" }
+    static func deleteConversation(_ id: Int) -> String { "/conversations/\(id)" }
+    static func markAsRead(_ id: Int) -> String { "/conversations/\(id)/read"}
+}
+
 struct ConversationRequestResponse: Codable {
     let isGroup: Bool
     let groupName: String?
@@ -14,7 +23,7 @@ struct ConversationRequestResponse: Codable {
 enum ConversationAction {
     static func getConversations(page: Int = 1) async throws -> APIResponse<[Conversation]> {
         let response = try await APIClient.shared.request(
-            "/conversations",
+            ConversationEndpoint.conversations,
             method: .get,
             query: ["page": String(page)],
             responseType: [Conversation].self
@@ -25,7 +34,7 @@ enum ConversationAction {
     
     static func getConversationDetail(conversationId: Int) async throws -> APIResponse<ConversationDetail> {
         let response = try await APIClient.shared.request(
-            "/conversations/\(conversationId)",
+            ConversationEndpoint.conversation(conversationId),
             method: .get,
             responseType: ConversationDetail.self
         )
@@ -36,7 +45,7 @@ enum ConversationAction {
     
     static func deleteConversation(id: Int) async throws -> APIResponse<EmptyResponse> {
         let response = try await APIClient.shared.request(
-            "/conversations/\(id)",
+            ConversationEndpoint.deleteConversation(id),
             method: .delete,
             responseType: EmptyResponse.self
         )
@@ -49,7 +58,7 @@ enum ConversationAction {
         let body = ["isRead": isRead]
         
         let response = try await APIClient.shared.request(
-            "/conversations/\(id)/read",
+            ConversationEndpoint.markAsRead(id),
             method: .patch,
             body: body,
             responseType: Conversation.self
@@ -65,7 +74,7 @@ enum ConversationAction {
         participants: [Int]
     ) async throws -> APIResponse<Conversation> {
         let response = try await APIClient.shared.request(
-            "/conversations",
+            ConversationEndpoint.createConversation,
             method: .post,
             body: ConversationRequestResponse(isGroup: isGroup, groupName: groupName, participants: participants),
             responseType: Conversation.self
