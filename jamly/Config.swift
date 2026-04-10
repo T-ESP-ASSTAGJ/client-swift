@@ -7,7 +7,7 @@
 
 enum Config {
 #if DEBUG
-    static let baseURL = "http://10.68.251.255:80"
+    static let baseURL = "http://10.68.253.64:80"
 #else
     static let baseURL = "https://api.jamly.app"
 #endif
