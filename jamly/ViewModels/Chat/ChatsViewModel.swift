@@ -139,6 +139,40 @@ class ChatsViewModel: ObservableObject {
         }
     }
     
+    /// Basculer le statut lu/non lu d'une conversation
+    func toggleReadStatus(_ conversation: Conversation) async {
+        do {
+            // Appel API pour marquer comme lu
+            _ = try await ConversationAction.markAsRead(id: conversation.id)
+            
+            // Mettre à jour localement le unreadCount
+            withAnimation {
+                if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
+                    // Créer une nouvelle configuration avec unreadCount à 0
+                    let config = ConversationConfig(
+                        id: conversation.id
+                    )
+                    
+                    // Créer une nouvelle conversation avec unreadCount à 0
+                    let updatedConversation = Conversation(
+                        config: config,
+                        type: conversation.type,
+                        lastMessage: conversation.lastMessage,
+                        participants: conversation.participants
+                    )
+                    
+                    conversations[index] = updatedConversation
+                    filterConversations()
+                }
+            }
+            
+            print("✅ Conversation \(conversation.id) marked as read")
+        } catch {
+            errorMessage = "Impossible de marquer la conversation comme lue"
+            print("❌ Error marking conversation as read: \(error)")
+        }
+    }
+    
     // MARK: - Private Methods
     
     /// Filtrer les conversations selon le texte de recherche

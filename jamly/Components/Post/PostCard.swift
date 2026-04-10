@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct PostCard: View {
     let post: Post
@@ -31,8 +32,10 @@ struct PostCard: View {
     @State private var showReportSheet = false
     @State private var isReported = false
     @State private var showAlreadyReportedToast = false
-    
+    @State private var currentTime = Date()
+
     private let captionTruncationThreshold = 80
+    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     init(post: Post, isCurrentPost: Bool, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
         self.post = post
@@ -147,11 +150,13 @@ struct PostCard: View {
 
             Spacer()
 
-            Text("23 minutes ago")
+            Text(formatRelativeTime(post.createdAt))
                 .font(.caption)
                 .foregroundColor(.white)
                 .opacity(0.7)
-
+                .onReceive(timer) { _ in
+                    currentTime = Date()
+                 }
             Menu {
                 Button(role: .destructive) {
                     if isReported {
