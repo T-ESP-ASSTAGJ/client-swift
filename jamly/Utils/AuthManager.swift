@@ -10,6 +10,7 @@ import Combine
 
 @MainActor
 final class AuthManager: ObservableObject {
+    @Published var completedOnboarding: Bool = false
     @Published var isAuthenticated: Bool = false {
         didSet {
             print("🔐 AuthManager.isAuthenticated changed to: \(isAuthenticated)")
@@ -62,5 +63,10 @@ final class AuthManager: ObservableObject {
         print("🔐 AuthManager.login called")
         userStore.setToken(token)
         isAuthenticated = true
+    }
+    
+    func completeOnboarding() {
+        completedOnboarding = true
+        UserDefaults.standard.set(true, forKey: "jamly.hasSeenOnboarding")
     }
 }
