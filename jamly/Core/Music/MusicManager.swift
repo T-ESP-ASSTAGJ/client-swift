@@ -138,6 +138,7 @@ final class MusicManager: ObservableObject {
                 
                 // Configure et joue
                 player.queue = [song]
+                try await player.prepareToPlay()
                 try await player.play()
                 
                 currentTrack = song

@@ -6,6 +6,7 @@ import Combine
 
 struct CreatePostView: View {
     @EnvironmentObject var musicManager: MusicManager
+    @EnvironmentObject var userStore: UserStore
     @StateObject private var viewModel = CreatePostViewModel()
     @State private var showSourceSheet = false
     @State private var showMusicPicker = false
@@ -14,6 +15,7 @@ struct CreatePostView: View {
     @State private var showCamera = false
     @State private var showBackCamera = false
     @State private var currentImageSelection: ImageSelection = .front
+    @Binding var selectedTab: TabItem
     
     enum ImageSelection {
         case front, back
@@ -177,7 +179,11 @@ struct CreatePostView: View {
                     // Publish Button
                     Button(action: {
                         Task {
-                            await viewModel.publishPost()
+                            let success = await viewModel.publishPost(userStore: userStore)
+                            if success {
+                                // ✅ Retour au tab Home
+                                selectedTab = .home
+                            }
                         }
                     }) {
                         HStack {
@@ -369,20 +375,41 @@ class CreatePostViewModel: ObservableObject {
 
     
     // MARK: - Publish Post
-    @MainActor func publishPost() async {
+    @MainActor func publishPost(userStore: UserStore) async -> Bool {
         guard canPublish else {
             errorMessage = "Veuillez remplir tous les champs requis"
-            return
+            return false
         }
         
         guard let song = selectedSong,
-              let catalogId = selectedCatalogId,
               let frontBase64 = imageToBase64(frontImage!),
               let backBase64 = imageToBase64(backImage!)
         else {
             errorMessage = "Erreur lors de la conversion des images"
-            return
+            return false
         }
+        
+        // ✅ Garantir qu'on utilise l'ID du catalogue Apple Music, pas l'ID de bibliothèque
+        var catalogId = selectedCatalogId ?? song.id.rawValue
+        
+        // Si l'ID commence par "i.", c'est un ID de bibliothèque → pas universel
+        if catalogId.hasPrefix("i.") {
+            print("⚠️ ID de bibliothèque détecté (\(catalogId)), conversion nécessaire...")
+            errorMessage = "Conversion de l'ID de la chanson en cours..."
+            isPublishing = true
+            
+            // Utiliser MusicManager pour obtenir l'ID catalogue universel
+            if let universalId = await MusicManager().getCatalogID(for: song) {
+                catalogId = universalId
+                print("✅ ID catalogue universel obtenu: \(catalogId)")
+            } else {
+                errorMessage = "Impossible de trouver cette chanson dans le catalogue Apple Music"
+                isPublishing = false
+                return false
+            }
+        }
+        
+        print("🎵 Utilisation de l'ID catalogue: \(catalogId)")
         
         // Artwork géré séparément (car optionnel)
         let coverBase64: String
@@ -397,27 +424,38 @@ class CreatePostViewModel: ObservableObject {
         
         logPublishingDetails(frontBase64, backBase64)
         
-        let request = CreatePostRequest(
-            caption: caption,
+        let trackInput = CreatePostRequest.TrackInput(
             songId: catalogId,
-            trackTitle: song.title,
+            title: song.title,
             artistName: song.artistName,
             releaseYear: getYear(from: song.releaseDate),
+            coverImage: coverBase64
+        )
+        
+        let request = CreatePostRequest(
+            caption: caption,
+            track: trackInput,
             frontImage: frontBase64,
             backImage: backBase64,
-            coverImage: coverBase64,
             location: location
         )
         
         do {
             _ = try await PostActions.create(post: request)
-            // Optionally reset the form on success
+            
+            // ✅ Rafraîchir le feed discovery (public)
+            await userStore.loadFeed(page: 1, forceRefresh: true, mode: "public")
+            
+            // Reset le formulaire
             resetForm()
+            
+            isPublishing = false
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            isPublishing = false
+            return false
         }
-        
-        isPublishing = false
     }
     
     // MARK: - Helper Methods
@@ -440,7 +478,12 @@ class CreatePostViewModel: ObservableObject {
         print("🖼️ Back Image: ✅ Base64 with data URI prefix (\(backBase64.count) chars)")
         print("📝 Caption: \"\(caption)\"")
         if let song = selectedSong {
-            print("🎵 Song: \(song.title) - \(song.artistName) (\(song.id.rawValue))")
+            let originalId = song.id.rawValue
+            let catalogId = selectedCatalogId ?? originalId
+            print("🎵 Song: \(song.title) - \(song.artistName)")
+            print("   📀 Original ID: \(originalId)")
+            print("   🌍 Catalog ID: \(catalogId)")
+            print("   ✅ Type: \(catalogId.hasPrefix("i.") ? "Bibliothèque (sera converti)" : "Catalogue universel")")
         }
         print("📍 Location: \(location.isEmpty ? "Non défini" : location)")
         print("📤 =========================")
@@ -449,6 +492,8 @@ class CreatePostViewModel: ObservableObject {
 
 #Preview {
     NavigationStack {
-        CreatePostView()
+        CreatePostView(selectedTab: .constant(.create))
+            .environmentObject(UserStore())
+            .environmentObject(MusicManager())
     }
 }

@@ -8,11 +8,23 @@ enum TabItem: Int, CaseIterable, Hashable {
     case profile
 }
 
+// Container pour gérer la navigation du CreatePostView
+struct CreatePostViewContainer: View {
+    @Binding var selectedTab: TabItem
+    
+    var body: some View {
+        NavigationStack {
+            CreatePostView(selectedTab: $selectedTab)
+        }
+    }
+}
+
 struct MainTabView: View {
     @State private var selectedTab: TabItem = .home
     @State private var discoveryScrollPosition: Int?
     @State private var friendsScrollPosition: Int?
     @State private var selectedSegment: FeedSegment = .discovery
+    @State private var shouldRefreshDiscovery = false
 
     
     @EnvironmentObject private var authManager: AuthManager
@@ -29,6 +41,15 @@ struct MainTabView: View {
                         friendsScrollPosition: $friendsScrollPosition
                     )
                 }
+                .onChange(of: shouldRefreshDiscovery) { oldValue, newValue in
+                    if newValue {
+                        // Reset to first post
+                        if let firstPost = userStore.feed.first {
+                            discoveryScrollPosition = firstPost.id
+                        }
+                        shouldRefreshDiscovery = false
+                    }
+                }
             }
             
             Tab("Discover", systemImage: "safari", value: .discover) {
@@ -38,9 +59,7 @@ struct MainTabView: View {
             }
             
             Tab("", systemImage: "plus", value: .create) {
-                NavigationStack {
-                    CreatePostView()
-                }
+                CreatePostViewContainer(selectedTab: $selectedTab)
             }
             
             Tab("Chats", systemImage: "ellipsis.message", value: .chats) {
@@ -63,6 +82,11 @@ struct MainTabView: View {
             }
             if oldValue == .home && newValue != .home {
                 musicManager.pause()
+            }
+            
+            if oldValue == .create && newValue == .home {
+                selectedSegment = .discovery
+                shouldRefreshDiscovery = true
             }
         }
     }
