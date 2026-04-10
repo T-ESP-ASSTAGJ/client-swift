@@ -57,10 +57,11 @@ struct jamlyApp: App {
             }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 switch newPhase {
-                case .background, .inactive:
-                    // App en arrière-plan ou inactive → pause
+                case .background:
                     musicManager.pause()
                     print("🎵 App en arrière-plan, musique en pause")
+                case .inactive:
+                    break
                     
                 case .active:
                     // App redevient active → ne fait rien
@@ -93,26 +94,21 @@ struct jamlyApp: App {
     }
 }
 
-// Vue racine qui gère l'authentification
 struct RootView: View {
     @EnvironmentObject private var authManager: AuthManager
     
     var body: some View {
         Group {
-            if authManager.isAuthenticated {
+            if !authManager.completedOnboarding && !authManager.isAuthenticated {
+                OnboardingView()
+                    .environmentObject(authManager)
+            }else if authManager.isAuthenticated {
                 MainTabView()
             } else {
-                AuthenticationFlow()
+                NavigationStack {
+                    LoginView()
+                }
             }
-        }
-    }
-}
-
-// Flow d'authentification avec sa propre navigation
-struct AuthenticationFlow: View {
-    var body: some View {
-        NavigationStack {
-            BrandingView()
         }
     }
 }

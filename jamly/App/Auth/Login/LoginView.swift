@@ -3,6 +3,7 @@ import SwiftUI
 struct LoginView: View {
     @State private var email: String = ""
     @State private var animateContent = false
+    @State private var navigateToOtp = false
     @StateObject private var viewModel = LoginViewModel()
     
     @EnvironmentObject private var authManager: AuthManager
@@ -174,11 +175,15 @@ struct LoginView: View {
                 .padding(.horizontal, 20)
                 
                 Spacer()
-                Spacer()
             }
         }
-        .navigationDestination(isPresented: .constant(viewModel.state == .success)) {
+        .navigationDestination(isPresented: $navigateToOtp) {
             OtpLoginView(email: email)
+        }
+        .onChange(of: viewModel.state) { _, newState in
+            if newState == .success {
+                navigateToOtp = true
+            }
         }
         .onAppear {
             animateContent = true
