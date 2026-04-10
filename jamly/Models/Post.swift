@@ -7,14 +7,18 @@
 
 struct CreatePostRequest: Codable {
     let caption: String
-    let songId: String
-    let trackTitle: String
-    let artistName: String
-    let releaseYear: Int
+    let track: TrackInput
     let frontImage: String
     let backImage: String
-    let coverImage: String
     let location: String
+    
+    struct TrackInput: Codable {
+        let songId: String
+        let title: String
+        let artistName: String
+        let releaseYear: Int
+        let coverImage: String
+    }
 }
 
 struct Post: Codable, Identifiable, Hashable {
