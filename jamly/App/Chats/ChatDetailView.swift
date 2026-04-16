@@ -60,6 +60,15 @@ struct MessageBubble: View {
                         message: message,
                         isFromCurrentUser: isFromCurrentUser
                     )
+                } else if message.type == "image" {
+                    // ✅ Bulle de message image
+                    if let imageUrl = message.content {
+                        // Image chargée depuis le serveur
+                        ImageMessageView(imageUrl: imageUrl, isFromCurrentUser: isFromCurrentUser)
+                    } else {
+                        // Message temporaire pendant l'envoi - afficher un loader
+                        ImageLoadingView(isFromCurrentUser: isFromCurrentUser)
+                    }
                 } else {
                     // Bulle de message texte
                     Text(message.content ?? "")
@@ -263,6 +272,13 @@ struct ChatDetailView: View {
     // ✅ Pour le debouncing du markAsRead
     @State private var markAsReadTask: Task<Void, Never>?
 
+    // ✅ États pour l'envoi d'images
+    @State private var showImageSourceSheet = false
+    @State private var showImagePicker = false
+    @State private var showCamera = false
+    @State private var selectedImage: UIImage?
+    @State private var isSendingImage = false
+
     // Dependencies
     @EnvironmentObject private var userStore: UserStore
     @StateObject private var mercureService = MercureService.shared
@@ -282,7 +298,14 @@ struct ChatDetailView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            messageInputSection
+            VStack(spacing: 0) {
+                // ✅ Prévisualisation de l'image sélectionnée
+                if let selectedImage {
+                    imagePreviewSection(image: selectedImage)
+                }
+
+                messageInputSection
+            }
         }
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -304,6 +327,26 @@ struct ChatDetailView: View {
             mercureService.unsubscribe()
             // ✅ Annuler la tâche de markAsRead en cours si on quitte la vue
             markAsReadTask?.cancel()
+        }
+        // ✅ Sheets pour la sélection d'images (fichiers existants)
+        .sheet(isPresented: $showImageSourceSheet) {
+            ImageSourceSheet(
+                onCameraSelected: {
+                    showImageSourceSheet = false
+                    showCamera = true
+                },
+                onGallerySelected: {
+                    showImageSourceSheet = false
+                    showImagePicker = true
+                }
+            )
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(image: $selectedImage)
+        }
+        .sheet(isPresented: $showCamera) {
+            CameraView(image: $selectedImage)
+                .ignoresSafeArea(.all)
         }
     }
     
@@ -507,6 +550,52 @@ struct ChatDetailView: View {
     
     // MARK: - Message Input Section
     
+    /// Prévisualisation de l'image sélectionnée
+    @ViewBuilder
+    private func imagePreviewSection(image: UIImage) -> some View {
+        HStack {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 80, height: 80)
+                .cornerRadius(12)
+                .clipped()
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Image ready to send")
+                    .font(.custom("Poppins-SemiBold", size: 14))
+                    .foregroundColor(.white)
+
+                if isSendingImage {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Sending...")
+                            .font(.custom("Poppins-Regular", size: 12))
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+
+            Spacer()
+
+            // Bouton pour annuler
+            Button {
+                selectedImage = nil
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(.gray)
+            }
+            .disabled(isSendingImage)
+        }
+        .padding()
+        .background(Color(uiColor: .systemGray6))
+        .cornerRadius(12)
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
+
     /// Section de saisie de message en bas de l'écran
     private var messageInputSection: some View {
         HStack(spacing: 8) {
@@ -522,12 +611,17 @@ struct ChatDetailView: View {
                 } label: {
                     Label("Share Track", systemImage: "music.note")
                 }
+            // Bouton média à gauche (dans l'input)
+            Button {
+                showImageSourceSheet = true
             } label: {
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: selectedImage == nil ? "plus.circle.fill" : "photo.circle.fill")
                     .font(.system(size: 28))
-                    .foregroundColor(.blue)
+                    .foregroundColor(selectedImage == nil ? .blue : .green)
             }
             .padding(.leading, 4)
+            .disabled(isSendingImage)
+
             .sheet(isPresented: $showPlaylistPicker) {
                 PlaylistPickerForMessageView(
                     conversationId: conversation.id,
@@ -552,18 +646,29 @@ struct ChatDetailView: View {
                 .focused($isTextFieldFocused)
                 .lineLimit(1...5)
                 .padding(.vertical, 10)
-            
-            // Bouton d'envoi (n'apparaît que si du texte est saisi)
-            if hasText {
+                .disabled(isSendingImage)
+
+            // Bouton d'envoi (n'apparaît que si du texte est saisi OU une image sélectionnée)
+            if hasText || selectedImage != nil {
                 Button {
-                    sendMessage()
+                    if selectedImage != nil {
+                        sendImageMessage()
+                    } else {
+                        sendMessage()
+                    }
                 } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(.blue)
+                    if isSendingImage {
+                        ProgressView()
+                            .frame(width: 28, height: 28)
+                    } else {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.blue)
+                    }
                 }
                 .padding(.trailing, 4)
                 .transition(.scale.combined(with: .opacity))
+                .disabled(isSendingImage)
             }
         }
         .frame(maxWidth: 340)
@@ -575,6 +680,7 @@ struct ChatDetailView: View {
                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hasText)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedImage != nil)
         .padding(.horizontal)
         .padding(.vertical, 8)
         .padding(.bottom, 8)
@@ -686,6 +792,91 @@ struct ChatDetailView: View {
                     // Remettre le texte dans le champ si l'envoi a échoué
                     newMessageText = messageToSend
                 }
+            }
+        }
+    }
+
+    /// ✅ Envoie un message image via l'API
+    private func sendImageMessage() {
+        guard let image = selectedImage else { return }
+
+        // Créer un message temporaire pour l'affichage optimiste
+        let now = ISO8601DateFormatter().string(from: Date())
+        let tempMessage = Message(
+            id: -1,
+            author: CommonUser(
+                id: currentUserId,
+                username: userStore.user?.username ?? "Vous",
+                profilePicture: userStore.user?.profilePicture
+            ),
+            type: "image",
+            content: nil, // L'image sera affichée via le contenu du message
+            track: nil,
+            trackMetadata: nil,
+            readAt: nil,
+            conversationId: conversation.id,
+            updatedAt: now,
+            createdAt: now
+        )
+
+        messages.append(tempMessage)
+        isSendingImage = true
+        isTextFieldFocused = false
+
+        Task {
+            do {
+                let response = try await MessageAction.sendImageMessage(
+                    conversationId: conversation.id,
+                    image: image
+                )
+
+                await MainActor.run {
+                    // Remplacer le message temporaire par le vrai message de l'API
+                    if let index = messages.firstIndex(where: { $0.id == -1 }) {
+                        messages[index] = response.value
+                    }
+
+                    // Réinitialiser l'état
+                    selectedImage = nil
+                    isSendingImage = false
+
+                    print("✅ Image envoyée avec succès")
+                }
+            } catch {
+                await MainActor.run {
+                    // En cas d'erreur, retirer le message temporaire
+                    messages.removeAll { $0.id == -1 }
+                    errorMessage = "Erreur lors de l'envoi de l'image: \(error.localizedDescription)"
+                    print("❌ Error sending image: \(error)")
+
+                    // Garder l'image sélectionnée pour permettre un nouvel essai
+                    isSendingImage = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Image Loading View
+/// ✅ Vue de chargement pour l'image pendant l'envoi
+struct ImageLoadingView: View {
+    let isFromCurrentUser: Bool
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 200, height: 200)
+                .cornerRadius(16)
+
+            VStack(spacing: 12) {
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .tint(isFromCurrentUser ? .blue : .white)
+
+                Text("Sending image...")
+                    .font(.custom("Poppins-Regular", size: 13))
+                    .foregroundColor(.gray)
             }
         }
     }
@@ -807,6 +998,104 @@ struct PlaylistLinkMessageView: View {
             artwork = playlist.artwork
         } catch {
             // MusicKit fetch failed — UI keeps default placeholder values
+        }
+    }
+}
+
+
+// MARK: - Image Message View
+/// ✅ Vue spéciale pour les messages contenant une image
+struct ImageMessageView: View {
+    let imageUrl: String
+    let isFromCurrentUser: Bool
+    @State private var showFullScreen = false
+
+    var body: some View {
+        Button {
+            showFullScreen = true
+        } label: {
+            AsyncImage(url: URL(string: imageUrl)) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                        .frame(width: 200, height: 200)
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 200, height: 200)
+                        .clipped()
+                        .cornerRadius(16)
+                case .failure:
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 200, height: 200)
+                        .cornerRadius(16)
+                        .overlay {
+                            VStack {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.title2)
+                                Text("Error loading image")
+                                    .font(.caption)
+                            }
+                            .foregroundColor(.white)
+                        }
+                @unknown default:
+                    EmptyView()
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showFullScreen) {
+            FullScreenImageView(imageUrl: imageUrl)
+        }
+    }
+}
+
+// MARK: - Full Screen Image View
+/// Vue plein écran pour afficher une image
+struct FullScreenImageView: View {
+    let imageUrl: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            AsyncImage(url: URL(string: imageUrl)) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                case .empty:
+                    ProgressView()
+                case .failure:
+                    VStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.largeTitle)
+                        Text("Error loading image")
+                    }
+                    .foregroundColor(.white)
+                @unknown default:
+                    EmptyView()
+                }
+            }
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding()
+                    }
+                }
+                Spacer()
+            }
         }
     }
 }
