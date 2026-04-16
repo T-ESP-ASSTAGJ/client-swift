@@ -80,7 +80,6 @@
 		796C8C4C2F055F8400EBC3D9 /* CommentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796C8C4B2F055F8000EBC3D9 /* CommentViewModel.swift */; };
 		79A65FBB2F02938F000E4FAE /* CommentAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A65FBA2F02937D000E4FAE /* CommentAction.swift */; };
 		79A65FBD2F029600000E4FAE /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A65FBC2F0295FE000E4FAE /* Comment.swift */; };
-		79C3DF452F6DA0FE00AC99BF /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C3DF442F6DA0FE00AC99BF /* NotificationsView.swift */; };
 		79CA2F1F2F032BD5002C55CC /* FollowingAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F1E2F032BD2002C55CC /* FollowingAction.swift */; };
 		79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F212F033082002C55CC /* FollowerAction.swift */; };
 		79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */; };
@@ -211,7 +210,6 @@
 		796C8C4B2F055F8000EBC3D9 /* CommentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewModel.swift; sourceTree = "<group>"; };
 		79A65FBA2F02937D000E4FAE /* CommentAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentAction.swift; sourceTree = "<group>"; };
 		79A65FBC2F0295FE000E4FAE /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
-		79C3DF442F6DA0FE00AC99BF /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		79CA2F1E2F032BD2002C55CC /* FollowingAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingAction.swift; sourceTree = "<group>"; };
 		79CA2F212F033082002C55CC /* FollowerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerAction.swift; sourceTree = "<group>"; };
 		79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MercureConfig.swift; sourceTree = "<group>"; };
@@ -387,7 +385,6 @@
 				76883EE52EE500E2006A3955 /* Stores */,
 				761C50612EE458870053AD1F /* Utils */,
 				76381C542F044095008BB4B0 /* ViewModels */,
-				79C3DF442F6DA0FE00AC99BF /* NotificationsView.swift */,
 			);
 			path = jamly;
 			sourceTree = "<group>";
@@ -831,6 +828,14 @@
 			path = Following;
 			sourceTree = "<group>";
 		};
+		931F1A6BA9C14D5DBECC5202 /* Discover */ = {
+			isa = PBXGroup;
+			children = (
+				D8E9F0A1B2C3D4E5F6001123 /* DiscoverViewModel.swift */,
+			);
+			path = Discover;
+			sourceTree = "<group>";
+		};
 		79FC690B2F3DE98500AD716C /* Chat */ = {
 			isa = PBXGroup;
 			children = (
@@ -1107,7 +1112,6 @@
 				796C8C4C2F055F8400EBC3D9 /* CommentViewModel.swift in Sources */,
 				766AF0B32F0D9D32006D36A0 /* ProfilePostThumbnail.swift in Sources */,
 				76883EE82EE50107006A3955 /* User.swift in Sources */,
-				79C3DF452F6DA0FE00AC99BF /* NotificationsView.swift in Sources */,
 				76A2D3C42EE4B28200AA6F6E /* MusicPlaylistsView.swift in Sources */,
 				79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */,
 				7917F0922F6D52BE003C6389 /* NotificationManager.swift in Sources */,
