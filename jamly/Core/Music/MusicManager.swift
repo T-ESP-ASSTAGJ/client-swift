@@ -23,7 +23,7 @@ final class MusicManager: ObservableObject {
     @Published var isConnected: Bool = false
 
     private var player: AVPlayer?
-    private var currentSongId: String?
+    @Published var currentSongId: String?
     private var playTask: Task<Void, Never>?
     private var endObserver: NSObjectProtocol?
     private var backgroundObserver: NSObjectProtocol?

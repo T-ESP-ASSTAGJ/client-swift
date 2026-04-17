@@ -94,81 +94,159 @@ struct MessageBubble: View {
     
     // MARK: - Helper Methods
     
-    /// Check if message content contains a playlist link
+    /// Check if message content is an Apple Music playlist link
     private func isPlaylistLink(_ content: String?) -> Bool {
         guard let content = content else { return false }
-        // New format: content is just the Apple Music playlist URL
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.hasPrefix("https://music.apple.com") && trimmed.contains("/playlist/") { return true }
+        if trimmed.contains("music.apple.com") && trimmed.contains("/playlist/") { return true }
         // Legacy format: "🎵 Name\nURL"
         return content.contains("🎵") && content.contains("music.apple.com")
     }
 }
 
 // MARK: - Music Message View
-/// Vue spéciale pour les messages contenant une piste musicale
+/// Displays a track message. message.track holds the Apple Music catalog song ID.
+/// Title, artist and artwork are fetched from MusicKit at display time.
 struct MusicMessageView: View {
     let message: Message
-    
+
+    @EnvironmentObject private var musicManager: MusicManager
+
+    @State private var songTitle: String = "Track"
+    @State private var songArtist: String = "Apple Music"
+    @State private var artwork: Artwork? = nil
+    @State private var songURL: URL? = nil
+
+    /// Extracts the Apple Music catalog song ID from the message content URL.
+    /// Format: music.apple.com/album/.../id?i=songId
+    var catalogSongID: String? {
+        guard let content = message.content else { return nil }
+        if let components = URLComponents(string: content),
+           let songId = components.queryItems?.first(where: { $0.name == "i" })?.value {
+            return songId
+        }
+        // Fallback: last numeric path component
+        if let url = URL(string: content), let last = url.pathComponents.last,
+           last.allSatisfy({ $0.isNumber }), !last.isEmpty {
+            return last
+        }
+        return nil
+    }
+
+    var isThisPlaying: Bool {
+        musicManager.isPlaying && musicManager.currentSongId == catalogSongID
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
-            // Image de la piste
-            if let imageUrl = message.trackImageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay {
-                            Image(systemName: "music.note")
-                                .foregroundColor(.white)
-                        }
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                Group {
+                    if let artwork {
+                        ArtworkImage(artwork, width: 56, height: 56)
+                    } else {
+                        artworkPlaceholder
+                    }
                 }
-                .frame(width: 50, height: 50)
+                .frame(width: 56, height: 56)
                 .cornerRadius(8)
-            }
-            
-            // Infos de la piste
-            VStack(alignment: .leading, spacing: 4) {
-                if let title = message.trackTitle {
-                    Text(title)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                .clipped()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(songTitle)
+                        .font(.subheadline.weight(.semibold))
                         .foregroundColor(.white)
-                }
-                
-                if let artist = message.trackArtist {
-                    Text(artist)
+                        .lineLimit(1)
+
+                    Text(songArtist)
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(1)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "applelogo").font(.caption2)
+                        Text("Apple Music").font(.caption)
+                    }
+                    .foregroundColor(.white.opacity(0.6))
                 }
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "music.note")
-                        .font(.caption2)
-                    Text("Piste partagée")
-                        .font(.caption2)
+
+                Spacer(minLength: 0)
+
+                // Play/pause button
+                if catalogSongID != nil {
+                    Button {
+                        Task { await togglePlayPause() }
+                    } label: {
+                        Image(systemName: isThisPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.2))
+                            .clipShape(Circle())
+                    }
                 }
-                .foregroundColor(.white.opacity(0.6))
             }
-            
-            Spacer()
-            
-            // Bouton play
-            Button {
-                // TODO: Jouer la piste
-            } label: {
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
+            .padding(12)
+
+            Divider().background(Color.white.opacity(0.2))
+
+            if let url = songURL {
+                Link(destination: url) {
+                    HStack {
+                        Image(systemName: "arrow.up.right.square").font(.body)
+                        Text("Open in Apple Music").font(.subheadline.weight(.semibold))
+                        Spacer()
+                    }
                     .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                }
             }
         }
-        .padding(12)
-        .background(Color.blue.opacity(0.8))
+        .background(
+            LinearGradient(
+                colors: [Color.pink.opacity(0.7), Color.pink.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .cornerRadius(16)
-        .frame(maxWidth: 280)
+        .frame(maxWidth: 300)
+        .task(id: message.id) { await loadSongData() }
+    }
+
+    private var artworkPlaceholder: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.15))
+            .overlay {
+                Image(systemName: "music.note")
+                    .font(.title2)
+                    .foregroundColor(.white.opacity(0.6))
+            }
+    }
+
+    private func togglePlayPause() async {
+        guard let songID = catalogSongID else { return }
+        if isThisPlaying {
+            musicManager.pause()
+        } else {
+            await musicManager.playPreview(songId: songID)
+        }
+    }
+
+    private func loadSongData() async {
+        guard let songID = catalogSongID, !songID.isEmpty,
+              MusicAuthorization.currentStatus == .authorized else { return }
+        do {
+            let request = MusicCatalogResourceRequest<Song>(
+                matching: \.id, equalTo: MusicItemID(songID)
+            )
+            let response = try await request.response()
+            guard let song = response.items.first else { return }
+            songTitle = song.title
+            songArtist = song.artistName
+            artwork = song.artwork
+            songURL = song.url
+        } catch {}
     }
 }
 
@@ -183,6 +261,7 @@ struct ChatDetailView: View {
     @State private var errorMessage: String?
     @State private var hasScrolledToBottom: Bool = false
     @State private var showPlaylistPicker = false
+    @State private var showTrackPicker = false
     @FocusState private var isTextFieldFocused: Bool
     
     // Dependencies
@@ -423,12 +502,10 @@ struct ChatDetailView: View {
                 } label: {
                     Label("Share Playlist", systemImage: "music.note.list")
                 }
-                
-                // Future options
                 Button {
-                    // TODO: Add photo sharing
+                    showTrackPicker = true
                 } label: {
-                    Label("Photo", systemImage: "photo")
+                    Label("Share Track", systemImage: "music.note")
                 }
             } label: {
                 Image(systemName: "plus.circle.fill")
@@ -441,6 +518,15 @@ struct ChatDetailView: View {
                     conversationId: conversation.id,
                     onPlaylistShared: {
                         showPlaylistPicker = false
+                        loadMessages()
+                    }
+                )
+            }
+            .sheet(isPresented: $showTrackPicker) {
+                TrackPickerForMessageView(
+                    conversationId: conversation.id,
+                    onTrackShared: {
+                        showTrackPicker = false
                         loadMessages()
                     }
                 )
@@ -525,8 +611,6 @@ struct ChatDetailView: View {
             ),
             type: "text",
             content: trimmedText,
-            track: nil,
-            trackMetadata: nil,
             readAt: nil,
             conversationId: conversation.id,
             updatedAt: now,

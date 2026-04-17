@@ -28,7 +28,7 @@ final class PlaylistShareService {
         let shareURL = appleMusicURL(for: playlist)
 
         // Only send the URL — name and artwork are fetched from MusicKit at display time
-        let _ = try await MessageAction.sendTextMessage(
+        let _ = try await MessageAction.sendShareMessage(
             conversationId: conversationId,
             content: shareURL
         )

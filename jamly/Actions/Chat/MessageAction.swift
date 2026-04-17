@@ -9,8 +9,6 @@ import Foundation
 
 struct MessageEndpoint {
     static let messages = "/messages"
-    
-    static func sendMessage(_ id: Int) -> String { "/conversations/\(id)/messages" }
 }
 
 // MARK: - Request Bodies
@@ -21,8 +19,9 @@ struct SendTextMessageRequest: Codable {
     let type: String
 }
 
-struct SendMusicMessageRequest: Codable {
-    let trackId: Int
+struct SendShareMessageRequest: Codable {
+    let conversationId: Int
+    let content: String
     let type: String
 }
 
@@ -46,24 +45,22 @@ enum MessageAction {
             responseType: Message.self
         )
     }
-    
-    /// Envoie un message musical (track) dans une conversation
-    static func sendMusicMessage(
+
+    /// Envoie un message de partage (track ou playlist) dans une conversation
+    static func sendShareMessage(
         conversationId: Int,
-        trackId: Int
+        content: String
     ) async throws -> APIResponse<Message> {
-        let body = SendMusicMessageRequest(
-            trackId: trackId,
-            type: "music"
+        let body = SendShareMessageRequest(
+            conversationId: conversationId,
+            content: content,
+            type: "share"
         )
-        
-        let response = try await APIClient.shared.request(
-            MessageEndpoint.sendMessage(conversationId),
+        return try await APIClient.shared.request(
+            MessageEndpoint.messages,
             method: .post,
             body: body,
             responseType: Message.self
         )
-        
-        return response
     }
 }
