@@ -18,10 +18,25 @@ struct LikePostBody: Encodable {
     let entityId: Int
 }
 
+struct PostEndpoint {
+    static let posts = "/posts"
+    static func viewPost(_ postId: Int) -> String { "/posts/\(postId)/view" }
+}
+
+struct LikeEndpoint {
+    static let likes = "/likes"
+    static let deleteLike = "/likes/delete"
+}
+
+struct ReportEndpoint {
+    static let report = "/reports"
+    static let reportReasons = "/reports-reasons"
+}
+
 enum PostActions {
     static func create(post: CreatePostRequest) async throws -> APIResponse<CreatePostRequestResponse> {
         let response = try await APIClient.shared.request(
-            "/posts",
+            PostEndpoint.posts,
             method: .post,
             body: post,
             responseType: CreatePostRequestResponse.self
@@ -36,7 +51,7 @@ enum PostActions {
         let body = LikePostBody(entityId: post.id)
         
         let response = try await APIClient.shared.request(
-            "/likes",
+            LikeEndpoint.likes,
             method: .post,
             body: body,
             responseType: EmptyResponse.self
@@ -51,7 +66,7 @@ enum PostActions {
         let body = LikePostBody(entityId: post.id)
         
         let response = try await APIClient.shared.request(
-            "/likes/delete",
+            LikeEndpoint.deleteLike,
             method: .post,
             body: body,
             responseType: EmptyResponse.self
@@ -66,7 +81,7 @@ enum PostActions {
         let postId = post.id
 
         let response = try await APIClient.shared.request(
-            "/posts/\(postId)/view",
+            PostEndpoint.viewPost(postId),
             method: .patch,
             responseType: EmptyResponse.self
         )
@@ -76,7 +91,7 @@ enum PostActions {
 
     static func fetchReportReasons() async throws -> APIResponse<[ReportReason]> {
         let response = try await APIClient.shared.request(
-            "/report-reasons",
+            ReportEndpoint.reportReasons,
             method: .get,
             responseType: [ReportReason].self
         )
@@ -86,7 +101,7 @@ enum PostActions {
     static func reportPost(postId: Int, reason: String, message: String) async throws -> APIResponse<EmptyResponse> {
         let body = ReportBody(entityId: postId, reason: reason, message: message)
         let response = try await APIClient.shared.request(
-            "/reports",
+            ReportEndpoint.report,
             method: .post,
             body: body,
             responseType: EmptyResponse.self
