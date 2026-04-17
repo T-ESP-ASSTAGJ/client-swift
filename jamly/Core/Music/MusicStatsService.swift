@@ -87,12 +87,36 @@ final class MusicStatsService {
 
     // MARK: - Total Listening Time
 
-    /// Returns the estimated total listening time in seconds: Σ (playCount × duration)
+    /// Returns the estimated total listening time in seconds: Σ (playCount × duration).
+    /// Falls back to an average track length when MusicKit returns a nil duration
+    /// (common for library-only songs without catalog enrichment).
     func fetchTotalListeningTime() async throws -> TimeInterval {
+        let averageTrackSeconds: TimeInterval = 210
         let songs = try await fetchLibrarySongs()
-        return songs.reduce(0) { total, song in
-            total + Double(song.playCount ?? 0) * (song.duration ?? 0)
+
+        var total = songs.reduce(TimeInterval(0)) { acc, song in
+            let plays = Double(song.playCount ?? 0)
+            guard plays > 0 else { return acc }
+            let duration = song.duration ?? averageTrackSeconds
+            return acc + plays * duration
         }
+
+        // Fallback: iCloud play-count sync can lag for hours after a fresh listen.
+        // When the library reports no plays yet, estimate from recently played history.
+        if total == 0 {
+            let recent = try await fetchRecentHistory(limit: 25)
+            total = recent.reduce(TimeInterval(0)) { acc, song in
+                acc + (song.duration ?? averageTrackSeconds)
+            }
+        }
+
+        #if DEBUG
+        let played = songs.filter { ($0.playCount ?? 0) > 0 }
+        let missingDuration = played.filter { $0.duration == nil }.count
+        print("⏱ Listening time: \(Int(total))s | played=\(played.count) | missing duration=\(missingDuration)")
+        #endif
+
+        return total
     }
 
     // MARK: - Recent History
@@ -106,11 +130,21 @@ final class MusicStatsService {
 
     // MARK: - Private
 
-    /// Fetches a large batch of library songs used for aggregation.
-    private func fetchLibrarySongs(batchSize: Int = 2000) async throws -> [Song] {
+    /// Fetches library songs used for aggregation, paginating until `maxCount` or exhaustion.
+    /// MusicKit caps `MusicLibraryRequest.limit` at 100 per batch — pagination is required
+    /// to aggregate accurately over a large library.
+    private func fetchLibrarySongs(maxCount: Int = 2000) async throws -> [Song] {
         var request = MusicLibraryRequest<Song>()
-        request.limit = batchSize
-        let response = try await request.response()
-        return Array(response.items)
+        request.sort(by: \.playCount, ascending: false)
+        request.limit = 100
+
+        var current: MusicItemCollection<Song>? = try await request.response().items
+        var all: [Song] = []
+
+        while let batch = current, !batch.isEmpty, all.count < maxCount {
+            all.append(contentsOf: batch)
+            current = batch.hasNextBatch ? try await batch.nextBatch(limit: 100) : nil
+        }
+        return all
     }
 }

@@ -342,7 +342,7 @@ class CreatePostViewModel: ObservableObject {
     @Published var frontImage: UIImage?
     @Published var backImage: UIImage?
     @Published var caption: String = ""
-    @Published var selectedSong: Track?
+    @Published var selectedSong: Song?
     @Published var selectedCatalogId: String?
     @Published var location: String = "Paris"
     @Published var isPublishing = false
@@ -389,26 +389,7 @@ class CreatePostViewModel: ObservableObject {
             return false
         }
         
-        // ✅ Garantir qu'on utilise l'ID du catalogue Apple Music, pas l'ID de bibliothèque
-        var catalogId = selectedCatalogId ?? song.id.rawValue
-        
-        // Si l'ID commence par "i.", c'est un ID de bibliothèque → pas universel
-        if catalogId.hasPrefix("i.") {
-            print("⚠️ ID de bibliothèque détecté (\(catalogId)), conversion nécessaire...")
-            errorMessage = "Conversion de l'ID de la chanson en cours..."
-            isPublishing = true
-            
-            // Utiliser MusicManager pour obtenir l'ID catalogue universel
-            if let universalId = await MusicManager().getCatalogID(for: song) {
-                catalogId = universalId
-                print("✅ ID catalogue universel obtenu: \(catalogId)")
-            } else {
-                errorMessage = "Impossible de trouver cette chanson dans le catalogue Apple Music"
-                isPublishing = false
-                return false
-            }
-        }
-        
+        let catalogId = selectedCatalogId ?? song.id.rawValue
         print("🎵 Utilisation de l'ID catalogue: \(catalogId)")
         
         // Artwork géré séparément (car optionnel)

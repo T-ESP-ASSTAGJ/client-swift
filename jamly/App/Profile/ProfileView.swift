@@ -18,6 +18,7 @@ struct ProfileView: View {
     @EnvironmentObject var musicManager: MusicManager
 
     @StateObject private var viewModel = ProfileViewModel()
+    @StateObject private var statsViewModel = ProfileStatsViewModel()
 
     /// Si userId est fourni, on affiche le profil d'un autre utilisateur
     let userId: Int?
@@ -100,7 +101,7 @@ struct ProfileView: View {
                             .tag(ProfileTab.likes)
 
                         if isOwnProfile {
-                            ProfileStatsView()
+                            ProfileStatsView(viewModel: statsViewModel)
                                 .tag(ProfileTab.stats)
                         }
                     }
@@ -339,14 +340,32 @@ struct ProfileView: View {
     private func calculateGridHeight() -> CGFloat {
         switch selectedTab {
         case .stats:
-            // Suffisant pour accueillir la carte + sections dynamiques
-            return UIScreen.main.bounds.height * 1.5
+            return calculateStatsHeight()
         default:
             let itemCount = selectedTab == .posts ? viewModel.posts.count : viewModel.likedPosts.count
             let rowCount = ceil(Double(itemCount) / 3.0)
             let itemHeight = UIScreen.main.bounds.width / 3
             return max(CGFloat(rowCount) * itemHeight + 5, 400)
         }
+    }
+
+    private func calculateStatsHeight() -> CGFloat {
+        let verticalPadding: CGFloat = 8 + 16
+        let interSectionSpacing: CGFloat = 16
+        let listeningCardHeight: CGFloat = 124
+        let sectionHeaderHeight: CGFloat = 22
+        let rowHeight: CGFloat = 56
+        let sectionInnerPadding: CGFloat = 32
+
+        func sectionHeight(rows: Int) -> CGFloat {
+            rows > 0 ? sectionHeaderHeight + 12 + CGFloat(rows) * rowHeight + sectionInnerPadding + interSectionSpacing : 0
+        }
+
+        var total: CGFloat = verticalPadding + listeningCardHeight + interSectionSpacing
+        total += sectionHeight(rows: statsViewModel.topTracks.count)
+        total += sectionHeight(rows: statsViewModel.topArtists.count)
+        total += sectionHeight(rows: statsViewModel.recentHistory.count)
+        return max(total, 400)
     }
 
     private func resetNavigation() {
