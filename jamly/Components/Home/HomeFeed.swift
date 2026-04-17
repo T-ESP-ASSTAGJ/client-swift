@@ -241,12 +241,7 @@ struct HomeFeed: View {
     }
     
     private func playPostMusic(_ post: Post) async {
-        let trackId = post.track.songId
-        if trackId.isEmpty {
-            musicManager.pause()
-            return
-        }
-        await musicManager.playTrackById(trackId)
+        await musicManager.playPreview(songId: post.track.songId)
     }
     
     private var currentScrollPositionBinding: Binding<Int?> {

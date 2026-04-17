@@ -7,229 +7,246 @@
 
 import Foundation
 import MusicKit
+import AVFoundation
 import Combine
+import UIKit
 
 @MainActor
 final class MusicManager: ObservableObject {
-    let player = ApplicationMusicPlayer.shared
-    
     @Published var authorizationStatus: MusicAuthorization.Status = .notDetermined
     @Published var playlists: [Playlist] = []
     @Published var tracks: [Track] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
-    
-    @Published var currentTrack: Song?
+
     @Published var isPlaying = false
-    
-    // ✅ NEW: Track if user has manually connected/disconnected the service
     @Published var isConnected: Bool = false
-    
+
+    private var player: AVPlayer?
+    private var currentSongId: String?
     private var playTask: Task<Void, Never>?
-    
-    // NOUVEAU: Vérifie le statut actuel SANS demander l'autorisation
+    private var endObserver: NSObjectProtocol?
+    private var backgroundObserver: NSObjectProtocol?
+
+    private var previewUrlCache: [String: URL] = [:]
+
+    init() {
+        configureAudioSession()
+        backgroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.pause() }
+        }
+    }
+
+    deinit {
+        if let token = endObserver { NotificationCenter.default.removeObserver(token) }
+        if let token = backgroundObserver { NotificationCenter.default.removeObserver(token) }
+    }
+
+    private func configureAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("⚠️ AVAudioSession config failed: \(error)")
+        }
+    }
+
+    // MARK: - Authorization
+
     func checkAuthorizationStatus() async -> MusicAuthorization.Status {
         let status = MusicAuthorization.currentStatus
         authorizationStatus = status
         return status
     }
-    
-    // Demande l'autorisation (avec prompt si notDetermined)
+
     func requestAuthorization() async {
         let status = await MusicAuthorization.request()
         authorizationStatus = status
-        
+
         if status == .authorized {
             isConnected = true
             await loadPlaylists()
         }
     }
-    
-    // ✅ NEW: Disconnect from Apple Music (clears playlists and state)
+
     func disconnect() {
         isConnected = false
         playlists = []
         tracks = []
         pause()
-        
-        // Reset authorization status to trigger fresh check on next connect
         authorizationStatus = .notDetermined
-        
         print("🎵 Disconnected from Apple Music - playlists cleared")
         print("⚠️ Note: To fully revoke access, go to iOS Settings > [Your App] > Media & Apple Music")
     }
-    
+
+    // MARK: - Library Playlists
+
     func loadPlaylists() async {
-        // Charge les playlists que si autorisé
         guard authorizationStatus == .authorized else {
             print("⚠️ Pas autorisé, skip loadPlaylists")
             return
         }
-        
+
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-        
+
         do {
-            // Charge les playlists avec les propriétés de base
             let request = MusicLibraryRequest<Playlist>()
             let response = try await request.response()
-            
-            print("📋 Found \(response.items.count) playlists")
-            
-            // Charge les détails pour chaque playlist
+
             var detailedPlaylists: [Playlist] = []
             for playlist in response.items {
                 do {
-                    // Charge artwork, description, curatorName
                     let detailed = try await playlist.with([.tracks])
                     detailedPlaylists.append(detailed)
                 } catch {
-                    // Si ça échoue pour une playlist, ajoute quand même la version de base
-                    print("⚠️ Error loading details for playlist \(playlist.name): \(error)")
                     detailedPlaylists.append(playlist)
                 }
             }
-            
             playlists = detailedPlaylists
-            
-            print("✅ Loaded \(playlists.count) playlists with details")
-            
         } catch {
             errorMessage = error.localizedDescription
             print("❌ Error loading playlists: \(error)")
         }
     }
-    
-    func playTrackById(_ trackId: String) async {
-        // Annule la tâche précédente si elle existe
-        playTask?.cancel()
-        
-        playTask = Task { @MainActor in
-            do {
-                let status = await MusicAuthorization.request()
-                guard status == .authorized else {
-                    print("❌ Apple Music non autorisé")
-                    return
-                }
-                
-                // Vérifie que la tâche n'a pas été annulée
-                guard !Task.isCancelled else {
-                    print("⏭️ Lecture annulée")
-                    return
-                }
-                
-                let musicItemID = MusicItemID(trackId)
-                var request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: musicItemID)
-                let response = try await request.response()
-                
-                // Vérifie encore que la tâche n'a pas été annulée
-                guard !Task.isCancelled else {
-                    print("⏭️ Lecture annulée après recherche")
-                    return
-                }
-                
-                guard let song = response.items.first else {
-                    print("❌ Track introuvable avec ID: \(trackId)")
-                    return
-                }
-                
-                print("🎵 Lecture: \(song.title) - \(song.artistName)")
-                
-                // Configure et joue
-                player.queue = [song]
-                try await player.prepareToPlay()
-                try await player.play()
-                
-                currentTrack = song
-                isPlaying = true
-                
-            } catch is CancellationError {
-                print("⏭️ Lecture annulée (CancellationError)")
-            } catch {
-                print("❌ Erreur lecture track: \(error)")
-            }
+
+    // MARK: - Preview Playback (AVPlayer, in-app only)
+
+    func playPreview(songId: String) async {
+        if songId.isEmpty {
+            pause()
+            return
         }
-        
+
+        if currentSongId == songId, let player = player {
+            if !isPlaying {
+                player.play()
+                isPlaying = true
+            }
+            return
+        }
+
+        playTask?.cancel()
+
+        playTask = Task { @MainActor in
+            guard !Task.isCancelled else { return }
+
+            guard let previewUrl = await fetchPreviewUrl(songId: songId) else {
+                print("❌ No preview available for songId: \(songId)")
+                return
+            }
+
+            guard !Task.isCancelled else { return }
+
+            if let token = endObserver {
+                NotificationCenter.default.removeObserver(token)
+                endObserver = nil
+            }
+
+            let item = AVPlayerItem(url: previewUrl)
+            let newPlayer = AVPlayer(playerItem: item)
+            newPlayer.automaticallyWaitsToMinimizeStalling = true
+
+            endObserver = NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: item,
+                queue: .main
+            ) { _ in
+                newPlayer.seek(to: .zero)
+                newPlayer.play()
+            }
+
+            guard !Task.isCancelled else { return }
+
+            player = newPlayer
+            currentSongId = songId
+            newPlayer.play()
+            isPlaying = true
+        }
+
         await playTask?.value
     }
-    
-    func getCatalogID(for track: Track) async -> String? {
+
+    private func fetchPreviewUrl(songId: String) async -> URL? {
+        if let cached = previewUrlCache[songId] {
+            return cached
+        }
+
         do {
-            // Vérifie d'abord si c'est déjà un ID catalogue (pas "i.")
-            let trackID = track.id.rawValue
-            if !trackID.hasPrefix("i.") {
-                print("✅ Déjà un ID catalogue: \(trackID)")
-                return trackID
-            }
-            
-            print("🔍 Track de bibliothèque détecté, recherche dans le catalogue...")
-            
-            // Récupère les infos du track
-            let title = track.title
-            let artistName = track.artistName
-            
-            // Recherche dans le catalogue Apple Music
-            let searchTerm = "\(title) \(artistName)"
-            var searchRequest = MusicCatalogSearchRequest(term: searchTerm, types: [Song.self])
-            searchRequest.limit = 5  // Prend les 5 premiers résultats
-            
-            let response = try await searchRequest.response()
-            
-            let songs = response.songs
-            guard !songs.isEmpty else {
-                print("❌ Aucun résultat trouvé dans le catalogue")
+            let musicItemID = MusicItemID(songId)
+            let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: musicItemID)
+            let response = try await request.response()
+
+            guard let song = response.items.first,
+                  let previewUrl = song.previewAssets?.first?.url else {
                 return nil
             }
-            
-            // Trouve la meilleure correspondance
-            // (idéalement même titre ET même artiste)
-            let exactMatch = songs.first { song in
-                song.title.lowercased() == title.lowercased() &&
-                song.artistName.lowercased() == artistName.lowercased()
-            }
-            
-            if let match = exactMatch {
-                let catalogID = match.id.rawValue
-                print("✅ Match exact trouvé!")
-                print("   Titre: \(match.title)")
-                print("   Artiste: \(match.artistName)")
-                print("   Catalog ID: \(catalogID)")
-                return catalogID
-            }
-            
-            // Si pas de match exact, prend le premier résultat
-            guard let firstSong = songs.first else {
-                print("❌ Aucun résultat trouvé dans le catalogue")
-                return nil
-            }
-            let catalogID = firstSong.id.rawValue
-            print("⚠️ Pas de match exact, meilleur résultat:")
-            print("   Titre: \(firstSong.title)")
-            print("   Artiste: \(firstSong.artistName)")
-            print("   Catalog ID: \(catalogID)")
-            return catalogID
-            
+
+            previewUrlCache[songId] = previewUrl
+            return previewUrl
         } catch {
-            print("❌ Erreur lors de la recherche: \(error)")
+            print("❌ Error fetching preview for \(songId): \(error)")
             return nil
         }
     }
-    
-    // Pause la musique
+
+    // MARK: - Catalog Search (for MusicPickerView)
+
+    func searchCatalog(term: String, limit: Int = 25) async -> [Song] {
+        do {
+            var request = MusicCatalogSearchRequest(term: term, types: [Song.self])
+            request.limit = limit
+            let response = try await request.response()
+            return Array(response.songs)
+        } catch {
+            print("❌ Catalog search error: \(error)")
+            return []
+        }
+    }
+
+    // MARK: - Get Catalog ID from library track
+
+    func getCatalogID(for track: Track) async -> String? {
+        let trackID = track.id.rawValue
+        if !trackID.hasPrefix("i.") {
+            return trackID
+        }
+
+        let searchTerm = "\(track.title) \(track.artistName)"
+        var searchRequest = MusicCatalogSearchRequest(term: searchTerm, types: [Song.self])
+        searchRequest.limit = 5
+
+        do {
+            let response = try await searchRequest.response()
+            let songs = response.songs
+
+            let exactMatch = songs.first { song in
+                song.title.lowercased() == track.title.lowercased() &&
+                song.artistName.lowercased() == track.artistName.lowercased()
+            }
+
+            return (exactMatch ?? songs.first)?.id.rawValue
+        } catch {
+            print("❌ Error searching catalog: \(error)")
+            return nil
+        }
+    }
+
+    // MARK: - Controls
+
     func pause() {
-        playTask?.cancel() // Annule aussi la tâche en cours
-        player.pause()
+        playTask?.cancel()
+        player?.pause()
         isPlaying = false
     }
-    
-    // Resume la musique
+
     func play() async {
-        do {
-            try await player.play()
-            isPlaying = true
-        } catch {
-            print("❌ Erreur play: \(error)")
-        }
+        player?.play()
+        isPlaying = true
     }
 }

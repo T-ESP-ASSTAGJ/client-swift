@@ -7,14 +7,15 @@ import SwiftUI
 import MusicKit
 
 struct ProfileStatsView: View {
-    @StateObject private var viewModel = ProfileStatsViewModel()
+    @ObservedObject var viewModel: ProfileStatsViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if viewModel.isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 80)
+                    .padding(.top, 40)
+                    .padding(.bottom, 40)
             } else {
                 content
             }
@@ -23,7 +24,7 @@ struct ProfileStatsView: View {
     }
 
     private var content: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 16) {
             listeningTimeCard
 
             if !viewModel.topTracks.isEmpty {
@@ -39,8 +40,8 @@ struct ProfileStatsView: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 20)
-        .padding(.bottom, 40)
+        .padding(.top, 8)
+        .padding(.bottom, 16)
     }
 
     // MARK: - Listening Time Card

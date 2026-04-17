@@ -184,11 +184,6 @@ struct PlaylistDetailView: View {
     
     private func playTrack(_ track: Track, from tracks: [Track]) async {
         do {
-            if let catalogID = await musicManager.getCatalogID(for: track) {
-                print("✅ ID à envoyer à ton API: \(catalogID)")
-                // C'est cet ID que tu stockes et que tu utilises dans le feed
-            }
-            
             player.queue = ApplicationMusicPlayer.Queue(for: [track] + tracks.filter { $0.id != track.id })
             try await player.play()
             currentTrack = track
