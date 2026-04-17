@@ -28,6 +28,9 @@ struct PostCard: View {
     @State private var isLiked: Bool
     @State private var likesCount: Int
     @State private var commentsCount: Int
+    @State private var showReportSheet = false
+    @State private var isReported = false
+    @State private var showAlreadyReportedToast = false
     
     private let captionTruncationThreshold = 80
 
@@ -66,8 +69,38 @@ struct PostCard: View {
             }
         }
         .padding(.top, !showPostDetail ? 20 : 0)
+        .overlay(alignment: .top) {
+            if showAlreadyReportedToast {
+                HStack(spacing: 8) {
+                    Image(systemName: "flag.fill")
+                        .foregroundColor(.white)
+                    Text("Already reported")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.orange.opacity(0.9))
+                )
+                .padding(.top, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onAppear {
+                    Task {
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showAlreadyReportedToast = false
+                        }
+                    }
+                }
+            }
+        }
         .navigationDestination(item: $selectedUserId) { userId in
             ProfileView(userId: userId)
+        }
+        .sheet(isPresented: $showReportSheet) {
+            ReportPostSheetView(post: post, isReported: $isReported)
         }
         .onAppear {
             viewModel.viewPost(post: post)
@@ -118,6 +151,23 @@ struct PostCard: View {
                 .font(.caption)
                 .foregroundColor(.white)
                 .opacity(0.7)
+
+            Menu {
+                Button(role: .destructive) {
+                    if isReported {
+                        showAlreadyReportedToast = true
+                    } else {
+                        showReportSheet = true
+                    }
+                } label: {
+                    Label(isReported ? "Already reported" : "Report", systemImage: isReported ? "flag.fill" : "flag")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(8)
+            }
         }
         .padding(.top, 25)
         .padding(.horizontal, 15)
