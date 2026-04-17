@@ -7,9 +7,11 @@ struct PlaylistDetailView: View {
     private let player = ApplicationMusicPlayer.shared
     
     @EnvironmentObject var musicManager: MusicManager
+    private let shareService = PlaylistShareService.shared
     
     @State private var isPlaying = false
     @State private var currentTrack: Track?
+    @State private var showShareToConversation = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -102,50 +104,80 @@ struct PlaylistDetailView: View {
     // MARK: - Actions
     
     private var actionsView: some View {
-        HStack(spacing: 20) {
-            Button(action: {
-               
-            }) {
-                HStack {
-                    Image(systemName: "play.fill")
-                    Text("Play")
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(
-                    LinearGradient(
-                        colors: [.pink, .purple],
-                        startPoint: .leading,
-                        endPoint: .trailing
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                Button(action: {
+                    Task { await playAll() }
+                }) {
+                    HStack {
+                        Image(systemName: "play.fill")
+                        Text("Play")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        LinearGradient(
+                            colors: [.pink, .purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
                     )
-                )
-                .cornerRadius(12)
+                    .cornerRadius(12)
+                }
+                
+                Button(action: {
+                    Task { await shufflePlay() }
+                }) {
+                    Image(systemName: "shuffle")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .frame(width: 50, height: 50)
+                        .background(Color.white.opacity(0.15))
+                        .cornerRadius(12)
+                }
             }
             
-            Button(action: {
-                Task { await shufflePlay() }
-            }) {
-                Image(systemName: "shuffle")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .frame(width: 50, height: 50)
-                    .background(Color.white.opacity(0.15))
-                    .cornerRadius(12)
-            }
-            
-            Button(action: { sharePlaylist() }) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .frame(width: 50, height: 50)
-                    .background(Color.white.opacity(0.15))
-                    .cornerRadius(12)
+            // Share Options
+            HStack(spacing: 12) {
+                Button(action: {
+                    showShareToConversation = true
+                }) {
+                    Image(systemName: "paperplane.fill")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .frame(width: 50, height: 50)
+                        .background(
+                            LinearGradient(
+                                colors: [.pink, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(10)
+                }
+                
+                // System share sheet for other apps
+                Button(action: {
+                    Task { await shareViaSystem() }
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .frame(width: 50, height: 50)
+                        .background(Color.white.opacity(0.15))
+                        .cornerRadius(10)
+                }
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
+        .sheet(isPresented: $showShareToConversation) {
+            ShareToConversationView(playlist: playlist)
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
     }
     
     // MARK: - Tracks List
@@ -225,14 +257,8 @@ struct PlaylistDetailView: View {
         }
     }
     
-    private func sharePlaylist() {
-        guard let url = playlist.url else { return }
-        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootVC = window.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
+    private func shareViaSystem() async {
+        await shareService.sharePlaylist(playlist)
     }
 }
 

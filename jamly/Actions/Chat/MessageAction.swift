@@ -39,16 +39,12 @@ enum MessageAction {
             content: content,
             type: "text"
         )
-        
-        let response = try await APIClient.shared.request(
+        return try await APIClient.shared.request(
             MessageEndpoint.messages,
             method: .post,
             body: body,
             responseType: Message.self
         )
-        
-        print("✅ Text message sent to conversation \(conversationId)")
-        return response
     }
     
     /// Envoie un message musical (track) dans une conversation
@@ -68,7 +64,6 @@ enum MessageAction {
             responseType: Message.self
         )
         
-        print("✅ Music message sent to conversation \(conversationId)")
         return response
     }
 }
