@@ -31,6 +31,8 @@
 		76381C582F0440C6008BB4B0 /* PostViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76381C572F0440C6008BB4B0 /* PostViewModel.swift */; };
 		76385AC32EE76651000B0320 /* PostAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76385AC22EE76651000B0320 /* PostAction.swift */; };
 		76385AC52EE767EC000B0320 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76385AC42EE767EC000B0320 /* Post.swift */; };
+		AA100002AA10000200AA0002 /* ReportPostSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100001AA10000100AA0001 /* ReportPostSheetView.swift */; };
+		AA100004AA10000400AA0004 /* Report.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100003AA10000300AA0003 /* Report.swift */; };
 		763EF3AD2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3AA2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf */; };
 		763EF3AE2EE5D3490096A522 /* Poppins-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3A92EE5D3490096A522 /* Poppins-BoldItalic.ttf */; };
 		763EF3AF2EE5D3490096A522 /* Poppins-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3AC2EE5D3490096A522 /* Poppins-SemiBoldItalic.ttf */; };
@@ -147,6 +149,8 @@
 		76381C572F0440C6008BB4B0 /* PostViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostViewModel.swift; sourceTree = "<group>"; };
 		76385AC22EE76651000B0320 /* PostAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAction.swift; sourceTree = "<group>"; };
 		76385AC42EE767EC000B0320 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		AA100001AA10000100AA0001 /* ReportPostSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportPostSheetView.swift; sourceTree = "<group>"; };
+		AA100003AA10000300AA0003 /* Report.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Report.swift; sourceTree = "<group>"; };
 		763EF3A92EE5D3490096A522 /* Poppins-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-BoldItalic.ttf"; sourceTree = "<group>"; };
 		763EF3AA2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		763EF3AB2EE5D3490096A522 /* Poppins-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-MediumItalic.ttf"; sourceTree = "<group>"; };
@@ -509,6 +513,7 @@
 			children = (
 				768FFC862F03307C00388CB7 /* PostDetailedView.swift */,
 				76204DCB2EE78A8B004C9C93 /* CreatePostView.swift */,
+				AA100001AA10000100AA0001 /* ReportPostSheetView.swift */,
 			);
 			path = Post;
 			sourceTree = "<group>";
@@ -592,6 +597,7 @@
 				76883EE72EE50107006A3955 /* User.swift */,
 				76385AC42EE767EC000B0320 /* Post.swift */,
 				7A475A6944A447BFBFC25055 /* MusicStats.swift */,
+				AA100003AA10000300AA0003 /* Report.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1006,6 +1012,8 @@
 				7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */,
 				796A842A2F097A760099766F /* SearchComponents.swift in Sources */,
 				768FFC872F03307C00388CB7 /* PostDetailedView.swift in Sources */,
+				AA100002AA10000200AA0002 /* ReportPostSheetView.swift in Sources */,
+				AA100004AA10000400AA0004 /* Report.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
