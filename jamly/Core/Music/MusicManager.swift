@@ -157,10 +157,8 @@ final class MusicManager: ObservableObject {
                 object: item,
                 queue: .main
             ) { _ in
-                Task { @MainActor in
-                    newPlayer.seek(to: .zero)
-                    newPlayer.play()
-                }
+                newPlayer.seek(to: .zero)
+                newPlayer.play()
             }
 
             guard !Task.isCancelled else { return }
