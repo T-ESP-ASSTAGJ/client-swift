@@ -103,7 +103,6 @@
 		C372E1562F8932B300FE51CF /* PlaylistPickerForMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */; };
 		C372E1602F8932B300FE51CF /* TrackPickerForMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */; };
 		C372E1612F8932B300FE51CF /* MusicPickerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */; };
-		C37E89162F923F68000E4E44 /* error.txt in Resources */ = {isa = PBXBuildFile; fileRef = C37E89152F923F63000E4E44 /* error.txt */; };
 		C39A5DCC2F04686800945A76 /* Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DCB2F04686800945A76 /* Search.swift */; };
 		C39A5DCE2F0468AE00945A76 /* SearchAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DCD2F0468AE00945A76 /* SearchAction.swift */; };
 		C39A5DD12F046B9600945A76 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DD02F046B9600945A76 /* SearchViewModel.swift */; };
@@ -256,7 +255,6 @@
 		C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistPickerForMessageView.swift; sourceTree = "<group>"; };
 		C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackPickerForMessageView.swift; sourceTree = "<group>"; };
 		C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPickerComponents.swift; sourceTree = "<group>"; };
-		C37E89152F923F63000E4E44 /* error.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = error.txt; sourceTree = "<group>"; };
 		C39A5DCB2F04686800945A76 /* Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Search.swift; sourceTree = "<group>"; };
 		C39A5DCD2F0468AE00945A76 /* SearchAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchAction.swift; sourceTree = "<group>"; };
 		C39A5DD02F046B9600945A76 /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
@@ -418,7 +416,6 @@
 			isa = PBXGroup;
 			children = (
 				7917F0CC2F6D6465003C6389 /* GoogleService-Info.plist */,
-				C37E89152F923F63000E4E44 /* error.txt */,
 				79F034062F5B258C00BF7673 /* Services */,
 				761C50532EE447380053AD1F /* Actions */,
 				76A2D3BE2EE4B22800AA6F6E /* App */,
@@ -1106,7 +1103,6 @@
 				76883F002EE5CF03006A3955 /* Poppins-Regular.ttf in Resources */,
 				76883F012EE5CF03006A3955 /* Poppins-Light.ttf in Resources */,
 				76883F022EE5CF03006A3955 /* Poppins-Bold.ttf in Resources */,
-				C37E89162F923F68000E4E44 /* error.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
