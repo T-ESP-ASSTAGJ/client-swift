@@ -1,5 +1,6 @@
 import SwiftUI
 import MusicKit
+import Combine
 
 struct MusicPlaylistsView: View {
     @EnvironmentObject var musicManager: MusicManager
@@ -109,6 +110,19 @@ struct MusicPlaylistsView: View {
                         PlaylistRowContent(playlist: playlist)
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .contextMenu {
+                        PlaylistContextMenu(playlist: playlist)
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button {
+                            Task {
+                                await PlaylistShareService.shared.sharePlaylist(playlist)
+                            }
+                        } label: {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        .tint(.blue)
+                    }
                 }
             }
             .padding()
@@ -195,6 +209,55 @@ struct PlaylistRowContent: View {
         .padding()
         .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
+    }
+}
+
+// MARK: - Playlist Context Menu
+
+struct PlaylistContextMenu: View {
+    let playlist: Playlist
+
+    @State private var showShareSheet = false
+    @State private var showShareToConversation = false
+
+    var body: some View {
+        Group {
+            Button {
+                showShareSheet = true
+            } label: {
+                Label("Share Link", systemImage: "square.and.arrow.up")
+            }
+
+            Button {
+                showShareToConversation = true
+            } label: {
+                Label("Send in Message", systemImage: "message.fill")
+            }
+
+            Divider()
+
+            Button {
+                Task { await PlaylistShareService.shared.sharePlaylist(playlist) }
+            } label: {
+                Label("Share via Apple Music", systemImage: "applelogo")
+            }
+
+            Button {
+                UIPasteboard.general.string = PlaylistShareService.shared.appleMusicURL(for: playlist)
+            } label: {
+                Label("Copy Link", systemImage: "doc.on.doc")
+            }
+        }
+        .sheet(isPresented: $showShareSheet) {
+            PlaylistShareSheetView(playlist: playlist)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showShareToConversation) {
+            ShareToConversationView(playlist: playlist)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 

@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Combine
+import MusicKit
 
 // Les modèles Conversation et ChatMessage sont dans ChatModels.swift
 
@@ -53,6 +55,11 @@ struct MessageBubble: View {
                 if message.isMusicMessage {
                     // Bulle de message musical
                     MusicMessageView(message: message)
+                } else if isPlaylistLink(message.content) {
+                    PlaylistLinkMessageView(
+                        message: message,
+                        isFromCurrentUser: isFromCurrentUser
+                    )
                 } else {
                     // Bulle de message texte
                     Text(message.content ?? "")
@@ -84,72 +91,164 @@ struct MessageBubble: View {
         }
         .padding(.horizontal)
     }
+    
+    // MARK: - Helper Methods
+    
+    /// Check if message content is an Apple Music playlist link
+    private func isPlaylistLink(_ content: String?) -> Bool {
+        guard let content = content else { return false }
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.contains(Config.appleMusicHost) && trimmed.contains(Config.appleMusicPlaylistPath) { return true }
+        // Legacy format: "🎵 Name\nURL"
+        return content.contains("🎵") && content.contains(Config.appleMusicHost)
+    }
 }
 
 // MARK: - Music Message View
-/// Vue spéciale pour les messages contenant une piste musicale
+/// Displays a track message. message.track holds the Apple Music catalog song ID.
+/// Title, artist and artwork are fetched from MusicKit at display time.
 struct MusicMessageView: View {
     let message: Message
-    
+
+    @EnvironmentObject private var musicManager: MusicManager
+
+    @State private var songTitle: String = "Track"
+    @State private var songArtist: String = "Apple Music"
+    @State private var artwork: Artwork? = nil
+    @State private var songURL: URL? = nil
+
+    /// Extracts the Apple Music catalog song ID from the message content URL.
+    /// Format: music.apple.com/album/.../id?i=songId
+    var catalogSongID: String? {
+        guard let content = message.content else { return nil }
+        if let components = URLComponents(string: content),
+           let songId = components.queryItems?.first(where: { $0.name == "i" })?.value {
+            return songId
+        }
+        // Fallback: last numeric path component
+        if let url = URL(string: content), let last = url.pathComponents.last,
+           last.allSatisfy({ $0.isNumber }), !last.isEmpty {
+            return last
+        }
+        return nil
+    }
+
+    var isThisPlaying: Bool {
+        musicManager.isPlaying && musicManager.currentSongId == catalogSongID
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
-            // Image de la piste
-            if let imageUrl = message.trackImageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay {
-                            Image(systemName: "music.note")
-                                .foregroundColor(.white)
-                        }
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                Group {
+                    if let artwork {
+                        ArtworkImage(artwork, width: 56, height: 56)
+                    } else {
+                        artworkPlaceholder
+                    }
                 }
-                .frame(width: 50, height: 50)
+                .frame(width: 56, height: 56)
                 .cornerRadius(8)
-            }
-            
-            // Infos de la piste
-            VStack(alignment: .leading, spacing: 4) {
-                if let title = message.trackTitle {
-                    Text(title)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                .clipped()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(songTitle)
+                        .font(.subheadline.weight(.semibold))
                         .foregroundColor(.white)
-                }
-                
-                if let artist = message.trackArtist {
-                    Text(artist)
+                        .lineLimit(1)
+
+                    Text(songArtist)
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(1)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "applelogo").font(.caption2)
+                        Text("Apple Music").font(.caption)
+                    }
+                    .foregroundColor(.white.opacity(0.6))
                 }
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "music.note")
-                        .font(.caption2)
-                    Text("Piste partagée")
-                        .font(.caption2)
+
+                Spacer(minLength: 0)
+
+                // Play/pause button
+                if catalogSongID != nil {
+                    Button {
+                        Task { await togglePlayPause() }
+                    } label: {
+                        Image(systemName: isThisPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.2))
+                            .clipShape(Circle())
+                    }
                 }
-                .foregroundColor(.white.opacity(0.6))
             }
-            
-            Spacer()
-            
-            // Bouton play
-            Button {
-                // TODO: Jouer la piste
-            } label: {
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
+            .padding(12)
+
+            Divider().background(Color.white.opacity(0.2))
+
+            if let url = songURL {
+                Link(destination: url) {
+                    HStack {
+                        Image(systemName: "arrow.up.right.square").font(.body)
+                        Text("Open in Apple Music").font(.subheadline.weight(.semibold))
+                        Spacer()
+                    }
                     .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                }
             }
         }
-        .padding(12)
-        .background(Color.blue.opacity(0.8))
+        .background(
+            LinearGradient(
+                colors: [Color.pink.opacity(0.7), Color.pink.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .cornerRadius(16)
-        .frame(maxWidth: 280)
+        .frame(maxWidth: 300)
+        .task(id: message.id) { await loadSongData() }
+    }
+
+    private var artworkPlaceholder: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.15))
+            .overlay {
+                Image(systemName: "music.note")
+                    .font(.title2)
+                    .foregroundColor(.white.opacity(0.6))
+            }
+    }
+
+    private func togglePlayPause() async {
+        guard let songID = catalogSongID else { return }
+        if isThisPlaying {
+            musicManager.pause()
+        } else {
+            await musicManager.playPreview(songId: songID)
+        }
+    }
+
+    private func loadSongData() async {
+        guard let songID = catalogSongID, !songID.isEmpty,
+              MusicAuthorization.currentStatus == .authorized else { return }
+        do {
+            let request = MusicCatalogResourceRequest<Song>(
+                matching: \.id, equalTo: MusicItemID(songID)
+            )
+            let response = try await request.response()
+            guard let song = response.items.first else { return }
+            songTitle = song.title
+            songArtist = song.artistName
+            artwork = song.artwork
+            songURL = song.url
+        } catch {
+            // MusicKit fetch failed — UI keeps default placeholder values
+        }
     }
 }
 
@@ -163,6 +262,8 @@ struct ChatDetailView: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var hasScrolledToBottom: Bool = false
+    @State private var showPlaylistPicker = false
+    @State private var showTrackPicker = false
     @FocusState private var isTextFieldFocused: Bool
     
     // Dependencies
@@ -221,45 +322,22 @@ struct ChatDetailView: View {
     /// Traite un message reçu via Mercure
     private func handleMercureMessage(data: Data) {
         do {
-            let decoder = JSONDecoder()
-            
-            // Votre backend envoie un wrapper avec "type" et "message"
-            let wrapper = try decoder.decode(MercureMessageWrapper.self, from: data)
+            let wrapper = try JSONDecoder().decode(MercureMessageWrapper.self, from: data)
             let newMessage = wrapper.message
-            
-            print("✅ Message Mercure parsé: \(newMessage.content ?? "no content")")
-            print("   Message ID: \(newMessage.id)")
-            print("   Auteur: \(newMessage.author.username)")
-            
-            // Vérifier si c'est notre propre message (déjà affiché en optimiste)
+
             if newMessage.isFromCurrentUser(currentUserId: currentUserId) {
-                // C'est notre message : remplacer le message temporaire (ID -1)
                 if let tempIndex = messages.firstIndex(where: { $0.id == -1 }) {
                     messages[tempIndex] = newMessage
-                    print("✅ Message temporaire remplacé par le message réel")
                 } else if !messages.contains(where: { $0.id == newMessage.id }) {
-                    // Le message temporaire a déjà été remplacé, mais pas par Mercure
                     messages.append(newMessage)
-                    print("✅ Message ajouté (envoyé par nous)")
-                } else {
-                    print("⚠️ Message déjà présent (ignoré)")
                 }
             } else {
-                // Message d'un autre utilisateur : l'ajouter s'il n'existe pas
                 if !messages.contains(where: { $0.id == newMessage.id }) {
                     messages.append(newMessage)
-                    print("✅ Message ajouté (reçu d'un autre utilisateur)")
-                } else {
-                    print("⚠️ Message déjà présent (ignoré)")
                 }
             }
         } catch {
-            print("❌ Erreur parsing message Mercure: \(error)")
-            
-            // Debug : afficher le JSON brut
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("   JSON reçu: \(jsonString)")
-            }
+            // Mercure parse error — silently ignored
         }
     }
     
@@ -419,15 +497,42 @@ struct ChatDetailView: View {
     /// Section de saisie de message en bas de l'écran
     private var messageInputSection: some View {
         HStack(spacing: 8) {
-            // Bouton média à gauche (dans l'input)
-            Button {
-                // TODO: Ouvrir le sélecteur de musique
+            // Bouton + à gauche (média/playlist)
+            Menu {
+                Button {
+                    showPlaylistPicker = true
+                } label: {
+                    Label("Share Playlist", systemImage: "music.note.list")
+                }
+                Button {
+                    showTrackPicker = true
+                } label: {
+                    Label("Share Track", systemImage: "music.note")
+                }
             } label: {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 28))
                     .foregroundColor(.blue)
             }
             .padding(.leading, 4)
+            .sheet(isPresented: $showPlaylistPicker) {
+                PlaylistPickerForMessageView(
+                    conversationId: conversation.id,
+                    onPlaylistShared: {
+                        showPlaylistPicker = false
+                        loadMessages()
+                    }
+                )
+            }
+            .sheet(isPresented: $showTrackPicker) {
+                TrackPickerForMessageView(
+                    conversationId: conversation.id,
+                    onTrackShared: {
+                        showTrackPicker = false
+                        loadMessages()
+                    }
+                )
+            }
             
             // Champ de texte
             TextField("Message...", text: $newMessageText, axis: .vertical)
@@ -486,7 +591,6 @@ struct ChatDetailView: View {
                 await MainActor.run {
                     errorMessage = "Erreur lors du chargement: \(error.localizedDescription)"
                     isLoading = false
-                    print("❌ Error loading messages: \(error)")
                 }
             }
         }
@@ -509,8 +613,6 @@ struct ChatDetailView: View {
             ),
             type: "text",
             content: trimmedText,
-            track: nil,
-            trackMetadata: nil,
             readAt: nil,
             conversationId: conversation.id,
             updatedAt: now,
@@ -540,7 +642,6 @@ struct ChatDetailView: View {
                     // En cas d'erreur, retirer le message temporaire
                     messages.removeAll { $0.id == -1 }
                     errorMessage = "Erreur lors de l'envoi: \(error.localizedDescription)"
-                    print("❌ Error sending message: \(error)")
                     
                     // Remettre le texte dans le champ si l'envoi a échoué
                     newMessageText = messageToSend
@@ -549,6 +650,127 @@ struct ChatDetailView: View {
         }
     }
 }
+
+// MARK: - Playlist Link Message View
+/// Displays a playlist message. Content is the Apple Music URL.
+/// Name and artwork are fetched from the MusicKit catalog at display time.
+struct PlaylistLinkMessageView: View {
+    let message: Message
+    let isFromCurrentUser: Bool
+
+    @State private var playlistName: String = "Playlist"
+    @State private var artwork: Artwork? = nil
+
+    /// The Apple Music URL — either the full content (new format) or extracted from legacy "🎵 Name\nURL"
+    var linkURL: URL? {
+        guard let content = message.content else { return nil }
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        // New format: content IS the URL
+        if let url = URL(string: trimmed), url.scheme == "https" { return url }
+        // Legacy format: URL embedded in text
+        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let matches = detector?.matches(in: content, range: NSRange(content.startIndex..., in: content))
+        if let match = matches?.first, let range = Range(match.range, in: content) {
+            return URL(string: String(content[range]))
+        }
+        return nil
+    }
+
+    /// Extracts a catalog playlist ID (pl.*) from the URL path.
+    var catalogPlaylistID: String? {
+        linkURL?.pathComponents.first(where: { $0.hasPrefix("pl.") })
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                // Artwork via ArtworkImage — handles both https:// and musicKit:// schemes
+                Group {
+                    if let artwork {
+                        ArtworkImage(artwork, width: 60, height: 60)
+                    } else {
+                        artworkPlaceholder
+                    }
+                }
+                .frame(width: 60, height: 60)
+                .cornerRadius(8)
+                .clipped()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(playlistName)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "applelogo").font(.caption2)
+                        Text("Apple Music").font(.caption)
+                    }
+                    .foregroundColor(.white.opacity(0.8))
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+
+            Divider().background(Color.white.opacity(0.2))
+
+            if let url = linkURL {
+                Link(destination: url) {
+                    HStack {
+                        Image(systemName: "play.circle.fill").font(.body)
+                        Text(catalogPlaylistID != nil ? "Open in Apple Music" : "Search in Apple Music")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "arrow.up.right").font(.caption)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                }
+            }
+        }
+        .background(
+            LinearGradient(
+                colors: [Color.pink.opacity(0.7), Color.pink.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(16)
+        .frame(maxWidth: 300)
+        .task(id: message.id) { await loadPlaylistData() }
+    }
+
+    private var artworkPlaceholder: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.15))
+            .overlay {
+                Image(systemName: "music.note.list")
+                    .font(.title2)
+                    .foregroundColor(.white.opacity(0.6))
+            }
+    }
+
+    // MARK: - MusicKit catalog fetch
+
+    private func loadPlaylistData() async {
+        guard let playlistID = catalogPlaylistID,
+              MusicAuthorization.currentStatus == .authorized else { return }
+        do {
+            let request = MusicCatalogResourceRequest<Playlist>(
+                matching: \.id, equalTo: MusicItemID(playlistID)
+            )
+            let response = try await request.response()
+            guard let playlist = response.items.first else { return }
+            playlistName = playlist.name
+            artwork = playlist.artwork
+        } catch {
+            // MusicKit fetch failed — UI keeps default placeholder values
+        }
+    }
+}
+
 // MARK: - Backward Compatibility Extension
 extension ChatDetailView {
     /// Initializer pour compatibilité avec l'ancien code (ChatsView)

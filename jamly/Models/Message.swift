@@ -7,16 +7,6 @@
 
 import Foundation
 
-// MARK: - Track Metadata (optionnel, pour les messages créés)
-
-struct TrackMetadata: Codable, Hashable {
-    let title: String?
-    let artist: String?
-    let album: String?
-    let imageUrl: String?
-    let duration: Int?
-}
-
 // MARK: - Message
 
 struct Message: Codable, Identifiable, Hashable {
@@ -26,38 +16,23 @@ struct Message: Codable, Identifiable, Hashable {
     let content: String?
     
     // Champs qui peuvent varier selon l'endpoint
-    let track: String?
-    let trackMetadata: TrackMetadata?
     let readAt: String?
     let conversationId: Int?
     let updatedAt: String?
     
     let createdAt: String
     
-    enum CodingKeys: String, CodingKey {
-        case id, author, type, content, track, trackMetadata, readAt, conversationId, updatedAt, createdAt
-    }
-    
     // MARK: - Computed Properties
-    
+
     var isMusicMessage: Bool {
-        type == "track" || type == "music"
+        if type == "track" || type == "music" { return true }
+        if type == "share", let content = content,
+           content.contains(Config.appleMusicHost), !content.contains(Config.appleMusicPlaylistPath) { return true }
+        return false
     }
-    
+
     var isRead: Bool {
         readAt != nil
-    }
-    
-    var trackTitle: String? {
-        trackMetadata?.title
-    }
-    
-    var trackArtist: String? {
-        trackMetadata?.artist
-    }
-    
-    var trackImageUrl: String? {
-        trackMetadata?.imageUrl
     }
     
     /// Convertit la date ISO8601 en Date
@@ -99,8 +74,8 @@ struct LightMessage: Codable, Identifiable, Hashable {
             return preview
         }
         
-        if let type = type, type == "track" || type == "music" {
-            return "🎵 Piste partagée"
+        if let type = type, type == "track" || type == "music" || type == "share" {
+            return "🎵 Contenu partagé"
         }
         
         if let content = content {
