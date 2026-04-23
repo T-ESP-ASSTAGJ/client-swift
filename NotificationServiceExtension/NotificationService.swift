@@ -28,51 +28,55 @@ class NotificationService: UNNotificationServiceExtension {
 
         let userInfo = request.content.userInfo
         let senderName = bestAttemptContent.title
-        let profilePictureURL = userInfo["profilePicture"] as? String
-        NSLog("🔔 [NotificationService] senderName: \(senderName), profilePictureURL: \(profilePictureURL ?? "nil")")
+        let avatarURL = (userInfo["profilePicture"] as? String).flatMap(Self.validURL)
+        let postURL = (userInfo["postImage"] as? String).flatMap(Self.validURL)
 
-        // Si pas de profile picture, on utilise Communication Notification sans avatar
-        guard let urlString = profilePictureURL, let url = URL(string: urlString) else {
+        NSLog("🔔 [NotificationService] senderName: \(senderName)")
+        NSLog("🔔 [NotificationService] avatarURL: \(avatarURL?.absoluteString ?? "nil")")
+        NSLog("🔔 [NotificationService] postURL: \(postURL?.absoluteString ?? "nil")")
+
+        // Télécharge avatar et post image en parallèle, puis assemble la notif
+        let group = DispatchGroup()
+        var avatarData: Data?
+        var postImageData: Data?
+
+        if let avatarURL {
+            group.enter()
+            URLSession.shared.dataTask(with: avatarURL) { data, _, error in
+                if let error {
+                    NSLog("🔔 [NotificationService] Erreur download avatar: \(error)")
+                }
+                avatarData = data
+                group.leave()
+            }.resume()
+        }
+
+        if let postURL {
+            group.enter()
+            URLSession.shared.dataTask(with: postURL) { data, _, error in
+                if let error {
+                    NSLog("🔔 [NotificationService] Erreur download post image: \(error)")
+                }
+                postImageData = data
+                group.leave()
+            }.resume()
+        }
+
+        group.notify(queue: .global()) {
             let updatedContent = self.createCommunicationNotification(
                 content: bestAttemptContent,
                 senderName: senderName,
-                imageData: nil
+                imageData: avatarData,
+                postImageData: postImageData
             )
             contentHandler(updatedContent)
-            return
         }
+    }
 
-        // Télécharger la profile picture et optionnellement l'image du post
-        let postImageURL = userInfo["postImage"] as? String
-        NSLog("🔔 [NotificationService] Téléchargement de l'avatar: \(urlString)")
-        NSLog("🔔 [NotificationService] postImage: \(postImageURL ?? "nil")")
-
-        let task = URLSession.shared.dataTask(with: url) { avatarData, _, error in
-            let safeAvatarData = (error == nil) ? avatarData : nil
-
-            // Si on a une image de post, la télécharger aussi
-            if let postURLString = postImageURL, let postURL = URL(string: postURLString) {
-                let postTask = URLSession.shared.dataTask(with: postURL) { postData, _, postError in
-                    let updatedContent = self.createCommunicationNotification(
-                        content: bestAttemptContent,
-                        senderName: senderName,
-                        imageData: safeAvatarData,
-                        postImageData: (postError == nil) ? postData : nil
-                    )
-                    contentHandler(updatedContent)
-                }
-                postTask.resume()
-            } else {
-                let updatedContent = self.createCommunicationNotification(
-                    content: bestAttemptContent,
-                    senderName: senderName,
-                    imageData: safeAvatarData,
-                    postImageData: nil
-                )
-                contentHandler(updatedContent)
-            }
-        }
-        task.resume()
+    private static func validURL(_ string: String) -> URL? {
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let url = URL(string: trimmed), url.scheme != nil else { return nil }
+        return url
     }
 
     private func createCommunicationNotification(
