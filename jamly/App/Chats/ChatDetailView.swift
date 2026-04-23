@@ -246,7 +246,9 @@ struct MusicMessageView: View {
             songArtist = song.artistName
             artwork = song.artwork
             songURL = song.url
-        } catch {}
+        } catch {
+            // MusicKit fetch failed — UI keeps default placeholder values
+        }
     }
 }
 
@@ -763,7 +765,9 @@ struct PlaylistLinkMessageView: View {
             guard let playlist = response.items.first else { return }
             playlistName = playlist.name
             artwork = playlist.artwork
-        } catch {}
+        } catch {
+            // MusicKit fetch failed — UI keeps default placeholder values
+        }
     }
 }
 

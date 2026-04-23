@@ -21,7 +21,7 @@ struct TrackPickerForMessageView: View {
                 Color.black.ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    searchBar.padding()
+                    MusicPickerSearchBar(text: $searchText, placeholder: "Search for a track...").padding()
 
                     if isSearching {
                         Spacer()
@@ -48,21 +48,9 @@ struct TrackPickerForMessageView: View {
                         .foregroundColor(selectedSong == nil ? .gray : .pink)
                 }
             }
-            .alert("Error", isPresented: .constant(shareError != nil)) {
-                Button("OK") { shareError = nil }
-            } message: {
-                if let error = shareError { Text(error) }
-            }
+            .shareErrorAlert($shareError)
             .overlay {
-                if isSharing {
-                    ZStack {
-                        Color.black.opacity(0.5).ignoresSafeArea()
-                        VStack(spacing: 12) {
-                            ProgressView().tint(.white).scaleEffect(1.5)
-                            Text("Sharing track...").foregroundColor(.white).font(.caption)
-                        }
-                    }
-                }
+                if isSharing { SharingOverlay(label: "Sharing track...") }
             }
         }
         .preferredColorScheme(.dark)
@@ -72,18 +60,6 @@ struct TrackPickerForMessageView: View {
     }
 
     // MARK: - Subviews
-
-    private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass").foregroundColor(.gray)
-            TextField("Search for a track...", text: $searchText)
-                .foregroundColor(.white)
-                .autocorrectionDisabled()
-        }
-        .padding(12)
-        .background(Color.gray.opacity(0.2))
-        .cornerRadius(10)
-    }
 
     private var emptySearchView: some View {
         VStack(spacing: 12) {
@@ -183,11 +159,7 @@ struct TrackPickerRow: View {
                 }
             }
             .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.white.opacity(0.15) : Color.gray.opacity(0.1))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2))
-            )
+            .pickerRowBackground(isSelected: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
     }
