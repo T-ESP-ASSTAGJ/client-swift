@@ -84,6 +84,9 @@ struct MainTabView: View {
                         .navigationDestination(for: NotifProfileTarget.self) { target in
                             ProfileView(userId: target.id)
                         }
+                        .navigationDestination(for: Conversation.self) { conversation in
+                            ChatDetailView(conversation: conversation)
+                        }
                 }
             }
 
@@ -177,6 +180,40 @@ struct MainTabView: View {
             case .profile: profileTabPath.append(target)
             case .create: homeTabPath.append(target)
             }
+        }
+        .onReceive(NotificationManager.shared.$pendingConversationId) { conversationId in
+            guard let conversationId else { return }
+            print("🚀 Navigation vers conversation \(conversationId)")
+            NotificationManager.shared.pendingConversationId = nil
+            Task {
+                await loadAndNavigateToConversation(id: conversationId)
+            }
+        }
+    }
+
+    // MARK: - Load Conversation
+
+    private func loadAndNavigateToConversation(id: Int) async {
+        do {
+            let response = try await ConversationAction.getConversationDetail(conversationId: id)
+            let detail = response.value
+            let conversation = Conversation(
+                config: ConversationConfig(
+                    id: detail.id,
+                    isGroup: detail.isGroup,
+                    groupName: detail.groupName ?? "",
+                    memberCount: detail.memberCount
+                ),
+                type: detail.isGroup ? "group" : "direct",
+                lastMessage: nil,
+                participants: detail.participants
+            )
+            chatsTabPath = NavigationPath()
+            chatsTabPath.append(conversation)
+            selectedTab = .chats
+            print("✅ Conversation \(id) chargée et navigation effectuée")
+        } catch {
+            print("❌ Erreur lors du chargement de la conversation \(id): \(error)")
         }
     }
 

@@ -7,10 +7,24 @@
 
 struct ConversationConfig {
     let id: Int
-    let isGroup: Bool = false
-    let groupName: String = ""
-    let unreadCount: Int = 0
-    let memberCount: Int = 0
+    let isGroup: Bool
+    let groupName: String
+    let unreadCount: Int
+    let memberCount: Int
+
+    init(
+        id: Int,
+        isGroup: Bool = false,
+        groupName: String = "",
+        unreadCount: Int = 0,
+        memberCount: Int = 0
+    ) {
+        self.id = id
+        self.isGroup = isGroup
+        self.groupName = groupName
+        self.unreadCount = unreadCount
+        self.memberCount = memberCount
+    }
 }
 
 struct Conversation: Codable, Identifiable, Hashable {

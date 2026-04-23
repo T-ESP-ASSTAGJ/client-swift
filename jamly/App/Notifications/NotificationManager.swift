@@ -28,6 +28,7 @@ final class NotificationManager: ObservableObject {
     @Published var pendingPostId: Int?
     @Published var pendingHighlightedCommentId: Int?
     @Published var pendingProfileUserId: Int?
+    @Published var pendingConversationId: Int?
     
     private init() {
         // Initialisation privée pour singleton
@@ -189,11 +190,13 @@ final class NotificationManager: ObservableObject {
         let entityId = Self.intFromAny(userInfo["entityId"])
         let postId = Self.intFromAny(userInfo["postId"])
         let userId = Self.intFromAny(userInfo["userId"])
+        let conversationId = Self.intFromAny(userInfo["conversationId"])
         print("📍 Tentative navigation:")
         print("   entityClass: \(entityClass ?? "nil")")
         print("   entityId: \(entityId.map(String.init) ?? "nil")")
         print("   postId: \(postId.map(String.init) ?? "nil")")
         print("   userId: \(userId.map(String.init) ?? "nil")")
+        print("   conversationId: \(conversationId.map(String.init) ?? "nil")")
 
         if let entityClass {
             if entityClass.contains("Comment") {
@@ -216,6 +219,16 @@ final class NotificationManager: ObservableObject {
                 print("✅ Navigation vers le post \(entityId) demandée")
                 return
             }
+            if entityClass.contains("Message") || entityClass.contains("Conversation") {
+                let target = conversationId ?? entityId
+                guard let target else {
+                    print("❌ conversationId/entityId manquant pour Message/Conversation")
+                    return
+                }
+                pendingConversationId = target
+                print("✅ Navigation vers conversation \(target) demandée")
+                return
+            }
             if entityClass.contains("User") || entityClass.contains("Follow") {
                 let target = entityId ?? userId
                 guard let target else {
@@ -230,14 +243,19 @@ final class NotificationManager: ObservableObject {
             return
         }
 
-        // Pas d'entityClass : cas follow (payload envoie uniquement userId)
+        // Pas d'entityClass : fallbacks sur les ids présents
+        if let conversationId {
+            pendingConversationId = conversationId
+            print("✅ Navigation vers conversation \(conversationId) demandée (fallback)")
+            return
+        }
         if let userId {
             pendingProfileUserId = userId
             print("✅ Navigation vers profil user \(userId) demandée (follow)")
             return
         }
 
-        print("❌ Rien à faire : ni entityClass ni userId")
+        print("❌ Rien à faire : aucun id exploitable")
     }
 
     private static func intFromAny(_ value: Any?) -> Int? {
