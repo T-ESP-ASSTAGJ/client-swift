@@ -12,7 +12,6 @@ import Combine
 
 // MARK: - Notification Names
 extension Notification.Name {
-    static let navigateToPost = Notification.Name("navigateToPost")
     static let navigateToProfile = Notification.Name("navigateToProfile")
     static let navigateToConversation = Notification.Name("navigateToConversation")
 }
@@ -26,6 +25,9 @@ final class NotificationManager: ObservableObject {
     @Published var lastNotificationReceived: Date?
     @Published var lastNotificationPayload: [AnyHashable: Any]?
     @Published var notificationCount: Int = 0
+    @Published var pendingPostId: Int?
+    @Published var pendingHighlightedCommentId: Int?
+    @Published var pendingProfileUserId: Int?
     
     private init() {
         // Initialisation privée pour singleton
@@ -182,25 +184,67 @@ final class NotificationManager: ObservableObject {
         // Traiter l'action de la notification
         handleNotificationData(userInfo)
         
-        // Navigation selon le type et entity_class
-        if let entityClass = userInfo["entity_class"] as? String,
-           let entityIdString = userInfo["entity_id"] as? String,
-           let entityId = Int(entityIdString) {
-            
-            print("📍 Navigation détectée:")
-            print("   Entity Class: \(entityClass)")
-            print("   Entity ID: \(entityId)")
-            
-            if entityClass == "App\\Entity\\Post" {
-                // Publier une notification pour naviguer vers le post
-                NotificationCenter.default.post(
-                    name: .navigateToPost,
-                    object: nil,
-                    userInfo: ["postId": entityId]
-                )
-                print("✅ Navigation vers le post \(entityId) demandée")
+        // Navigation selon entityClass / userId
+        let entityClass = userInfo["entityClass"] as? String
+        let entityId = Self.intFromAny(userInfo["entityId"])
+        let postId = Self.intFromAny(userInfo["postId"])
+        let userId = Self.intFromAny(userInfo["userId"])
+        print("📍 Tentative navigation:")
+        print("   entityClass: \(entityClass ?? "nil")")
+        print("   entityId: \(entityId.map(String.init) ?? "nil")")
+        print("   postId: \(postId.map(String.init) ?? "nil")")
+        print("   userId: \(userId.map(String.init) ?? "nil")")
+
+        if let entityClass {
+            if entityClass.contains("Comment") {
+                guard let postId, let entityId else {
+                    print("❌ postId ou entityId manquant pour Comment")
+                    return
+                }
+                pendingHighlightedCommentId = entityId
+                pendingPostId = postId
+                print("✅ Navigation vers post \(postId) avec commentaire \(entityId) en tête")
+                return
             }
+            if entityClass.contains("Post") {
+                guard let entityId else {
+                    print("❌ entityId manquant pour Post")
+                    return
+                }
+                pendingHighlightedCommentId = nil
+                pendingPostId = entityId
+                print("✅ Navigation vers le post \(entityId) demandée")
+                return
+            }
+            if entityClass.contains("User") || entityClass.contains("Follow") {
+                let target = entityId ?? userId
+                guard let target else {
+                    print("❌ userId/entityId manquant pour User/Follow")
+                    return
+                }
+                pendingProfileUserId = target
+                print("✅ Navigation vers profil user \(target) demandée")
+                return
+            }
+            print("ℹ️ entityClass non géré pour navigation: \(entityClass)")
+            return
         }
+
+        // Pas d'entityClass : cas follow (payload envoie uniquement userId)
+        if let userId {
+            pendingProfileUserId = userId
+            print("✅ Navigation vers profil user \(userId) demandée (follow)")
+            return
+        }
+
+        print("❌ Rien à faire : ni entityClass ni userId")
+    }
+
+    private static func intFromAny(_ value: Any?) -> Int? {
+        if let int = value as? Int { return int }
+        if let str = value as? String { return Int(str) }
+        if let num = value as? NSNumber { return num.intValue }
+        return nil
     }
     
     /// Traite les données d'une notification
@@ -227,6 +271,11 @@ final class NotificationManager: ObservableObject {
             }
         }
         
+        // ✅ Vérifier si une profilePicture est présente
+        if let profilePicture = userInfo["profilePicture"] as? String {
+            print("🖼️ Profile Picture URL: \(profilePicture)")
+        }
+        
         // Extraire les données custom
         print("📝 Custom Data:")
         for (key, value) in userInfo where key as? String != "aps" {
@@ -239,25 +288,25 @@ final class NotificationManager: ObservableObject {
             switch type {
             case "like", "new_like":
                 print("❤️ Nouveau like reçu")
-                if let entityId = userInfo["entity_id"] as? String {
+                if let entityId = userInfo["entityId"] as? String {
                     print("   Entity ID: \(entityId)")
                 }
-                if let entityClass = userInfo["entity_class"] as? String {
+                if let entityClass = userInfo["entityClass"] as? String {
                     print("   Entity Class: \(entityClass)")
                 }
             case "comment", "new_comment":
                 print("💬 Nouveau commentaire")
-                if let entityId = userInfo["entity_id"] as? String {
+                if let entityId = userInfo["entityId"] as? String {
                     print("   Entity ID: \(entityId)")
                 }
             case "follow", "new_follower":
                 print("👤 Nouveau follower")
-                if let userId = userInfo["user_id"] as? String {
+                if let userId = userInfo["userId"] as? String {
                     print("   User ID: \(userId)")
                 }
             case "message", "new_message":
                 print("💌 Nouveau message")
-                if let conversationId = userInfo["conversation_id"] as? String {
+                if let conversationId = userInfo["conversationId"] as? String {
                     print("   Conversation ID: \(conversationId)")
                 }
             default:

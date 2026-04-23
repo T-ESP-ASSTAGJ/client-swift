@@ -2,14 +2,15 @@ import SwiftUI
 
 struct CommentRow: View {
     let comment: CommentResponse
-    
+    let isHighlighted: Bool
+
     @State private var isLiked: Bool
     @State private var likesCount: Int
     @State private var isTogglingLike: Bool = false
-//    @State private var showReplySheet = false
-    
-    init(comment: CommentResponse) {
+
+    init(comment: CommentResponse, isHighlighted: Bool = false) {
         self.comment = comment
+        self.isHighlighted = isHighlighted
         self._isLiked = State(initialValue: comment.isLiked)
         self._likesCount = State(initialValue: comment.likesCount)
     }
@@ -97,8 +98,10 @@ struct CommentRow: View {
             Spacer()
         }
         .padding(12)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isHighlighted ? Color(.systemGray3) : Color(.systemGray6))
+        )
     }
     
     private func toggleLike() async {

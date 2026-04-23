@@ -23,11 +23,12 @@ final class CommentViewModel: ObservableObject {
     private var currentPage: Int = 1
     private var hasMorePages: Bool = true
     private var currentPostId: Int?
+    private var highlightedCommentId: Int?
     
     @Published var isLoadingMore: Bool = false
     @Published var errorMessage: String?
     
-    func getComments(post: Post) async {
+    func getComments(post: Post, highlightedCommentId: Int? = nil) async {
         Task {
             isLoading = true
             errorMessage = nil
@@ -35,15 +36,35 @@ final class CommentViewModel: ObservableObject {
             state = .loading
             hasMorePages = true
             currentPostId = post.id
+            self.highlightedCommentId = highlightedCommentId
 
             do {
+                // Commentaire mis en avant (récupéré à part pour garantir qu'il s'affiche)
+                var highlighted: CommentResponse?
+                if let highlightedCommentId {
+                    do {
+                        let highlightedResponse = try await CommentAction.getComment(id: highlightedCommentId)
+                        if highlightedResponse.statusCode == 200 {
+                            highlighted = highlightedResponse.value
+                            print("⭐ Commentaire mis en avant chargé: \(highlightedCommentId)")
+                        }
+                    } catch {
+                        print("⚠️ Impossible de charger le commentaire \(highlightedCommentId): \(error)")
+                    }
+                }
+
                 print("📥 Loading comments for post \(post.id), page \(currentPage)")
                 let response = try await CommentAction.getComments(postId: post.id)
 
                 switch response.statusCode {
                 case 200:
                     state = .success
-                    comments = response.value
+                    var loaded = response.value
+                    if let highlighted {
+                        loaded.removeAll { $0.id == highlighted.id }
+                        loaded.insert(highlighted, at: 0)
+                    }
+                    comments = loaded
 
                     print("✅ Loaded \(response.value.count) comments")
                     hasMorePages = response.value.count >= 20
@@ -76,7 +97,11 @@ final class CommentViewModel: ObservableObject {
                 
                 switch response.statusCode {
                 case 200:
-                    comments.append(contentsOf: response.value)
+                    var newComments = response.value
+                    if let highlightedCommentId {
+                        newComments.removeAll { $0.id == highlightedCommentId }
+                    }
+                    comments.append(contentsOf: newComments)
                     hasMorePages = response.value.count >= 20
                 default:
                     errorMessage = "Failed to load comments."

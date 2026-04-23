@@ -8,6 +8,10 @@ enum TabItem: Int, CaseIterable, Hashable {
     case profile
 }
 
+struct NotifProfileTarget: Identifiable, Hashable {
+    let id: Int
+}
+
 // Container pour gérer la navigation du CreatePostView
 struct CreatePostViewContainer: View {
     @Binding var selectedTab: TabItem
@@ -27,6 +31,11 @@ struct MainTabView: View {
     @State private var shouldRefreshDiscovery = false
     @State private var selectedPostForDetail: Post?
     @State private var isLoadingPost = false
+    @State private var highlightedCommentId: Int?
+    @State private var homeTabPath = NavigationPath()
+    @State private var discoverTabPath = NavigationPath()
+    @State private var chatsTabPath = NavigationPath()
+    @State private var profileTabPath = NavigationPath()
 
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userStore: UserStore
@@ -35,12 +44,15 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "rectangle.stack.badge.play.fill", value: .home) {
-                NavigationStack {
+                NavigationStack(path: $homeTabPath) {
                     HomeView(
                         selectedSegment: $selectedSegment,
                         discoveryScrollPosition: $discoveryScrollPosition,
                         friendsScrollPosition: $friendsScrollPosition
                     )
+                    .navigationDestination(for: NotifProfileTarget.self) { target in
+                        ProfileView(userId: target.id)
+                    }
                 }
                 .onChange(of: shouldRefreshDiscovery) { oldValue, newValue in
                     if newValue {
@@ -52,38 +64,48 @@ struct MainTabView: View {
                     }
                 }
             }
-            
+
             Tab("Discover", systemImage: "safari", value: .discover) {
-                NavigationStack {
+                NavigationStack(path: $discoverTabPath) {
                     DiscoverView()
+                        .navigationDestination(for: NotifProfileTarget.self) { target in
+                            ProfileView(userId: target.id)
+                        }
                 }
             }
-            
+
             Tab("", systemImage: "plus", value: .create) {
                 CreatePostViewContainer(selectedTab: $selectedTab)
             }
-            
+
             Tab("Chats", systemImage: "ellipsis.message", value: .chats) {
-                NavigationStack {
+                NavigationStack(path: $chatsTabPath) {
                     ChatsView()
+                        .navigationDestination(for: NotifProfileTarget.self) { target in
+                            ProfileView(userId: target.id)
+                        }
                 }
             }
-            
-            
+
+
             Tab("Profile", systemImage: "person.crop.circle.fill", value: .profile) {
-                NavigationStack {
+                NavigationStack(path: $profileTabPath) {
                     ProfileView()
+                        .navigationDestination(for: NotifProfileTarget.self) { target in
+                            ProfileView(userId: target.id)
+                        }
                 }
             }
         }
         .accentColor(.white)
         .sheet(item: $selectedPostForDetail) { post in
             NavigationStack {
-                PostDetailView(post: post)
+                PostDetailView(post: post, highlightedCommentId: highlightedCommentId)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Fermer") {
+                            Button("Close") {
                                 selectedPostForDetail = nil
+                                highlightedCommentId = nil
                             }
                             .foregroundColor(.white)
                         }
@@ -109,9 +131,17 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { oldValue, newValue in
             if oldValue == .profile && newValue != .profile {
                 NotificationCenter.default.post(name: .resetProfileNavigation, object: nil)
+                profileTabPath = NavigationPath()
             }
             if oldValue == .home && newValue != .home {
                 musicManager.pause()
+                homeTabPath = NavigationPath()
+            }
+            if oldValue == .discover && newValue != .discover {
+                discoverTabPath = NavigationPath()
+            }
+            if oldValue == .chats && newValue != .chats {
+                chatsTabPath = NavigationPath()
             }
 
             if oldValue == .create && newValue == .home {
@@ -123,27 +153,29 @@ struct MainTabView: View {
             Task {
                 await NotificationManager.shared.resetBadge()
             }
-            setupNotificationObservers()
         }
-        .onDisappear {
-            NotificationCenter.default.removeObserver(self)
+        .onReceive(NotificationManager.shared.$pendingPostId) { postId in
+            guard let postId else { return }
+            let commentId = NotificationManager.shared.pendingHighlightedCommentId
+            print("🚀 Navigation vers le post \(postId) (commentaire mis en avant: \(commentId.map(String.init) ?? "aucun"))")
+            NotificationManager.shared.pendingPostId = nil
+            NotificationManager.shared.pendingHighlightedCommentId = nil
+            highlightedCommentId = commentId
+            Task {
+                await loadAndNavigateToPost(id: postId)
+            }
         }
-    }
-
-    // MARK: - Navigation depuis notifications
-
-    private func setupNotificationObservers() {
-        NotificationCenter.default.addObserver(
-            forName: .navigateToPost,
-            object: nil,
-            queue: .main
-        ) { notification in
-            if let postId = notification.userInfo?["postId"] as? Int {
-                print("🚀 Navigation vers le post \(postId)")
-                // Pas besoin de changer d'onglet !
-                Task {
-                    await loadAndNavigateToPost(id: postId)
-                }
+        .onReceive(NotificationManager.shared.$pendingProfileUserId) { userId in
+            guard let userId else { return }
+            print("🚀 Navigation vers profil user \(userId) (tab actuel: \(selectedTab))")
+            NotificationManager.shared.pendingProfileUserId = nil
+            let target = NotifProfileTarget(id: userId)
+            switch selectedTab {
+            case .home: homeTabPath.append(target)
+            case .discover: discoverTabPath.append(target)
+            case .chats: chatsTabPath.append(target)
+            case .profile: profileTabPath.append(target)
+            case .create: homeTabPath.append(target)
             }
         }
     }
