@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 // MARK: - Message
 
 struct Message: Codable, Identifiable, Hashable {
@@ -28,7 +27,7 @@ struct Message: Codable, Identifiable, Hashable {
     var isMusicMessage: Bool {
         if type == "track" || type == "music" { return true }
         if type == "share", let content = content,
-           content.contains("music.apple.com"), !content.contains("/playlist/") { return true }
+           content.contains(Config.appleMusicHost), !content.contains(Config.appleMusicPlaylistPath) { return true }
         return false
     }
 

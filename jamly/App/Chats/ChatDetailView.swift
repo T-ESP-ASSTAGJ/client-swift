@@ -98,9 +98,9 @@ struct MessageBubble: View {
     private func isPlaylistLink(_ content: String?) -> Bool {
         guard let content = content else { return false }
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.contains("music.apple.com") && trimmed.contains("/playlist/") { return true }
+        if trimmed.contains(Config.appleMusicHost) && trimmed.contains(Config.appleMusicPlaylistPath) { return true }
         // Legacy format: "🎵 Name\nURL"
-        return content.contains("🎵") && content.contains("music.apple.com")
+        return content.contains("🎵") && content.contains(Config.appleMusicHost)
     }
 }
 

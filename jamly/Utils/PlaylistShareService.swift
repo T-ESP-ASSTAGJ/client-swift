@@ -7,7 +7,9 @@ final class PlaylistShareService {
 
     static let shared = PlaylistShareService()
 
-    private init() {}
+    private init() {
+        // Intentionally empty — prevents external instantiation (singleton pattern)
+    }
 
     // MARK: - Share via iOS share sheet
 
@@ -44,9 +46,9 @@ final class PlaylistShareService {
         let id = playlist.id.rawValue
         if id.hasPrefix("p.") {
             let encoded = playlist.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-            return "https://music.apple.com/search?term=\(encoded)"
+            return "\(Config.appleMusicBaseURL)/search?term=\(encoded)"
         }
-        return "https://music.apple.com/playlist/\(id)"
+        return "\(Config.appleMusicBaseURL)\(Config.appleMusicPlaylistPath)\(id)"
     }
 
     private func presentShareSheet(items: [Any]) async {
