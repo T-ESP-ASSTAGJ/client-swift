@@ -11,7 +11,7 @@ enum Config {
 #else
     static let baseURL = "https://api.jamly.app"
 #endif
-    
+
     static let appleMusicHost = "music.apple.com"
     static let appleMusicBaseURL = "https://music.apple.com/"
     static let appleMusicPlaylistPath = "/playlist/"

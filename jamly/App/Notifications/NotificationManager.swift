@@ -14,6 +14,7 @@ import Combine
 extension Notification.Name {
     static let navigateToProfile = Notification.Name("navigateToProfile")
     static let navigateToConversation = Notification.Name("navigateToConversation")
+    static let messageNotificationReceived = Notification.Name("messageNotificationReceived")
 }
 
 struct NotificationManagerEndpoint {
@@ -164,16 +165,25 @@ final class NotificationManager: ObservableObject {
         notificationCount += 1
         lastNotificationReceived = Date()
         lastNotificationPayload = userInfo
-        
+
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         print("🔔 NOTIFICATION REÇUE #\(notificationCount)")
         print("   Timestamp: \(Date())")
         print("   Payload complet:")
         print(userInfo)
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
+
         // Traiter les données de la notification
         handleNotificationData(userInfo)
+
+        // Diffuser le conversationId vers les vues intéressées (liste des chats, etc.)
+        if let conversationId = Self.intFromAny(userInfo["conversationId"]) {
+            NotificationCenter.default.post(
+                name: .messageNotificationReceived,
+                object: nil,
+                userInfo: ["conversationId": conversationId]
+            )
+        }
     }
     
     /// Appelé quand l'utilisateur tape sur une notification

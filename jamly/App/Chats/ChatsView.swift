@@ -63,10 +63,10 @@ struct ConversationRow: View {
                 
                 HStack {
                     if let lastMessage = conversation.lastMessage {
-                        Text(formatLastMessage(lastMessage))
+                        Text(formatLastMessage(lastMessage, isGroup: conversation.isGroup))
                             .font(.caption)
                             .foregroundColor(.gray)
-                            .lineLimit(2)
+                            .lineLimit(1)
                             .truncationMode(.tail)
                             .multilineTextAlignment(.leading)
                     } else {
@@ -140,9 +140,11 @@ struct ConversationRow: View {
     
     // MARK: - Helpers
     
-    private func formatLastMessage(_ message: LightMessage) -> String {
-        // Format: "username: preview"
-        return "\(message.author.username): \(message.displayPreview)"
+    private func formatLastMessage(_ message: LightMessage, isGroup: Bool) -> String {
+        if isGroup {
+            return "\(message.author.username): \(message.displayPreview)"
+        }
+        return message.displayPreview
     }
     
     private func formatTimestamp(_ message: LightMessage) -> String {

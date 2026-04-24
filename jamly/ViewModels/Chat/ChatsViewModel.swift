@@ -25,11 +25,45 @@ class ChatsViewModel: ObservableObject {
     
     private var currentPage = 1
     private var hasMorePages = true
-    
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Lifecycle
-    
+
     init() {
-        // Initialisation si nécessaire
+        NotificationCenter.default.publisher(for: .messageNotificationReceived)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] note in
+                guard let conversationId = note.userInfo?["conversationId"] as? Int else { return }
+                self?.handleIncomingMessageNotification(conversationId: conversationId)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Incrémente le compteur non-lu pour une conversation (ou recharge si inconnue)
+    private func handleIncomingMessageNotification(conversationId: Int) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+            // Conversation pas encore dans la liste (nouveau chat) → recharger
+            Task { await loadConversations() }
+            return
+        }
+        let current = conversations[index]
+        let newConfig = ConversationConfig(
+            id: current.id,
+            isGroup: current.isGroup,
+            groupName: current.groupName ?? "",
+            unreadCount: current.unreadCount + 1,
+            memberCount: current.memberCount
+        )
+        let updated = Conversation(
+            config: newConfig,
+            type: current.type,
+            lastMessage: current.lastMessage,
+            participants: current.participants
+        )
+        withAnimation {
+            conversations[index] = updated
+            filterConversations()
+        }
     }
     
     // MARK: - Public Methods
@@ -138,13 +172,13 @@ class ChatsViewModel: ObservableObject {
             print("❌ Error deleting conversation: \(error)")
         }
     }
-    
+
     /// Basculer le statut lu/non lu d'une conversation
     func toggleReadStatus(_ conversation: Conversation) async {
         do {
             // Appel API pour marquer comme lu
             _ = try await ConversationAction.markAsRead(id: conversation.id)
-            
+
             // Mettre à jour localement le unreadCount
             withAnimation {
                 if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
@@ -152,7 +186,7 @@ class ChatsViewModel: ObservableObject {
                     let config = ConversationConfig(
                         id: conversation.id
                     )
-                    
+
                     // Créer une nouvelle conversation avec unreadCount à 0
                     let updatedConversation = Conversation(
                         config: config,
@@ -160,19 +194,19 @@ class ChatsViewModel: ObservableObject {
                         lastMessage: conversation.lastMessage,
                         participants: conversation.participants
                     )
-                    
+
                     conversations[index] = updatedConversation
                     filterConversations()
                 }
             }
-            
+
             print("✅ Conversation \(conversation.id) marked as read")
         } catch {
             errorMessage = "Impossible de marquer la conversation comme lue"
             print("❌ Error marking conversation as read: \(error)")
         }
     }
-    
+
     // MARK: - Private Methods
     
     /// Filtrer les conversations selon le texte de recherche
