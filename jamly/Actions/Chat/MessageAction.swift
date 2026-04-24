@@ -32,12 +32,6 @@ struct SendImageMessageRequest: Codable {
     let type: String
 }
 
-struct SendImageMessageRequest: Codable {
-    let conversationId: Int
-    let content: String  // Image en Base64 avec data URI prefix
-    let type: String
-}
-
 // MARK: - Message Actions
 
 enum MessageAction {
@@ -75,40 +69,6 @@ enum MessageAction {
             body: body,
             responseType: Message.self
         )
-    }
-    
-    /// Envoie un message image dans une conversation
-    static func sendImageMessage(
-        conversationId: Int,
-        image: UIImage
-    ) async throws -> APIResponse<Message> {
-        // Convertir l'image en Base64 avec data URI prefix (comme dans CreatePost)
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-            throw NSError(
-                domain: "MessageAction",
-                code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to JPEG"]
-            )
-        }
-        
-        let base64String = imageData.base64EncodedString()
-        let dataURI = "data:image/jpeg;base64,\(base64String)"
-        
-        let body = SendImageMessageRequest(
-            conversationId: conversationId,
-            content: dataURI,
-            type: "image"
-        )
-        
-        let response = try await APIClient.shared.request(
-            MessageEndpoint.messages,
-            method: .post,
-            body: body,
-            responseType: Message.self
-        )
-        
-        print("✅ Image message sent to conversation \(conversationId)")
-        return response
     }
     
     /// Envoie un message image dans une conversation

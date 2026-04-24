@@ -599,8 +599,13 @@ struct ChatDetailView: View {
     /// Section de saisie de message en bas de l'écran
     private var messageInputSection: some View {
         HStack(spacing: 8) {
-            // Bouton + à gauche (média/playlist)
+            // Bouton + unique : image, playlist, track
             Menu {
+                Button {
+                    showImageSourceSheet = true
+                } label: {
+                    Label("Share Image", systemImage: "photo")
+                }
                 Button {
                     showPlaylistPicker = true
                 } label: {
@@ -611,9 +616,6 @@ struct ChatDetailView: View {
                 } label: {
                     Label("Share Track", systemImage: "music.note")
                 }
-            // Bouton média à gauche (dans l'input)
-            Button {
-                showImageSourceSheet = true
             } label: {
                 Image(systemName: selectedImage == nil ? "plus.circle.fill" : "photo.circle.fill")
                     .font(.system(size: 28))
@@ -621,7 +623,6 @@ struct ChatDetailView: View {
             }
             .padding(.leading, 4)
             .disabled(isSendingImage)
-
             .sheet(isPresented: $showPlaylistPicker) {
                 PlaylistPickerForMessageView(
                     conversationId: conversation.id,
@@ -811,8 +812,6 @@ struct ChatDetailView: View {
             ),
             type: "image",
             content: nil, // L'image sera affichée via le contenu du message
-            track: nil,
-            trackMetadata: nil,
             readAt: nil,
             conversationId: conversation.id,
             updatedAt: now,
