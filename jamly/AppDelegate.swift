@@ -13,10 +13,10 @@ import FirebaseMessaging
 class AppDelegate: NSObject, UIApplicationDelegate {
     
     func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+        _: UIApplication,
+        didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
-        
+
         FirebaseApp.configure()
         
         UNUserNotificationCenter.current().delegate = self
@@ -28,7 +28,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     
     // ✅ Appelé quand le device token APNs est reçu
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         // Envoie le token APNs à Firebase
@@ -45,7 +45,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     
     // ❌ Appelé en cas d'erreur
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
         Task { @MainActor in
@@ -59,7 +59,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     
     // Notification reçue quand l'app est au premier plan
     func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
+        _: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
@@ -78,7 +78,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     
     // L'utilisateur a tapé sur une notification
     func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
+        _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
@@ -96,7 +96,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     
     // 📱 Notification reçue en arrière-plan (silent push)
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
@@ -113,7 +113,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 extension AppDelegate: MessagingDelegate {
     
     // ✅ Appelé quand le FCM token est reçu ou mis à jour
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+    func messaging(_: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let fcmToken = fcmToken else { return }
         
         Task { @MainActor in

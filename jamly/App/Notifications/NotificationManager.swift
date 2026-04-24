@@ -16,6 +16,10 @@ extension Notification.Name {
     static let navigateToConversation = Notification.Name("navigateToConversation")
 }
 
+struct NotificationManagerEndpoint {
+    static var deviceToken: String { "\(UserEndpoints.users)/device-token" }
+}
+
 final class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
     
@@ -94,7 +98,7 @@ final class NotificationManager: ObservableObject {
     private func sendTokenToServer(_ token: String) async {
         do {
             try await APIClient.shared.request(
-                "/users/device-token",
+                NotificationManagerEndpoint.deviceToken,
                 method: .post,
                 body: ["deviceToken": token],
                 responseType: EmptyResponse.self
@@ -134,7 +138,7 @@ final class NotificationManager: ObservableObject {
     private func sendFCMTokenToServer(_ token: String) async {
         do {
             try await APIClient.shared.request(
-                "/users/device-token",
+                NotificationManagerEndpoint.deviceToken,
                 method: .post,
                 body: ["deviceToken": token],
                 responseType: EmptyResponse.self

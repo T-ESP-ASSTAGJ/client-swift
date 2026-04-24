@@ -30,7 +30,7 @@ struct ProfileView: View {
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     @State private var isFollowingTarget: Bool = false
-    @State private var unreadNotificationsCount = 2 // TODO: Remplacer par vraie valeur depuis API
+    @State private var unreadNotificationsCount = 2
 
     // MARK: - Computed Properties
 
