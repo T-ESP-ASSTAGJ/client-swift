@@ -141,23 +141,35 @@ class ChatsViewModel: ObservableObject {
     
     /// Basculer le statut lu/non lu d'une conversation
     func toggleReadStatus(_ conversation: Conversation) async {
-        let shouldMarkAsRead = conversation.unreadCount > 0
-        
         do {
-            let response = try await ConversationAction.markAsRead(id: conversation.id, isRead: shouldMarkAsRead)
+            // Appel API pour marquer comme lu
+            _ = try await ConversationAction.markAsRead(id: conversation.id)
             
-            // Mettre à jour la conversation localement avec la réponse de l'API
-            if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
-                withAnimation {
-                    conversations[index] = response.value
+            // Mettre à jour localement le unreadCount
+            withAnimation {
+                if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
+                    // Créer une nouvelle configuration avec unreadCount à 0
+                    let config = ConversationConfig(
+                        id: conversation.id
+                    )
+                    
+                    // Créer une nouvelle conversation avec unreadCount à 0
+                    let updatedConversation = Conversation(
+                        config: config,
+                        type: conversation.type,
+                        lastMessage: conversation.lastMessage,
+                        participants: conversation.participants
+                    )
+                    
+                    conversations[index] = updatedConversation
                     filterConversations()
                 }
             }
             
-            print("✅ Conversation \(conversation.id) marked as \(shouldMarkAsRead ? "read" : "unread")")
+            print("✅ Conversation \(conversation.id) marked as read")
         } catch {
-            errorMessage = "Impossible de modifier le statut"
-            print("❌ Error toggling read status: \(error)")
+            errorMessage = "Impossible de marquer la conversation comme lue"
+            print("❌ Error marking conversation as read: \(error)")
         }
     }
     

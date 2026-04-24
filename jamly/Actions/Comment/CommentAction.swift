@@ -38,7 +38,17 @@ enum CommentAction {
             query: ["page": String(page)],
             responseType: [CommentResponse].self
         )
-        
+
+        return response
+    }
+
+    static func getComment(id: Int) async throws -> APIResponse<CommentResponse> {
+        let response = try await APIClient.shared.request(
+            "/comments/\(id)",
+            method: .get,
+            responseType: CommentResponse.self
+        )
+
         return response
     }
     

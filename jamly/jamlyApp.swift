@@ -6,11 +6,14 @@ import MusicKit
 
 @main
 struct jamlyApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var userStore = UserStore()
     @StateObject private var authManager: AuthManager
     @State private var isLoading = true
     
     @StateObject private var musicManager = MusicManager()
+    @StateObject private var notificationManager = NotificationManager.shared
     
     @Environment(\.scenePhase) private var scenePhase
     
@@ -37,10 +40,19 @@ struct jamlyApp: App {
                         .environmentObject(authManager)
                         .environmentObject(userStore)
                         .environmentObject(musicManager)
+                        .environmentObject(notificationManager)
                 }
             }
             .task {
                 await userStore.initialize()
+                
+                // ✅ Demande l'autorisation pour les notifications push
+                await notificationManager.requestAuthorization()
+                
+                // 📱 Envoyer le device token si l'utilisateur est déjà connecté
+                if authManager.isAuthenticated {
+                    await notificationManager.sendDeviceTokenToServer()
+                }
                 
                 // ✅ Charge les playlists EN ARRIÈRE-PLAN seulement si déjà autorisé
                 await loadMusicIfAuthorized()

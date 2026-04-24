@@ -429,20 +429,27 @@ struct ChatDetailView: View {
                         .id("bottom")
                 }
                 .opacity(hasScrolledToBottom || messages.isEmpty ? 1 : 0) // Toujours visible si vide
-                .onChange(of: messages.count) { newCount in
-                    if !hasScrolledToBottom && newCount > 0 {
-                        // Premier chargement : scroll instantané sans animation
-                        DispatchQueue.main.async {
-                            proxy.scrollTo("bottom", anchor: .bottom)
-                            // Afficher après un mini délai pour que le scroll soit fait
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                hasScrolledToBottom = true
+                .onChange(of: messages.count) { _, newCount in
+                    guard newCount > 0 else { return }
+                    if !hasScrolledToBottom {
+                        // Premier chargement : laisser le LazyVStack se layouter avant de scroller
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 100_000_000)
+                            if let lastId = messages.last?.id {
+                                proxy.scrollTo(lastId, anchor: .bottom)
                             }
+                            try? await Task.sleep(nanoseconds: 200_000_000)
+                            if let lastId = messages.last?.id {
+                                proxy.scrollTo(lastId, anchor: .bottom)
+                            }
+                            hasScrolledToBottom = true
                         }
-                    } else if newCount > 0 {
+                    } else {
                         // Nouveaux messages : scroll avec animation
                         withAnimation(.easeOut(duration: 0.3)) {
-                            proxy.scrollTo("bottom", anchor: .bottom)
+                            if let lastId = messages.last?.id {
+                                proxy.scrollTo(lastId, anchor: .bottom)
+                            }
                         }
                     }
                 }

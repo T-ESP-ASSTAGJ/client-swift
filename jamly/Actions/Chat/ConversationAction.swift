@@ -54,17 +54,14 @@ enum ConversationAction {
         return response
     }
     
-    static func markAsRead(id: Int, isRead: Bool) async throws -> APIResponse<Conversation> {
-        let body = ["isRead": isRead]
+    static func markAsRead(id: Int) async throws -> APIResponse<EmptyResponse> {
         
         let response = try await APIClient.shared.request(
             ConversationEndpoint.markAsRead(id),
-            method: .patch,
-            body: body,
-            responseType: Conversation.self
+            method: .post,
+            responseType: EmptyResponse.self
         )
         
-        print("✅ Conversation \(id) marked as \(isRead ? "read" : "unread")")
         return response
     }
     

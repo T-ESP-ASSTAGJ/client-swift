@@ -63,6 +63,11 @@ final class AuthManager: ObservableObject {
         print("🔐 AuthManager.login called")
         userStore.setToken(token)
         isAuthenticated = true
+        
+        // 📱 Envoyer le device token après la connexion
+        Task {
+            await NotificationManager.shared.sendDeviceTokenToServer()
+        }
     }
     
     func completeOnboarding() {

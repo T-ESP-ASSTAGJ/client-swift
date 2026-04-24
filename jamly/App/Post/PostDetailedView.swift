@@ -9,63 +9,83 @@ import SwiftUI
 
 struct PostDetailView: View {
     let post: Post
-    
+    let highlightedCommentId: Int?
+
     @EnvironmentObject var musicManager: MusicManager
     @EnvironmentObject private var userStore: UserStore
-    
+
     @StateObject private var commentViewModel = CommentViewModel()
-    
+
     @State private var coverUIImage: UIImage?
     @State private var newCommentText: String = ""
     @State private var isLoading: Bool = false
     @State private var isPlaying = true
-    
+    @State private var didScrollToHighlighted = false
+
     @FocusState private var isTextFieldFocused: Bool
-    
-    init(post: Post) {
+
+    init(post: Post, highlightedCommentId: Int? = nil) {
         self.post = post
-        
-//        print("Current post: \(post)")
+        self.highlightedCommentId = highlightedCommentId
     }
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    // MARK - Post Card
-                    PostCard(
-                        post: post,
-                        isCurrentPost: true,
-                        onSeeMore: { },  // Vide car déjà dans le détail
-                        onOpenComments: { },
-                        showPostDetail: .constant(true),
-                        musicManager: musicManager
-                    )
-                    
-                    // MARK: - Track Card
-                    trackCard
-                        .padding(.top, 20)
-                    
-                    // MARK: - Caption
-                    if !post.caption.isEmpty {
-                        captionSection
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // MARK - Post Card
+                        PostCard(
+                            post: post,
+                            isCurrentPost: true,
+                            onSeeMore: { },  // Vide car déjà dans le détail
+                            onOpenComments: { },
+                            showPostDetail: .constant(true),
+                            musicManager: musicManager
+                        )
+
+                        // MARK: - Track Card
+                        trackCard
                             .padding(.top, 20)
+
+                        // MARK: - Caption
+                        if !post.caption.isEmpty {
+                            captionSection
+                                .padding(.top, 20)
+                        }
+
+                        // MARK: - Comments Section
+                        commentsSection
+                            .padding(.top, 24)
                     }
-                    
-                    // MARK: - Comments Section
-                    commentsSection
-                        .padding(.top, 24)
                 }
                 .safeAreaInset(edge: .bottom) {
                     commentInputSection
                 }
-                .padding(.bottom, 100) // Space for input
+                .task {
+                    await loadData()
+                }
+                .onChange(of: commentViewModel.comments.count) { _, _ in
+                    scrollToHighlightedComment(proxy: proxy)
+                }
+                .onTapGesture {
+                    isTextFieldFocused = false
+                }
             }
-            .task {
-                await loadData()
-            }
-            .onTapGesture {
-                isTextFieldFocused = false
+        }
+    }
+
+    private func scrollToHighlightedComment(proxy: ScrollViewProxy) {
+        guard !didScrollToHighlighted,
+              let highlightedCommentId,
+              commentViewModel.comments.contains(where: { $0.id == highlightedCommentId })
+        else { return }
+        didScrollToHighlighted = true
+        // Petit délai pour laisser la LazyVStack rendre ses enfants
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            withAnimation(.easeInOut(duration: 0.4)) {
+                proxy.scrollTo(highlightedCommentId, anchor: .center)
             }
         }
     }
@@ -177,8 +197,12 @@ struct PostDetailView: View {
             } else {
                 LazyVStack(spacing: 16) {
                     ForEach(commentViewModel.comments) { comment in
-                        CommentRow(comment: comment)
-                            .padding(.horizontal, 20)
+                        CommentRow(
+                            comment: comment,
+                            isHighlighted: comment.id == highlightedCommentId
+                        )
+                        .id(comment.id)
+                        .padding(.horizontal, 20)
                     }
                 }
             }
@@ -276,11 +300,7 @@ struct PostDetailView: View {
             }
         }
         
-        // Load comments
-//        print("ID DU POST")
-//        print(post.id)
-//        print("ID DU POST")
-        await commentViewModel.getComments(post: post)
+        await commentViewModel.getComments(post: post, highlightedCommentId: highlightedCommentId)
     }
     
     private func sendComment() async {
