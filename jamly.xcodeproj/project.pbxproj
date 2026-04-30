@@ -75,6 +75,8 @@
 		792F52B12F92685400E29094 /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 792F52B02F92685400E29094 /* Intents.framework */; };
 		7933238A2EF80A230040755F /* CommentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* CommentRow.swift */; };
 		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
+		794070352FA383EF00CCE9F6 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */; };
+		794070372FA3843600CCE9F6 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794070362FA3843600CCE9F6 /* ImageCache.swift */; };
 		796367362F360183000BA493 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367352F360181000BA493 /* Conversation.swift */; };
 		796367382F3603C3000BA493 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367372F3603BD000BA493 /* Message.swift */; };
 		7965AA672F50867C005E6504 /* MessageAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7965AA662F50867C005E6504 /* MessageAction.swift */; };
@@ -227,6 +229,8 @@
 		792F52B02F92685400E29094 /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
 		793323892EF80A230040755F /* CommentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRow.swift; sourceTree = "<group>"; };
 		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
+		794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
+		794070362FA3843600CCE9F6 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		796367352F360181000BA493 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		796367372F3603BD000BA493 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		7965AA662F50867C005E6504 /* MessageAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAction.swift; sourceTree = "<group>"; };
@@ -459,6 +463,7 @@
 		761C504C2EE3ACA20053AD1F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */,
 				796A842B2F097A9C0099766F /* Search */,
 				7918D9F22F095F0F00F33AB2 /* Profile */,
 				79A162DE2EEC745F004CBDCF /* Comments */,
@@ -774,6 +779,14 @@
 			path = Profile;
 			sourceTree = "<group>";
 		};
+		794070382FA3880B00CCE9F6 /* Image */ = {
+			isa = PBXGroup;
+			children = (
+				794070362FA3843600CCE9F6 /* ImageCache.swift */,
+			);
+			path = Image;
+			sourceTree = "<group>";
+		};
 		796A842B2F097A9C0099766F /* Search */ = {
 			isa = PBXGroup;
 			children = (
@@ -841,6 +854,7 @@
 		79F034062F5B258C00BF7673 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				794070382FA3880B00CCE9F6 /* Image */,
 				79F034072F5B259700BF7673 /* Mercure */,
 			);
 			path = Services;
@@ -1167,6 +1181,7 @@
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */,
 				9A794C9040DE4685B14F937B /* ProfileFollowButton.swift in Sources */,
+				794070352FA383EF00CCE9F6 /* CachedAsyncImage.swift in Sources */,
 				1BA5EA8958C34A21B98911B6 /* ProfileHeaderView.swift in Sources */,
 				C5D93653D9654282BCDD367A /* ProfileStatsView.swift in Sources */,
 				A0EEE1090BFB4E678E0743A1 /* ProfileTabButton.swift in Sources */,
@@ -1196,6 +1211,7 @@
 				76C8951A2F089F2D0087166B /* ChatDetailView.swift in Sources */,
 				793323952EF840D80040755F /* PostView.swift in Sources */,
 				76883EE12EE5005C006A3955 /* PostCard.swift in Sources */,
+				794070372FA3843600CCE9F6 /* ImageCache.swift in Sources */,
 				76A2D3C12EE4B24500AA6F6E /* MusicManager.swift in Sources */,
 				761C508B2EE47C350053AD1F /* ProfileView.swift in Sources */,
 				D1A2B3C4D5E6F70011223344 /* ProfileSettingsMenuView.swift in Sources */,

@@ -114,20 +114,19 @@ struct PostCard: View {
 
     private var userHeader: some View {
         HStack {
-            AsyncImage(url: URL(string: post.user.profilePicture)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-            } placeholder: {
+            CachedAsyncImage(
+                url: URL(string: post.user.profilePicture),
+                targetSize: CGSize(width: 40, height: 40)
+            ) {
                 Circle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(width: 40, height: 40)
                     .overlay {
-                        ProgressView()
+                        Image(systemName: "person.fill")
+                            .foregroundColor(.gray)
                     }
             }
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(post.user.username)
