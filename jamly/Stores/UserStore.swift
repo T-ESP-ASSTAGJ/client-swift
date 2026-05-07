@@ -367,8 +367,17 @@ class UserStore: ObservableObject {
     func setUser(_ user: User) {
         self.user = user
     }
+    
+    /// Removes a deleted post from all feeds
+    func removePost(id: Int) {
+        feed.removeAll { $0.id == id }
+        discoveryFeed.removeAll { $0.id == id }
+        friendsFeed.removeAll { $0.id == id }
+        discoveryFeedCache.removeAll { $0.id == id }
+        friendsFeedCache.removeAll { $0.id == id }
+    }
 
-    /// Déconnecte l'utilisateur et nettoie tout l'état local.
+    /// Déconnecte l'utilisateuret nettoie tout l'état local.
     ///
     /// Vide les feeds et leurs caches, réinitialise la pagination, supprime le token du
     /// Keychain et annule la tâche de chargement de feed en cours.

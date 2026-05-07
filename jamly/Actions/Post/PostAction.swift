@@ -24,6 +24,7 @@ struct LikePostBody: Encodable {
 /// Chemins relatifs des endpoints liés aux posts.
 struct PostEndpoint {
     static let posts = "/posts"
+    static func post(_ postId: Int) -> String { "/posts/\(postId)" }
     static func viewPost(_ postId: Int) -> String { "/posts/\(postId)/view" }
 }
 
@@ -139,6 +140,15 @@ enum PostActions {
             ReportEndpoint.reportReasons,
             method: .get,
             responseType: [ReportReason].self
+        )
+        return response
+    }
+
+    static func deletePost(postId: Int) async throws -> APIResponse<EmptyResponse> {
+        let response = try await APIClient.shared.request(
+            PostEndpoint.post(postId),
+            method: .delete,
+            responseType: EmptyResponse.self
         )
         return response
     }

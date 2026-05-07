@@ -20,6 +20,8 @@ struct PostDetailView: View {
     @State private var newCommentText: String = ""
     @State private var isLoading: Bool = false
     @State private var isPlaying = true
+    @State private var navigateToProfile: Int? = nil
+
     @State private var didScrollToHighlighted = false
 
     @FocusState private var isTextFieldFocused: Bool
@@ -38,8 +40,10 @@ struct PostDetailView: View {
                         PostCard(
                             post: post,
                             isCurrentPost: true,
-                            onSeeMore: { },  // Vide car déjà dans le détail
-                            onOpenComments: { },
+                            currentUserId: userStore.user?.id,
+                        onSeeMore: { },  // Vide car déjà dans le détail
+                        onOpenComments: { },
+                        onDeleted: { navigateToProfile = post.user.id },
                             showPostDetail: .constant(true),
                             musicManager: musicManager
                         )
@@ -72,6 +76,9 @@ struct PostDetailView: View {
                     isTextFieldFocused = false
                 }
             }
+            .navigationDestination(item: $navigateToProfile) { userId in
+                ProfileView(userId: userId)
+            }
         }
     }
 
@@ -89,7 +96,7 @@ struct PostDetailView: View {
             }
         }
     }
-    
+
     // MARK: - Track Card
     
     private var trackCard: some View {

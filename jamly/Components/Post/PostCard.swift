@@ -11,15 +11,17 @@ import Combine
 struct PostCard: View {
     let post: Post
     let isCurrentPost: Bool
+    let currentUserId: Int?
     let onSeeMore: () -> Void
     let onOpenComments: () -> Void
-    
+    let onDeleted: (() -> Void)?
+
     @Binding var showPostDetail: Bool
-    
+
     @ObservedObject var musicManager: MusicManager
-    
+
     @StateObject private var viewModel = PostViewModel()
-    
+
     @State private var selectedUserId: Int?
     @State private var frontImage: UIImage?
     @State private var backImage: UIImage?
@@ -32,17 +34,21 @@ struct PostCard: View {
     @State private var showReportSheet = false
     @State private var isReported = false
     @State private var showAlreadyReportedToast = false
+    @State private var showDeleteConfirmation = false
+
     @State private var currentTime = Date()
 
     private let captionTruncationThreshold = 80
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
-    init(post: Post, isCurrentPost: Bool, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
+    init(post: Post, isCurrentPost: Bool, currentUserId: Int?, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, onDeleted: (() -> Void)? = nil, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
         self.post = post
         self.isCurrentPost = isCurrentPost
+        self.currentUserId = currentUserId
         self.onSeeMore = onSeeMore
         self.onOpenComments = onOpenComments
-        
+        self.onDeleted = onDeleted
+
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
 
@@ -105,6 +111,16 @@ struct PostCard: View {
         .sheet(isPresented: $showReportSheet) {
             ReportPostSheetView(post: post, isReported: $isReported)
         }
+        .alert("Delete this post?", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                viewModel.deletePost(postId: post.id) {
+                    onDeleted?()
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
+        }
         .onAppear {
             viewModel.viewPost(post: post)
         }
@@ -157,14 +173,22 @@ struct PostCard: View {
                     currentTime = Date()
                  }
             Menu {
-                Button(role: .destructive) {
-                    if isReported {
-                        showAlreadyReportedToast = true
-                    } else {
-                        showReportSheet = true
+                if post.user.id == currentUserId {
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
-                } label: {
-                    Label(isReported ? "Already reported" : "Report", systemImage: isReported ? "flag.fill" : "flag")
+                } else {
+                    Button(role: .destructive) {
+                        if isReported {
+                            showAlreadyReportedToast = true
+                        } else {
+                            showReportSheet = true
+                        }
+                    } label: {
+                        Label(isReported ? "Already reported" : "Report", systemImage: isReported ? "flag.fill" : "flag")
+                    }
                 }
             } label: {
                 Image(systemName: "ellipsis")

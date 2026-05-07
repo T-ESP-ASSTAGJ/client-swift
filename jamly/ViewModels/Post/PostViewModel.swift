@@ -117,6 +117,19 @@ final class PostViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Delete
+
+    func deletePost(postId: Int, onSuccess: @escaping () -> Void) {
+        Task {
+            do {
+                _ = try await PostActions.deletePost(postId: postId)
+                onSuccess()
+            } catch {
+                errorMessage = "Failed to delete post. Please try again."
+            }
+        }
+    }
+
     // MARK: - Report
 
     /// Liste des motifs de signalement disponibles, chargée à la demande.
