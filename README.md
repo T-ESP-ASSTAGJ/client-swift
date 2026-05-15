@@ -194,17 +194,28 @@ Les targets de tests sont :
 - `jamlyTests` — tests unitaires
 - `jamlyUITests` — tests UI
 
-## Documentation in-code
+## Documentation
 
-La majorité des composants techniques (Networking, Models, Stores, Actions,
-ViewModels, Services) est documentée au format DocC. Pour générer le site
-documentation :
+Au-delà de ce README, trois documents approfondis sont disponibles dans le
+dossier [`docs/`](docs/) et lisibles directement sur GitHub :
+
+- [**Architecture**](docs/architecture.md) — vue d'ensemble des couches, flux
+  d'authentification OTP, messagerie temps réel via Mercure, chargement et
+  pagination des feeds, gestion d'erreurs.
+- [**Conventions API**](docs/api-conventions.md) — fonctionnement de
+  `APIClient`, ajout d'un nouvel endpoint pas à pas, pagination, naming,
+  utilisation de `@MainActor`.
+- [**Notifications push**](docs/notifications.md) — enregistrement APNs/FCM,
+  rich notifications via la Service Extension, deep linking, contrat de
+  payload côté backend.
+
+La majorité des fichiers Swift est par ailleurs documentée au format DocC
+(commentaires `///`), exploités au survol dans Xcode/VS Code et générables
+en site HTML via :
 
 ```
 Xcode → Product → Build Documentation (⇧⌃⌘D)
 ```
-
-La documentation s'ouvre ensuite dans Xcode et peut être exportée.
 
 ## Conventions
 
