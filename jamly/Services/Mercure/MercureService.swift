@@ -252,7 +252,7 @@ private final class ResumeBox: @unchecked Sendable {
 extension MercureService: URLSessionDataDelegate {
 
     nonisolated func urlSession(
-        _ session: URLSession,
+        _: URLSession,
         dataTask: URLSessionDataTask,
         didReceive response: URLResponse,
         completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
