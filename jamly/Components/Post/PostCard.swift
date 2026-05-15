@@ -373,7 +373,16 @@ struct PostCard: View {
             Spacer()
 
             Button {
-                // Action pour ouvrir dans Apple Music
+                let urlString: String
+                if !post.track.songId.isEmpty {
+                    urlString = "https://music.apple.com/song/\(post.track.songId)"
+                } else {
+                    urlString = "https://music.apple.com/search?term=\(post.track.title) \(post.track.artistName)"
+                        .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                }
+                if let url = URL(string: urlString) {
+                    UIApplication.shared.open(url)
+                }
             } label: {
                 Image(systemName: "apple.logo")
                     .font(.system(size: 14, weight: .medium))
