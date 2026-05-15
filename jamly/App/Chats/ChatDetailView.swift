@@ -29,14 +29,12 @@ struct MessageBubble: View {
             }
             
             // Avatar pour les messages reçus
-            if !isFromCurrentUser, let profilePicture = message.author.profilePicture {
-                AsyncImage(url: URL(string: profilePicture)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
+            if !isFromCurrentUser {
+                CachedAsyncImage(
+                    url: URL(string: message.author.profilePicture ?? ""),
+                    targetSize: CGSize(width: 32, height: 32)
+                ) {
+                    defaultAvatar
                 }
                 .frame(width: 32, height: 32)
                 .clipShape(Circle())
@@ -96,6 +94,17 @@ struct MessageBubble: View {
     }
 
     // MARK: - Helper Methods
+
+    /// Avatar par défaut affiché quand l'utilisateur n'a pas de photo de profil
+    /// ou pendant que l'image se charge.
+    private var defaultAvatar: some View {
+        Circle()
+            .fill(Color.gray.opacity(0.3))
+            .overlay {
+                Image(systemName: "person.fill")
+                    .foregroundColor(.gray)
+            }
+    }
 
     /// Check if message content is an Apple Music playlist link
     private func isPlaylistLink(_ content: String?) -> Bool {
@@ -262,7 +271,9 @@ struct ChatDetailView: View {
     // État local
     @State private var messages: [Message] = []
     @State private var newMessageText: String = ""
-    @State private var isLoading: Bool = false
+    // `true` au démarrage pour éviter de flasher l'empty state pendant
+    // l'établissement de Mercure et le premier fetch des messages.
+    @State private var isLoading: Bool = true
     @State private var errorMessage: String?
     @State private var hasScrolledToBottom: Bool = false
     @State private var showPlaylistPicker = false
@@ -318,9 +329,12 @@ struct ChatDetailView: View {
             }
         }
         .onAppear {
-            loadMessages()
             Task {
-                _ = await (setupMercure(), markConversationAsRead())
+                // Établit la connexion Mercure AVANT de charger l'historique pour
+                // éviter de manquer un message envoyé pendant le fetch initial.
+                await setupMercure()
+                loadMessages()
+                await markConversationAsRead()
             }
         }
         .onDisappear {
@@ -396,13 +410,16 @@ struct ChatDetailView: View {
         HStack(spacing: 12) {
             // Photo de profil (pour les conversations directes)
             if let profilePicture = conversation.displayProfilePicture(currentUserId: currentUserId) {
-                AsyncImage(url: URL(string: profilePicture)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
+                CachedAsyncImage(
+                    url: URL(string: profilePicture),
+                    targetSize: CGSize(width: 32, height: 32)
+                ) {
                     Circle()
                         .fill(Color.gray.opacity(0.3))
+                        .overlay {
+                            Image(systemName: "person.fill")
+                                .foregroundColor(.gray)
+                        }
                 }
                 .frame(width: 32, height: 32)
                 .clipShape(Circle())
@@ -467,7 +484,12 @@ struct ChatDetailView: View {
             if messages.isEmpty && !isLoading {
                 emptyMessagesView
             }
-            
+
+            // Loader centré pendant le premier chargement
+            if isLoading && messages.isEmpty {
+                ProgressView()
+            }
+
             ScrollViewReader { proxy in
                 ScrollView {
                     messageContentView
@@ -506,13 +528,10 @@ struct ChatDetailView: View {
         }
     }
     
-    /// Contenu des messages (loading, empty, ou liste)
+    /// Contenu des messages (vide ou liste)
     @ViewBuilder
     private var messageContentView: some View {
-        if isLoading && messages.isEmpty {
-            ProgressView()
-                .padding()
-        } else if !messages.isEmpty {
+        if !messages.isEmpty {
             messageListView
         }
     }

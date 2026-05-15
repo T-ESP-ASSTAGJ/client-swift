@@ -306,18 +306,6 @@ struct ChatsView: View {
             }
             .scrollContentBackground(.hidden)
             .listStyle(.plain)
-            .overlay(alignment: .bottom) {
-                if viewModel.isLoading {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                            .tint(.white)
-                            .padding()
-                        Spacer()
-                    }
-                    .background(Color.black.opacity(0.5))
-                }
-            }
         }
     }
     
