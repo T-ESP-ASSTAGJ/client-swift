@@ -8,20 +8,29 @@
 import Foundation
 import Combine
 
+/// ViewModel d'un post (actions sociales et signalement).
+///
+/// Couvre les interactions sur un post existant : like / unlike, comptage de vues, et
+/// signalement. Le chargement des posts eux-mêmes est géré par ``UserStore`` (feeds)
+/// ou ``DiscoverViewModel``.
 @MainActor
 final class PostViewModel: ObservableObject {
+    /// État simple d'une action d'écriture (like/unlike/report).
     enum VerifyState {
         case loading
         case success
         case error
     }
-    
+
     @Published var state: VerifyState = .loading
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    
+
     // MARK: - Actions
-    
+
+    /// Like un post côté serveur et met à jour ``state`` selon le résultat.
+    ///
+    /// - Parameter post: Post à liker.
     func likePost(post: Post) {
         Task {
             errorMessage = nil
@@ -48,6 +57,9 @@ final class PostViewModel: ObservableObject {
         }
     }
     
+    /// Retire le like précédemment posé sur un post.
+    ///
+    /// - Parameter post: Post à unliker.
     func unlikePost(post: Post) {
         Task {
             errorMessage = nil
@@ -74,6 +86,11 @@ final class PostViewModel: ObservableObject {
         }
     }
     
+    /// Incrémente le compteur de vues d'un post côté serveur.
+    ///
+    /// À appeler lorsqu'un post devient visible à l'écran (par ex. via `.onAppear`).
+    ///
+    /// - Parameter post: Post visualisé.
     func viewPost(post: Post) {
         Task {
             errorMessage = nil
@@ -102,12 +119,18 @@ final class PostViewModel: ObservableObject {
 
     // MARK: - Report
 
+    /// Liste des motifs de signalement disponibles, chargée à la demande.
     @Published var reportReasons: [ReportReason] = []
     @Published var isReportLoading: Bool = false
+    /// `true` une fois qu'un signalement a abouti, utilisé pour fermer la modale et afficher
+    /// une confirmation.
     @Published var reportSuccess: Bool = false
+    /// `true` quand le serveur indique qu'un signalement existe déjà pour ce post par cet
+    /// utilisateur (statut `422`).
     @Published var alreadyReported: Bool = false
     @Published var reportError: String?
 
+    /// Charge la liste des motifs de signalement à présenter dans la modale de report.
     func fetchReportReasons() {
         Task {
             do {
@@ -119,6 +142,16 @@ final class PostViewModel: ObservableObject {
         }
     }
 
+    /// Signale un post auprès du serveur.
+    ///
+    /// Distingue deux cas d'erreur courants :
+    /// - `422` → ``alreadyReported`` passe à `true` (l'utilisateur a déjà signalé ce post),
+    /// - autres erreurs → ``reportError`` est renseigné avec un message générique.
+    ///
+    /// - Parameters:
+    ///   - postId: Identifiant du post à signaler.
+    ///   - reason: Clé du motif sélectionné.
+    ///   - message: Commentaire libre saisi par l'utilisateur.
     func reportPost(postId: Int, reason: String, message: String) async {
         isReportLoading = true
         reportError = nil

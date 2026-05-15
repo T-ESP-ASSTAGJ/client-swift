@@ -8,27 +8,38 @@
 import Combine
 import SwiftUI
 
+/// ViewModel de l'inbox (liste des conversations).
+///
+/// Gère le chargement initial, la pagination, la recherche locale, la suppression et la
+/// mise à jour du statut lu/non-lu. Réagit également aux notifications push entrantes pour
+/// mettre à jour le compteur de messages non-lus sans recharger la liste complète.
 @MainActor
 class ChatsViewModel: ObservableObject {
     // MARK: - Published Properties
-    
+
+    /// Toutes les conversations connues, dans l'ordre du serveur.
     @Published var conversations: [Conversation] = []
+    /// Vue filtrée affichée à l'écran, dérivée de ``searchText``.
     @Published var filteredConversations: [Conversation] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    /// Texte de recherche saisi par l'utilisateur. Recalcule ``filteredConversations`` à chaque
+    /// changement via le `didSet`.
     @Published var searchText = "" {
         didSet {
             filterConversations()
         }
     }
     @Published var isLoadingMore = false
-    
+
     private var currentPage = 1
     private var hasMorePages = true
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Lifecycle
 
+    /// S'abonne aux notifications de nouveaux messages reçus pour incrémenter le compteur
+    /// non-lu sans rafraîchir l'inbox complet.
     init() {
         NotificationCenter.default.publisher(for: .messageNotificationReceived)
             .receive(on: DispatchQueue.main)
@@ -39,7 +50,12 @@ class ChatsViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// Incrémente le compteur non-lu pour une conversation (ou recharge si inconnue)
+    /// Incrémente le compteur non-lu d'une conversation suite à la réception d'un push.
+    ///
+    /// Si la conversation n'est pas encore présente dans l'inbox (premier message d'un
+    /// nouveau chat), l'inbox complet est rechargé pour la faire apparaître.
+    ///
+    /// - Parameter conversationId: Identifiant de la conversation impactée.
     private func handleIncomingMessageNotification(conversationId: Int) {
         guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
             // Conversation pas encore dans la liste (nouveau chat) → recharger
@@ -67,8 +83,8 @@ class ChatsViewModel: ObservableObject {
     }
     
     // MARK: - Public Methods
-    
-    /// Charger les conversations depuis l'API
+
+    /// Charge la première page de conversations depuis l'API et remplace l'état courant.
     func loadConversations() async {
         isLoading = true
         errorMessage = nil
@@ -86,6 +102,11 @@ class ChatsViewModel: ObservableObject {
         isLoading = false
     }
     
+    /// Charge la page suivante de conversations (infinite scroll).
+    ///
+    /// Déduplique sur l'identifiant pour éviter qu'une conversation déjà chargée n'apparaisse
+    /// deux fois. Si la réponse renvoie moins de 20 éléments, considère qu'il n'y a plus de
+    /// page à charger.
     func loadMoreConversations() async {
         // Ne pas charger si déjà en cours ou si plus de pages disponibles
         guard !isLoading, !isLoadingMore, hasMorePages else { return }
@@ -121,6 +142,13 @@ class ChatsViewModel: ObservableObject {
         isLoadingMore = false
     }
     
+    /// Indique si une conversation donnée doit déclencher le chargement de la page suivante.
+    ///
+    /// La règle est : « si on est sur l'avant-avant-dernière conversation, on précharge la suite »,
+    /// ce qui permet une infinite scroll fluide.
+    ///
+    /// - Parameter conversation: Conversation actuellement visible à l'écran.
+    /// - Returns: `true` si le seuil de prefetch est atteint.
     func shouldLoadMore(for conversation: Conversation) -> Bool {
         // Charger plus quand on atteint les 3 dernières conversations
         guard let lastConversation = filteredConversations.suffix(3).first else {
@@ -128,13 +156,18 @@ class ChatsViewModel: ObservableObject {
         }
         return conversation.id == lastConversation.id
     }
-    
-    /// Rafraîchir les conversations (pull-to-refresh)
+
+    /// Rafraîchit l'inbox via un pull-to-refresh.
     func refresh() async {
         await loadConversations()
     }
-    
-    /// Charger plus de conversations (pagination)
+
+    /// Variante de pagination prenant explicitement la page courante.
+    ///
+    /// Conservée pour les appelants qui maintiennent eux-mêmes la page (legacy) ;
+    /// préférer ``loadMoreConversations()`` pour les nouveaux usages.
+    ///
+    /// - Parameter currentPage: Page actuelle avant l'appel ; la suivante sera chargée.
     func loadMoreConversations(currentPage: Int) async {
         guard !isLoading else { return }
         
@@ -156,7 +189,9 @@ class ChatsViewModel: ObservableObject {
         }
     }
     
-    /// Supprimer une conversation
+    /// Supprime une conversation côté serveur et la retire de l'inbox local avec animation.
+    ///
+    /// - Parameter conversation: Conversation à supprimer.
     func deleteConversation(_ conversation: Conversation) async {
         do {
             _ = try await ConversationAction.deleteConversation(id: conversation.id)
@@ -173,7 +208,9 @@ class ChatsViewModel: ObservableObject {
         }
     }
 
-    /// Basculer le statut lu/non lu d'une conversation
+    /// Marque une conversation comme lue côté serveur et remet `unreadCount` à zéro localement.
+    ///
+    /// - Parameter conversation: Conversation à marquer comme lue.
     func toggleReadStatus(_ conversation: Conversation) async {
         do {
             // Appel API pour marquer comme lu
@@ -208,8 +245,11 @@ class ChatsViewModel: ObservableObject {
     }
 
     // MARK: - Private Methods
-    
-    /// Filtrer les conversations selon le texte de recherche
+
+    /// Recalcule ``filteredConversations`` en fonction de ``searchText``.
+    ///
+    /// Filtre sur le nom du groupe et l'aperçu du dernier message ; insensible à la casse
+    /// via `localizedCaseInsensitiveContains`.
     private func filterConversations() {
         if searchText.isEmpty {
             filteredConversations = conversations

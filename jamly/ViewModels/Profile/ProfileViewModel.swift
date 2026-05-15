@@ -8,14 +8,21 @@
 import Foundation
 import Combine
 
+/// ViewModel d'une page de profil utilisateur (le sien ou celui d'un autre).
+///
+/// Agrège plusieurs jeux de données associés au profil :
+/// - Informations utilisateur (``profileUser``),
+/// - Posts publiés et posts likés, chacun avec leur propre pagination,
+/// - Liste des followers (non paginée ici, voir ``FollowerViewModel`` pour la vue dédiée).
 @MainActor
 final class ProfileViewModel: ObservableObject {
+    /// État simple d'une requête de chargement.
     enum VerifyState {
         case loading
         case success
         case error
     }
-    
+
     @Published var profileUser: User?
     @Published var likedPosts: [Post] = []
     @Published var posts : [Post] = []
@@ -29,9 +36,12 @@ final class ProfileViewModel: ObservableObject {
     @Published var currentPostsPage: Int = 1
     @Published var hasMoreLikedPosts: Bool = true
     @Published var hasMoreUserPosts: Bool = true
-    
+
     // MARK: - Actions
-    
+
+    /// Récupère le profil utilisateur par son identifiant.
+    ///
+    /// - Parameter userId: Identifiant du profil à charger.
     func fetchUserProfile(userId: Int) {
         Task {
             isLoading = true
@@ -59,6 +69,13 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
+    /// Charge la liste des posts likés par un utilisateur.
+    ///
+    /// Si `page == 1`, remplace l'état courant ; sinon, ajoute les résultats à la suite.
+    ///
+    /// - Parameters:
+    ///   - id: Identifiant de l'utilisateur observé.
+    ///   - page: Numéro de page à charger.
     func getLikedPosts(id: Int, page: Int = 1) {
         Task {
             isLoading = true
@@ -92,6 +109,12 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
+    /// Charge la page suivante des posts likés (infinite scroll).
+    ///
+    /// Déduplique sur l'identifiant pour éviter qu'un post ne s'affiche plusieurs fois si
+    /// la pagination chevauche après un nouveau like.
+    ///
+    /// - Parameter userId: Identifiant de l'utilisateur observé.
     func loadMoreLikedPosts(userId: Int) {
         guard !isLoadingMoreLikes, hasMoreLikedPosts else {
             print("⚠️ Already loading or no more liked posts")
@@ -137,6 +160,13 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
+    /// Charge la liste des posts publiés par un utilisateur.
+    ///
+    /// Si `page == 1`, remplace l'état courant ; sinon, ajoute les résultats à la suite.
+    ///
+    /// - Parameters:
+    ///   - id: Identifiant de l'utilisateur observé.
+    ///   - page: Numéro de page à charger.
     func getPosts(id: Int, page: Int = 1) {
         Task {
             isLoading = true
@@ -169,6 +199,9 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
+    /// Charge la page suivante des posts publiés par l'utilisateur (infinite scroll).
+    ///
+    /// - Parameter userId: Identifiant de l'utilisateur observé.
     func loadMorePosts(userId: Int) {
         guard !isLoadingMorePosts, hasMoreUserPosts else {
             print("⚠️ Already loading or no more posts")
@@ -214,6 +247,12 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
+    /// Charge la liste des followers d'un utilisateur.
+    ///
+    /// Cette méthode ne paginerai pas : pour la vue dédiée des followers avec pagination,
+    /// utiliser ``FollowerViewModel``.
+    ///
+    /// - Parameter userId: Identifiant de l'utilisateur observé.
     func getFollowers(userId: Int) {
         Task {
             do {

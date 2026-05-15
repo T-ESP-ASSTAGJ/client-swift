@@ -8,6 +8,10 @@
 import Foundation
 import Combine
 
+/// ViewModel de la liste des followers d'un utilisateur.
+///
+/// Maintient une pagination par page de 20 entrées. La page courante est exposée pour
+/// la UI mais ne doit pas être modifiée de l'extérieur.
 @MainActor
 final class FollowerViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -17,12 +21,17 @@ final class FollowerViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var currentPage = 1
     @Published var hasMorePages = true
-    
+
     // MARK: - Private Properties
+    /// Identifiant de l'utilisateur dont on liste les followers, conservé pour les
+    /// requêtes de pagination ultérieures.
     private var currentUserId: Int?
-    
+
     // MARK: - Load Methods
-    
+
+    /// Charge la première page de followers et réinitialise la pagination.
+    ///
+    /// - Parameter userId: Identifiant de l'utilisateur observé.
     func loadFollowers(userId: Int) async {
         currentUserId = userId
         currentPage = 1
@@ -52,6 +61,10 @@ final class FollowerViewModel: ObservableObject {
         }
     }
     
+    /// Charge la page suivante de followers (infinite scroll).
+    ///
+    /// En cas d'erreur, ``currentPage`` est restauré pour permettre une nouvelle tentative
+    /// sans laisser de trou dans la pagination.
     func loadMoreFollowers() async {
         guard !isLoadingMore, !isLoading, hasMorePages, let userId = currentUserId else {
             print("⚠️ LoadMore blocked - isLoadingMore: \(isLoadingMore), isLoading: \(isLoading), hasMore: \(hasMorePages), userId: \(currentUserId?.description ?? "nil")")
