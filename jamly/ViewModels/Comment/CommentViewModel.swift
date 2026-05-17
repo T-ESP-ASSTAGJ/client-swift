@@ -8,26 +8,41 @@
 import Foundation
 import Combine
 
+/// ViewModel de la vue des commentaires d'un post.
+///
+/// Gère le chargement paginé, l'envoi de nouveaux commentaires et l'épinglage en tête
+/// d'un commentaire ciblé par push notification (deep link).
 @MainActor
 final class CommentViewModel: ObservableObject {
+    /// État de la requête de chargement des commentaires.
     enum VerifyState {
         case loading
         case success
         case error
     }
-    
+
     @Published var comments: [CommentResponse] = []
     @Published var state: VerifyState = .loading
     @Published var isLoading: Bool = false
-    
+
     private var currentPage: Int = 1
     private var hasMorePages: Bool = true
     private var currentPostId: Int?
+    /// Identifiant d'un commentaire ouvert via deep link, épinglé en tête de liste.
     private var highlightedCommentId: Int?
-    
+
     @Published var isLoadingMore: Bool = false
     @Published var errorMessage: String?
-    
+
+    /// Charge les commentaires d'un post, avec épinglage optionnel d'un commentaire spécifique.
+    ///
+    /// Le commentaire épinglé est récupéré séparément via ``CommentAction/getComment(id:)``
+    /// pour garantir qu'il s'affiche en tête, même s'il appartient à une page ultérieure.
+    /// Les autres commentaires sont chargés via la pagination standard.
+    ///
+    /// - Parameters:
+    ///   - post: Post dont on charge les commentaires.
+    ///   - highlightedCommentId: Commentaire à épingler (issu d'un deep link), ou `nil`.
     func getComments(post: Post, highlightedCommentId: Int? = nil) async {
         Task {
             isLoading = true
@@ -83,6 +98,11 @@ final class CommentViewModel: ObservableObject {
     }
     
     
+    /// Charge la page suivante de commentaires (infinite scroll).
+    ///
+    /// Si un commentaire est épinglé, il est filtré des nouvelles pages pour éviter un doublon
+    /// avec la tête de liste. En cas d'erreur, ``currentPage`` est décrémenté pour autoriser
+    /// une nouvelle tentative.
     func loadMoreComments() async {
         guard !isLoadingMore, !isLoading, hasMorePages, let postId = currentPostId else {
             return
@@ -114,6 +134,17 @@ final class CommentViewModel: ObservableObject {
         }
     }
     
+    /// Envoie un nouveau commentaire et l'insère en tête de la liste locale.
+    ///
+    /// Le serveur ne renvoie pas les compteurs (forcément à zéro à la création) ; ils sont
+    /// initialisés à `0` côté client. Le commentaire reste affiché de manière optimiste
+    /// même si un fetch ultérieur le repositionne.
+    ///
+    /// - Parameters:
+    ///   - postId: Identifiant du post commenté.
+    ///   - content: Contenu textuel du commentaire (non vide).
+    /// - Returns: Le commentaire créé tel qu'inséré dans ``comments``.
+    /// - Throws: ``APIError`` ou toute erreur renvoyée par ``CommentAction/CreateComment(postId:content:)``.
     func sendComment(postId: Int, content: String) async throws -> CommentResponse {
         errorMessage = nil
         

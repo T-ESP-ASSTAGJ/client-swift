@@ -8,6 +8,10 @@
 import Foundation
 import Combine
 
+/// ViewModel de la liste des utilisateurs suivis (followings) par un utilisateur.
+///
+/// Pendant logique de ``FollowerViewModel`` : pagination de 20 entrées, état d'erreur dédié,
+/// et identifiant utilisateur mémorisé pour la pagination.
 @MainActor
 final class FollowingViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -17,14 +21,16 @@ final class FollowingViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var currentPage = 1
     @Published var hasMorePages = true
-    
+
     // MARK: - Private Properties
     private let itemsPerPage = 20
     private var currentUserId: Int?
-    
+
     // MARK: - Load Methods
-    
-    /// Load following users for a user (resets pagination)
+
+    /// Charge la première page d'utilisateurs suivis et réinitialise la pagination.
+    ///
+    /// - Parameter userId: Identifiant de l'utilisateur observé.
     func loadFollowing(userId: Int) async {
         currentUserId = userId
         currentPage = 1
@@ -51,6 +57,9 @@ final class FollowingViewModel: ObservableObject {
         }
     }
     
+    /// Charge la page suivante des utilisateurs suivis (infinite scroll).
+    ///
+    /// En cas d'erreur, ``currentPage`` est restauré pour permettre une nouvelle tentative.
     func loadMoreFollowing() async {
         guard !isLoadingMore, !isLoading, hasMorePages, let userId = currentUserId else {
             print("⚠️ LoadMore blocked - isLoadingMore: \(isLoadingMore), isLoading: \(isLoading), hasMore: \(hasMorePages), userId: \(currentUserId?.description ?? "nil")")

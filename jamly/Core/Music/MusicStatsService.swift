@@ -6,10 +6,21 @@
 import Foundation
 import MusicKit
 
+/// Service de calcul des statistiques d'écoute exposées dans le profil utilisateur.
+///
+/// Toutes les méthodes lisent la bibliothèque Apple Music locale via MusicKit et agrègent
+/// les `playCount` côté client : aucune donnée n'est envoyée au backend Jamly.
+///
+/// - Note: Les `playCount` peuvent être absents pour les morceaux non synchronisés iCloud.
+///   ``fetchTotalListeningTime()`` documente le fallback utilisé dans ce cas.
 final class MusicStatsService {
 
     // MARK: - Top Tracks
 
+    /// Récupère les morceaux les plus écoutés de la bibliothèque, triés par `playCount`.
+    ///
+    /// - Parameter limit: Nombre de morceaux à retourner. Par défaut `10`.
+    /// - Throws: Les erreurs MusicKit propagées par la requête.
     func fetchTopTracks(limit: Int = 10) async throws -> [Song] {
         var request = MusicLibraryRequest<Song>()
         request.sort(by: \.playCount, ascending: false)
@@ -20,6 +31,13 @@ final class MusicStatsService {
 
     // MARK: - Top Artists
 
+    /// Calcule le top des artistes en sommant les `playCount` de leurs morceaux.
+    ///
+    /// L'agrégation se fait par nom d'artiste : deux artistes homonymes seront fusionnés
+    /// (limitation connue, MusicKit n'expose pas systématiquement un identifiant stable).
+    ///
+    /// - Parameter limit: Nombre d'artistes à retourner. Par défaut `10`.
+    /// - Throws: Les erreurs MusicKit propagées par la requête de bibliothèque.
     func fetchTopArtists(limit: Int = 10) async throws -> [ArtistStat] {
         let songs = try await fetchLibrarySongs()
 
@@ -42,6 +60,13 @@ final class MusicStatsService {
 
     // MARK: - Top Albums
 
+    /// Calcule le top des albums en sommant les `playCount` de leurs morceaux.
+    ///
+    /// La clé d'agrégation est composée de `albumTitle|||artistName` afin de distinguer
+    /// deux albums portant le même titre mais d'artistes différents.
+    ///
+    /// - Parameter limit: Nombre d'albums à retourner. Par défaut `10`.
+    /// - Throws: Les erreurs MusicKit propagées par la requête de bibliothèque.
     func fetchTopAlbums(limit: Int = 10) async throws -> [AlbumStat] {
         let songs = try await fetchLibrarySongs()
 
@@ -69,6 +94,13 @@ final class MusicStatsService {
 
     // MARK: - Top Genres
 
+    /// Calcule le top des genres en sommant les `playCount` de leurs morceaux.
+    ///
+    /// Seul le premier genre déclaré par MusicKit est pris en compte par morceau, car
+    /// les morceaux multi-genres tendraient sinon à fausser les comptages.
+    ///
+    /// - Parameter limit: Nombre de genres à retourner. Par défaut `10`.
+    /// - Throws: Les erreurs MusicKit propagées par la requête de bibliothèque.
     func fetchTopGenres(limit: Int = 10) async throws -> [GenreStat] {
         let songs = try await fetchLibrarySongs()
 
@@ -121,6 +153,10 @@ final class MusicStatsService {
 
     // MARK: - Recent History
 
+    /// Récupère les morceaux récemment écoutés via `MusicRecentlyPlayedRequest`.
+    ///
+    /// - Parameter limit: Nombre de morceaux à retourner. Par défaut `10`.
+    /// - Throws: Les erreurs MusicKit propagées par la requête.
     func fetchRecentHistory(limit: Int = 10) async throws -> [Song] {
         var request = MusicRecentlyPlayedRequest<Song>()
         request.limit = limit

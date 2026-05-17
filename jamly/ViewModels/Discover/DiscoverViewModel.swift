@@ -8,6 +8,11 @@
 import Combine
 import Foundation
 
+/// ViewModel de l'onglet Discover (feed public).
+///
+/// Indépendant de ``UserStore`` car la vue Discover peut être consultée hors flux de feed
+/// principal (par exemple pour rafraîchir uniquement le contenu public sans toucher au
+/// feed Friends).
 @MainActor
 final class DiscoverViewModel: ObservableObject {
     @Published var posts: [Post] = []
@@ -20,6 +25,7 @@ final class DiscoverViewModel: ObservableObject {
 
     // MARK: - Actions
 
+    /// Charge la première page du feed public et remplace l'état courant.
     func getFeedPublic() {
         Task {
             isLoading = true
@@ -44,6 +50,10 @@ final class DiscoverViewModel: ObservableObject {
         }
     }
 
+    /// Charge la page suivante du feed public (infinite scroll).
+    ///
+    /// Déduplique sur l'identifiant pour éviter les doublons. Si la réponse est vide,
+    /// `hasMorePosts` passe à `false` et plus aucun chargement ne sera tenté.
     func loadMorePosts() {
         guard !isLoadingMorePosts, hasMorePosts else { return }
 

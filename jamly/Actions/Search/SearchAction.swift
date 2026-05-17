@@ -7,12 +7,15 @@
 
 import Foundation
 
+/// Actions API liées à la recherche d'utilisateurs.
 enum SearchAction {
-    /// Search for users by username with pagination
+    /// Recherche des utilisateurs par nom d'utilisateur avec pagination.
+    ///
     /// - Parameters:
-    ///   - username: The search query
-    ///   - page: The page number (starts at 1)
-    /// - Returns: Array of SearchUser objects
+    ///   - username: Texte de recherche (sous-chaîne ou nom complet).
+    ///   - page: Numéro de page (par défaut `1`).
+    /// - Returns: Les utilisateurs correspondant à la requête.
+    /// - Throws: ``APIError`` en cas d'échec.
     static func searchUsers(username: String, page: Int = 1) async throws -> APIResponse<[SearchUser]> {
         let response = try await APIClient.shared.request(
             "/users",

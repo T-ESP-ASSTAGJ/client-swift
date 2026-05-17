@@ -5,6 +5,11 @@
 //  Created by Jonathan Dumesnil on 06/02/2026.
 //
 
+/// Configuration de base d'une conversation, utilisée comme bundle d'arguments pour
+/// éviter une signature d'init à 5 paramètres positionnels.
+///
+/// Sert principalement lors de la construction manuelle d'une ``Conversation``
+/// (par exemple côté test ou aperçu).
 struct ConversationConfig {
     let id: Int
     let isGroup: Bool
@@ -27,6 +32,11 @@ struct ConversationConfig {
     }
 }
 
+/// Conversation telle qu'elle apparaît dans la liste des chats (vue inbox).
+///
+/// Contient les informations légères (dernier message, participants, compteur non-lus)
+/// pour l'affichage en cellule. Pour la conversation détaillée avec tous les messages,
+/// utiliser ``ConversationDetail``.
 struct Conversation: Codable, Identifiable, Hashable {
     let id: Int
     let isGroup: Bool
@@ -70,8 +80,15 @@ struct Conversation: Codable, Identifiable, Hashable {
     }
     
     // MARK: - Computed Properties
-    
-    /// Retourne le nom à afficher (groupe ou utilisateur)
+
+    /// Retourne le nom à afficher dans la liste des conversations.
+    ///
+    /// Pour un groupe, retourne le nom du groupe (ou un fallback générique).
+    /// Pour une conversation directe, retourne le nom de l'autre participant.
+    ///
+    /// - Parameter currentUserId: Identifiant de l'utilisateur connecté, utilisé pour
+    ///   filtrer son propre profil hors des participants.
+    /// - Returns: Le nom à afficher, jamais vide.
     func displayName(currentUserId: Int) -> String {
         if isGroup {
             return groupName ?? "Chat group"
@@ -81,14 +98,21 @@ struct Conversation: Codable, Identifiable, Hashable {
             return otherParticipant?.username ?? participants.first?.username ?? "Unknown user"
         }
     }
-    
-    /// Retourne l'autre participant dans une conversation directe
+
+    /// Retourne l'autre participant d'une conversation directe.
+    ///
+    /// - Parameter currentUserId: Identifiant de l'utilisateur connecté.
+    /// - Returns: L'autre participant, ou `nil` si la conversation est un groupe.
     func otherParticipant(currentUserId: Int) -> CommonUser? {
         guard !isGroup else { return nil }
         return participants.first { $0.id != currentUserId }
     }
-    
-    /// Retourne l'URL de la photo de profil à afficher
+
+    /// Retourne l'URL de la photo de profil à afficher dans la cellule.
+    ///
+    /// - Parameter currentUserId: Identifiant de l'utilisateur connecté.
+    /// - Returns: L'URL de la photo de l'autre participant pour une conversation directe,
+    ///   ou `nil` pour un groupe (les groupes n'ont pas d'avatar dans cette version).
     func displayProfilePicture(currentUserId: Int) -> String? {
         if isGroup {
             // Pour un groupe, pas de photo de profil
@@ -102,7 +126,10 @@ struct Conversation: Codable, Identifiable, Hashable {
 
 // MARK: - ConversationDetail
 
-/// Représente une conversation complète avec tous ses messages
+/// Conversation complète avec l'historique de tous ses messages.
+///
+/// Utilisée dans la vue de détail d'un chat, contrairement à ``Conversation``
+/// qui ne contient que le dernier message pour la vue liste.
 struct ConversationDetail: Codable, Identifiable {
     let id: Int
     let isGroup: Bool
@@ -112,17 +139,21 @@ struct ConversationDetail: Codable, Identifiable {
     let updatedAt: String
     let memberCount: Int
     let participants: [CommonUser]
-    
+
     enum CodingKeys: String, CodingKey {
         case id, isGroup, groupName, messages, createdAt, updatedAt, memberCount, participants
     }
-    
-    /// Dernier message de la conversation
+
+    /// Dernier message de la conversation (le plus récent dans `messages`).
     var lastMessage: Message? {
         messages.last
     }
-    
-    /// Nom d'affichage de la conversation
+
+    /// Nom d'affichage de la conversation : nom du groupe, ou nom du premier participant
+    /// pour une conversation directe.
+    ///
+    /// - Note: Contrairement à ``Conversation/displayName(currentUserId:)``, cette propriété
+    ///   ne filtre pas l'utilisateur connecté car la vue détail dispose déjà du contexte.
     var displayName: String {
         if let groupName = groupName {
             return groupName
