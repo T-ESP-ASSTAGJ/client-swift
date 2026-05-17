@@ -108,13 +108,16 @@ struct jamlyApp: App {
 
 struct RootView: View {
     @EnvironmentObject private var authManager: AuthManager
-    
+    @EnvironmentObject private var userStore: UserStore
+
     var body: some View {
         Group {
             if !authManager.isAuthenticated {
                 NavigationStack {
                     LoginView()
                 }
+            } else if needsProfileSetup {
+                ProfileSetupView()
             } else if !authManager.completedOnboarding {
                 OnboardingView()
                     .environmentObject(authManager)
@@ -122,5 +125,13 @@ struct RootView: View {
                 MainTabView()
             }
         }
+    }
+
+    private var needsProfileSetup: Bool {
+        guard let user = userStore.user else { return false }
+        // TODO: réactiver le check photo quand l'upload sera implémenté côté API.
+        // let missingPhoto = (user.profilePicture ?? "").isEmpty
+        let missingUsername = user.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return missingUsername
     }
 }
