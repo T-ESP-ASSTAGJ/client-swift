@@ -78,15 +78,18 @@ struct OtpLoginView: View {
                                 )
                                 .shadow(color: .cyan.opacity(0.3), radius: 20, x: 0, y: 10)
                             
-                            HStack(spacing: 5) {
+                            VStack(spacing: 4) {
                                 Text("A verification code sent to")
                                     .font(.custom("Poppins-Regular", size: 14))
                                     .foregroundColor(.white.opacity(0.5))
-                                
+
                                 Text(email)
                                     .font(.custom("Poppins-Medium", size: 15))
                                     .foregroundColor(.white.opacity(0.8))
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
                             }
+                            .multilineTextAlignment(.center)
                         }
                     }
                     .opacity(animateContent ? 1 : 0)
@@ -259,7 +262,7 @@ struct OtpLoginView: View {
         resendCooldown = 60
         startCooldownTimer()
     }
-    
+
     private func startCooldownTimer() {
         stopCooldownTimer()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in

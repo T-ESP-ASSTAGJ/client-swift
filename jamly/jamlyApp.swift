@@ -111,15 +111,15 @@ struct RootView: View {
     
     var body: some View {
         Group {
-            if !authManager.completedOnboarding && !authManager.isAuthenticated {
-                OnboardingView()
-                    .environmentObject(authManager)
-            }else if authManager.isAuthenticated {
-                MainTabView()
-            } else {
+            if !authManager.isAuthenticated {
                 NavigationStack {
                     LoginView()
                 }
+            } else if !authManager.completedOnboarding {
+                OnboardingView()
+                    .environmentObject(authManager)
+            } else {
+                MainTabView()
             }
         }
     }

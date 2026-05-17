@@ -181,7 +181,7 @@ struct LoginView: View {
             OtpLoginView(email: email)
         }
         .onChange(of: viewModel.state) { _, newState in
-            if newState == .success {
+            if newState == .codeSent {
                 navigateToOtp = true
             }
         }
