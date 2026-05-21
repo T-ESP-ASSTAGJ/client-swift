@@ -31,6 +31,7 @@
 		76381C582F0440C6008BB4B0 /* PostViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76381C572F0440C6008BB4B0 /* PostViewModel.swift */; };
 		76385AC32EE76651000B0320 /* PostAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76385AC22EE76651000B0320 /* PostAction.swift */; };
 		76385AC52EE767EC000B0320 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76385AC42EE767EC000B0320 /* Post.swift */; };
+		4A6E6A9BCB344F46B4D2B1EF /* UserParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC4E67DF15047B8A9407355 /* UserParameter.swift */; };
 		763EF3AD2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3AA2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf */; };
 		763EF3AE2EE5D3490096A522 /* Poppins-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3A92EE5D3490096A522 /* Poppins-BoldItalic.ttf */; };
 		763EF3AF2EE5D3490096A522 /* Poppins-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 763EF3AC2EE5D3490096A522 /* Poppins-SemiBoldItalic.ttf */; };
@@ -94,6 +95,7 @@
 		79FC690D2F3DE9FA00AD716C /* ConversationAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC690C2F3DE98B00AD716C /* ConversationAction.swift */; };
 		79FC691A2F3E286E00AD716C /* ChatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC69192F3E286E00AD716C /* ChatsViewModel.swift */; };
 		9A794C9040DE4685B14F937B /* ProfileFollowButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB03C1DB17B945078A59FCCE /* ProfileFollowButton.swift */; };
+		AA200002AA20000200AA0002 /* PrivacyLockedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA200001AA20000100AA0001 /* PrivacyLockedView.swift */; };
 		A0EEE1090BFB4E678E0743A1 /* ProfileTabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C7E4AEF38A447A983F4F2CE /* ProfileTabButton.swift */; };
 		AA000001000000000000AA01 /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA00 /* OnBoardingView.swift */; };
 		AA100002AA10000200AA0002 /* ReportPostSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100001AA10000100AA0001 /* ReportPostSheetView.swift */; };
@@ -186,6 +188,7 @@
 		76381C572F0440C6008BB4B0 /* PostViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostViewModel.swift; sourceTree = "<group>"; };
 		76385AC22EE76651000B0320 /* PostAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAction.swift; sourceTree = "<group>"; };
 		76385AC42EE767EC000B0320 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		6FC4E67DF15047B8A9407355 /* UserParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserParameter.swift; sourceTree = "<group>"; };
 		763EF3A92EE5D3490096A522 /* Poppins-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-BoldItalic.ttf"; sourceTree = "<group>"; };
 		763EF3AA2EE5D3490096A522 /* Poppins-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		763EF3AB2EE5D3490096A522 /* Poppins-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Poppins-MediumItalic.ttf"; sourceTree = "<group>"; };
@@ -253,6 +256,7 @@
 		AA100001AA10000100AA0001 /* ReportPostSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportPostSheetView.swift; sourceTree = "<group>"; };
 		AA100003AA10000300AA0003 /* Report.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Report.swift; sourceTree = "<group>"; };
 		AB03C1DB17B945078A59FCCE /* ProfileFollowButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileFollowButton.swift; sourceTree = "<group>"; };
+		AA200001AA20000100AA0001 /* PrivacyLockedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyLockedView.swift; sourceTree = "<group>"; };
 		B5C6D7E8F9001122334455AA /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		C338C8EE2EEC71BC00916AED /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		C372E14F2F892F1200FE51CF /* PlaylistShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistShareService.swift; sourceTree = "<group>"; };
@@ -688,6 +692,7 @@
 				C39A5DCB2F04686800945A76 /* Search.swift */,
 				76883EE72EE50107006A3955 /* User.swift */,
 				76385AC42EE767EC000B0320 /* Post.swift */,
+				6FC4E67DF15047B8A9407355 /* UserParameter.swift */,
 				7A475A6944A447BFBFC25055 /* MusicStats.swift */,
 				AA100003AA10000300AA0003 /* Report.swift */,
 			);
@@ -778,6 +783,7 @@
 				548B31B1DF7B4E00B1F46CBC /* ProfileHeaderView.swift */,
 				65A121DA0491442EB6286CCE /* ProfileStatsView.swift */,
 				5C7E4AEF38A447A983F4F2CE /* ProfileTabButton.swift */,
+				AA200001AA20000100AA0001 /* PrivacyLockedView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -1180,6 +1186,7 @@
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
 				79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
+				4A6E6A9BCB344F46B4D2B1EF /* UserParameter.swift in Sources */,
 				76119AB52EFEDB2F00237349 /* FeedAction.swift in Sources */,
 				763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */,
 				7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */,
@@ -1188,6 +1195,7 @@
 				1BA5EA8958C34A21B98911B6 /* ProfileHeaderView.swift in Sources */,
 				C5D93653D9654282BCDD367A /* ProfileStatsView.swift in Sources */,
 				A0EEE1090BFB4E678E0743A1 /* ProfileTabButton.swift in Sources */,
+				AA200002AA20000200AA0002 /* PrivacyLockedView.swift in Sources */,
 				79FC690D2F3DE9FA00AD716C /* ConversationAction.swift in Sources */,
 				763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */,
 				AA000001000000000000AA01 /* OnBoardingView.swift in Sources */,

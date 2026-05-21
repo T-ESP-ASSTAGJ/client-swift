@@ -21,9 +21,10 @@ struct FollowingView: View {
     /// Si userId est fourni, on affiche les following d'un autre utilisateur
     /// Sinon, on affiche les following de l'utilisateur connecté
     let userId: Int?
-    
+    let isPublic: Bool
+
     // MARK: - Computed Properties
-    
+
     /// Indique si on affiche son propre profil
     private var isOwnProfile: Bool {
         guard let userId = userId, let currentUserId = userStore.user?.id else {
@@ -39,11 +40,11 @@ struct FollowingView: View {
     
     // MARK: - Init
     
-    init(userId: Int? = nil) {
+    init(userId: Int? = nil, isPublic: Bool = true) {
         self.userId = userId
+        self.isPublic = isPublic
     }
-    
-    
+
     var filteredFollowings: [FollowingUser] {
         if searchText.isEmpty {
             return followingViewModel.followingUsers
@@ -85,7 +86,9 @@ struct FollowingView: View {
     
     var body: some View {
         Group {
-            if followingViewModel.isLoading {
+            if !isPublic && !isOwnProfile {
+                PrivacyLockedView(message: "This user doesn't share their following list.", expandVertically: true)
+            } else if followingViewModel.isLoading {
                 // État de chargement
                 VStack(spacing: 12) {
                     ProgressView()

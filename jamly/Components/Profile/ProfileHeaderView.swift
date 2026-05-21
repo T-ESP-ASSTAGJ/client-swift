@@ -7,7 +7,16 @@ import SwiftUI
 
 struct ProfileHeaderView: View {
     let user: User?
+    let isOwnProfile: Bool
     @Binding var selectedFollowView: FollowViews?
+
+    private var isFollowingVisible: Bool {
+        isOwnProfile || (user?.parameters?.followingVisibility ?? .publicVisibility) == .publicVisibility
+    }
+
+    private var isFollowersVisible: Bool {
+        isOwnProfile || (user?.parameters?.followersVisibility ?? .publicVisibility) == .publicVisibility
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
