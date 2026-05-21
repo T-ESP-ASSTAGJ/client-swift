@@ -29,6 +29,8 @@ class UserStore: ObservableObject {
     @Published var token: String?
     /// Feed actuellement affiché : alias vers ``discoveryFeed`` ou ``friendsFeed``
     /// selon le segment sélectionné dans la UI.
+    @Published var userParameters: UserParameter?
+    /// Paramètres d'utilisateur pour visibilité et confidentialité
     @Published var feed: [Post] = []
     /// Posts du feed Discovery (publication publique).
     @Published var discoveryFeed: [Post] = []
@@ -510,6 +512,26 @@ class UserStore: ObservableObject {
         }
     }
     
+    func fetchUserParameters() async {
+        do {
+            let response = try await UserActions.fetchParameters()
+            userParameters = response.value
+        } catch {
+            print("❌ Failed to fetch user parameters: \(error)")
+        }
+    }
+
+    func updateUserParameters(_ params: UserParameter) async -> Bool {
+        do {
+            let response = try await UserActions.updateParameters(params)
+            userParameters = response.value
+            return true
+        } catch {
+            print("❌ Failed to update user parameters: \(error)")
+            return false
+        }
+    }
+
     /// Supprime définitivement le compte de l'utilisateur connecté.
     ///
     /// En cas de succès, ``logout()`` est appelée pour nettoyer entièrement l'état local.

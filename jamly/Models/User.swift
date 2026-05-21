@@ -19,9 +19,9 @@ struct User: Codable {
     let bio: String?
     let followingCount: Int
     let followersCount: Int
-
+let parameters: UserParameter?
     enum CodingKeys: String, CodingKey {
-        case id, username, email, profilePicture, phoneNumber, bio, followingCount, followersCount
+        case id, username, email, profilePicture, phoneNumber, bio, followingCount, followersCount, parameters
     }
 
     init(from decoder: Decoder) throws {
@@ -68,7 +68,7 @@ struct FollowerUser: Codable, Identifiable, Equatable {
 }
 
 /// Utilisateur tel qu'il apparaît dans la liste des followings (utilisateurs suivis).
-struct FollowingUser: Codable, Identifiable {
+struct FollowingUser: Codable, Identifiable, Equatable {
     let id: Int
     let username: String
     let profilePicture: String

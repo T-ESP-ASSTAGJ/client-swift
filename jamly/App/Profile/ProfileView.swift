@@ -30,6 +30,7 @@ struct ProfileView: View {
     @State private var selectedPost: Post? = nil
     @State private var isShowingPostDetail = false
     @State private var isFollowingTarget: Bool = false
+    @State private var isTargetFollowingMe: Bool = false
     @State private var unreadNotificationsCount = 2
 
     // MARK: - Computed Properties
@@ -43,6 +44,34 @@ struct ProfileView: View {
         return userId == currentUserId
     }
 
+    private var isLikesVisible: Bool {
+        isOwnProfile || isVisible(displayedUser?.parameters?.likesVisibility ?? .public)
+    }
+
+    private var isStatsVisible: Bool {
+        isOwnProfile || isVisible(displayedUser?.parameters?.statsVisibility ?? .public)
+    }
+
+    private var isFollowersVisible: Bool {
+        isOwnProfile || isVisible(displayedUser?.parameters?.followersVisibility ?? .public)
+    }
+
+    private var isFollowingVisible: Bool {
+        isOwnProfile || isVisible(displayedUser?.parameters?.followingVisibility ?? .public)
+    }
+
+    /// Checks if content is visible based on the visibility option and the current user's relationship
+    private func isVisible(_ visibility: VisibilityOption) -> Bool {
+        switch visibility {
+        case .public:
+            return true
+        case .friends:
+            return isFollowingTarget && isTargetFollowingMe
+        case .private:
+            return false
+        }
+    }
+
     init(userId: Int? = nil) {
         self.userId = userId
     }
@@ -53,63 +82,75 @@ struct ProfileView: View {
         GridItem(.flexible(), spacing: 2)
     ]
 
-    var body: some View {
-        ZStack(alignment: .top) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    ProfileHeaderView(user: displayedUser, selectedFollowView: $selectedFollowView)
+    // MARK: - Scroll Content
 
-                    if !isOwnProfile {
-                        ProfileFollowButton(
-                            isFollowing: isFollowingTarget,
-                            onFollow: {
-                                Task {
-                                    guard let targetUserId = userId else { return }
-                                    await userStore.followUser(userId: targetUserId)
-                                    isFollowingTarget = true
-                                    viewModel.getFollowers(userId: targetUserId)
-                                    viewModel.fetchUserProfile(userId: targetUserId)
-                                }
-                            },
-                            onUnfollow: {
-                                Task {
-                                    guard let targetUserId = userId else { return }
-                                    await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
-                                    isFollowingTarget = false
-                                    viewModel.getFollowers(userId: targetUserId)
-                                    viewModel.fetchUserProfile(userId: targetUserId)
-                                }
-                            }
-                        )
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
-                    }
+    private var scrollContent: some View {
+        VStack(spacing: 0) {
+            ProfileHeaderView(user: displayedUser, isOwnProfile: isOwnProfile, selectedFollowView: $selectedFollowView)
 
-                    GeometryReader { geometry in
-                        let minY = geometry.frame(in: .global).minY - 110
-                        tabsSection
-                            .offset(y: minY < 0 ? -minY : 0)
-                            .zIndex(10)
-                    }
-                    .frame(height: 52)
-                    .zIndex(10)
-
-                    TabView(selection: $selectedTab) {
-                        postsGrid
-                            .tag(ProfileTab.posts)
-
-                        likesGrid
-                            .tag(ProfileTab.likes)
-
-                        if isOwnProfile {
-                            ProfileStatsView(viewModel: statsViewModel)
-                                .tag(ProfileTab.stats)
+            if !isOwnProfile {
+                ProfileFollowButton(
+                    isFollowing: isFollowingTarget,
+                    onFollow: {
+                        Task {
+                            guard let targetUserId = userId else { return }
+                            await userStore.followUser(userId: targetUserId)
+                            isFollowingTarget = true
+                            viewModel.getFollowers(userId: targetUserId)
+                            viewModel.getFollowing(userId: targetUserId)
+                            viewModel.fetchUserProfile(userId: targetUserId)
+                        }
+                    },
+                    onUnfollow: {
+                        Task {
+                            guard let targetUserId = userId else { return }
+                            await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
+                            isFollowingTarget = false
+                            viewModel.getFollowers(userId: targetUserId)
+                            viewModel.getFollowing(userId: targetUserId)
+                            viewModel.fetchUserProfile(userId: targetUserId)
                         }
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: calculateGridHeight())
-                    .clipped()
+                )
+                .padding(.horizontal)
+                .padding(.bottom, 16)
+            }
+
+            GeometryReader { geometry in
+                let minY = geometry.frame(in: .global).minY - 110
+                tabsSection
+                    .offset(y: minY < 0 ? -minY : 0)
+                    .zIndex(10)
+            }
+            .frame(height: 52)
+            .zIndex(10)
+
+            TabView(selection: $selectedTab) {
+                postsGrid
+                    .tag(ProfileTab.posts)
+
+                likesGrid
+                    .tag(ProfileTab.likes)
+
+                Group {
+                    if !isStatsVisible {
+                        privacyLockedView(message: "This user doesn't share their listening statistics.")
+                    } else {
+                        ProfileStatsView(viewModel: statsViewModel)
+                    }
                 }
+                .tag(ProfileTab.stats)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: calculateGridHeight())
+            .clipped()
+        }
+    }
+
+    private var mainContent: some View {
+        ZStack(alignment: .top) {
+            ScrollView {
+                scrollContent
             }
             .coordinateSpace(name: "scroll")
 
@@ -120,69 +161,88 @@ struct ProfileView: View {
                 Spacer()
             }
         }
-        .toolbar {
-            if isOwnProfile {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showMusicPlaylists = true
-                    } label: {
-                        Image(systemName: "music.note.square.stack.fill")
-                            .font(.system(size: 15))
-                            .foregroundColor(.white)
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showProfileEdit = true
-                    } label: {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 15))
-                            .foregroundColor(.white)
-                    }
-                    .padding(.trailing, 3)
+    }
 
-                    Button {
-                        authManager.logout()
-                    } label: {
-                        Image(systemName: "door.right.hand.open")
-                            .font(.system(size: 15))
-                            .foregroundColor(.white)
+    private var contentWithToolbar: some View {
+        mainContent
+            .toolbar {
+                if isOwnProfile {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            showMusicPlaylists = true
+                        } label: {
+                            Image(systemName: "music.note.square.stack.fill")
+                                .font(.system(size: 15))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            showProfileEdit = true
+                        } label: {
+                            Image(systemName: "person.crop.circle")
+                                .font(.system(size: 15))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.trailing, 3)
+
+                        Button {
+                            authManager.logout()
+                        } label: {
+                            Image(systemName: "door.right.hand.open")
+                                .font(.system(size: 15))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
             }
-        }
-        .navigationDestination(isPresented: $showMusicPlaylists) {
-            MusicPlaylistsView().environmentObject(musicManager)
-        }
-        .navigationDestination(isPresented: $showProfileEdit) {
-            ProfileSettingsMenuView()
-        }
-        .navigationDestination(item: $selectedFollowView) { view in
-            switch view {
-            case .followers:
-                FollowersView(userId: userId ?? userStore.user?.id)
-            case .following:
-                FollowingView(userId: userId ?? userStore.user?.id)
+            .navigationDestination(isPresented: $showMusicPlaylists) {
+                MusicPlaylistsView().environmentObject(musicManager)
             }
-        }
-        .navigationDestination(isPresented: $isShowingPostDetail) {
-            if let post = selectedPost {
-                PostDetailView(post: post)
+            .navigationDestination(isPresented: $showProfileEdit) {
+                ProfileSettingsMenuView()
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .resetProfileNavigation)) { _ in
-            resetNavigation()
-        }
-        .task {
-            if let userId {
-                viewModel.fetchUserProfile(userId: userId)
-                viewModel.getFollowers(userId: userId)
+            .navigationDestination(item: $selectedFollowView) { view in
+                switch view {
+                case .followers:
+                    FollowersView(
+                        userId: userId ?? userStore.user?.id,
+                        isPublic: isFollowersVisible
+                    )
+                case .following:
+                    FollowingView(
+                        userId: userId ?? userStore.user?.id,
+                        isPublic: isFollowingVisible
+                    )
+                }
             }
-        }
-        .onChange(of: viewModel.followers) { _, newValue in
-            guard !isOwnProfile, let currentUserId = userStore.user?.id else { return }
-            isFollowingTarget = newValue.contains { $0.id == currentUserId }
-        }
+            .navigationDestination(isPresented: $isShowingPostDetail) {
+                if let post = selectedPost {
+                    PostDetailView(post: post)
+                }
+            }
+    }
+
+    var body: some View {
+        contentWithToolbar
+            .onReceive(NotificationCenter.default.publisher(for: .resetProfileNavigation)) { _ in
+                resetNavigation()
+            }
+            .task {
+                if let userId {
+                    viewModel.fetchUserProfile(userId: userId)
+                    viewModel.getFollowers(userId: userId)
+                    viewModel.getFollowing(userId: userId)
+                }
+            }
+            .onChange(of: viewModel.followers) { _, newValue in
+                guard !isOwnProfile, let currentUserId = userStore.user?.id else { return }
+                isFollowingTarget = newValue.contains { $0.id == currentUserId }
+            }
+            .onChange(of: viewModel.following) { _, newValue in
+                guard !isOwnProfile, let currentUserId = userStore.user?.id else { return }
+                isTargetFollowingMe = newValue.contains { $0.id == currentUserId }
+            }
     }
 
     // MARK: - Tabs Section
@@ -196,15 +256,13 @@ struct ProfileView: View {
                 TabButton(icon: "heart.fill", isSelected: selectedTab == .likes) {
                     selectedTab = .likes
                 }
-                if isOwnProfile {
-                    TabButton(icon: "music.note.list", isSelected: selectedTab == .stats) {
-                        selectedTab = .stats
-                    }
+                TabButton(icon: "music.note.list", isSelected: selectedTab == .stats) {
+                    selectedTab = .stats
                 }
             }
 
             GeometryReader { geo in
-                let tabWidth = geo.size.width / CGFloat(isOwnProfile ? 3 : 2)
+                let tabWidth = geo.size.width / 3
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: tabWidth, height: 2)
@@ -263,7 +321,9 @@ struct ProfileView: View {
 
     private var likesGrid: some View {
         VStack(spacing: 0) {
-            if viewModel.isLoading {
+            if !isLikesVisible {
+                privacyLockedView(message: "This user doesn't share their liked posts.")
+            } else if viewModel.isLoading {
                 loadingState()
             } else if viewModel.likedPosts.isEmpty {
                 emptyState(message: "No liked posts yet")
@@ -319,6 +379,22 @@ struct ProfileView: View {
     }
 
     // MARK: - Helpers
+
+    private func privacyLockedView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Spacer().frame(height: 60)
+            Image(systemName: "lock.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.gray)
+            Text(message)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
 
     private func emptyState(message: String) -> some View {
         VStack(spacing: 12) {

@@ -21,9 +21,10 @@ struct FollowersView: View {
     /// Si userId est fourni, on affiche les followers d'un autre utilisateur
     /// Sinon, on affiche les followers de l'utilisateur connecté
     let userId: Int?
-    
+    let isPublic: Bool
+
     // MARK: - Computed Properties
-    
+
     /// Indique si on affiche son propre profil
     private var isOwnProfile: Bool {
         guard let userId = userId, let currentUserId = userStore.user?.id else {
@@ -39,10 +40,25 @@ struct FollowersView: View {
     
     // MARK: - Init
     
-    init(userId: Int? = nil) {
+    init(userId: Int? = nil, isPublic: Bool = true) {
         self.userId = userId
+        self.isPublic = isPublic
     }
     
+    private var privacyLockedView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.gray)
+            Text("This user doesn't share their followers list.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     var filteredFollowers: [FollowerUser] {
         if searchText.isEmpty {
             return followerViewModel.followers
@@ -79,7 +95,9 @@ struct FollowersView: View {
     
     var body: some View {
         Group {
-            if followerViewModel.isLoading || followingViewModel.isLoading {
+            if !isPublic && !isOwnProfile {
+                privacyLockedView
+            } else if followerViewModel.isLoading || followingViewModel.isLoading {
                 // État de chargement
                 VStack(spacing: 12) {
                     ProgressView()

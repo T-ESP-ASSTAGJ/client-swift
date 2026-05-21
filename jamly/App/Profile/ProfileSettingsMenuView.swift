@@ -34,8 +34,8 @@ struct ProfileSettingsMenuView: View {
 
                 SettingsRow(
                     icon: "eye.fill",
-                    title: "Account Visibility",
-                    subtitle: "Manage who can see your profile",
+                    title: "Privacy & Notifications",
+                    subtitle: "Privacy & alerts settings",
                     color: .green
                 ) {
                     showAccountVisibility = true

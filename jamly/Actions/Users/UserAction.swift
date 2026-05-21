@@ -18,6 +18,7 @@ import Foundation
 struct UserEndpoints {
     // Base paths
     static let me = "/users/me"
+    static let meParameters = "/users/me/parameters"
     static let users = "/users"
     static let posts = "/posts"
 
@@ -182,7 +183,24 @@ enum UserActions {
             method: .delete,
             responseType: EmptyResponse.self
         )
-        
+
         return response
+    }
+
+    static func fetchParameters() async throws -> APIResponse<UserParameter> {
+        try await APIClient.shared.request(
+            UserEndpoints.meParameters,
+            method: .get,
+            responseType: UserParameter.self
+        )
+    }
+
+    static func updateParameters(_ params: UserParameter) async throws -> APIResponse<UserParameter> {
+        try await APIClient.shared.request(
+            UserEndpoints.meParameters,
+            method: .patch,
+            body: params,
+            responseType: UserParameter.self
+        )
     }
 }

@@ -27,6 +27,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var likedPosts: [Post] = []
     @Published var posts : [Post] = []
     @Published var followers: [FollowerUser] = []
+    @Published var following: [FollowingUser] = []
     @Published var state: VerifyState = .loading
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -257,16 +258,34 @@ final class ProfileViewModel: ObservableObject {
         Task {
             do {
                 let response = try await FollowerAction.getFollowerUsers(userId: userId)
-                
+
                 switch response.statusCode {
                 case 200:
                     followers = response.value
-                    
+
                 default:
                     errorMessage = "Une erreur est survenue lors du chargement des followers."
                 }
             } catch {
                 errorMessage = "Impossible de charger les followers."
+            }
+        }
+    }
+
+    func getFollowing(userId: Int) {
+        Task {
+            do {
+                let response = try await FollowingAction.getFollowingUsers(userId: userId)
+
+                switch response.statusCode {
+                case 200:
+                    following = response.value
+
+                default:
+                    errorMessage = "Une erreur est survenue lors du chargement des following."
+                }
+            } catch {
+                errorMessage = "Impossible de charger les following."
             }
         }
     }
