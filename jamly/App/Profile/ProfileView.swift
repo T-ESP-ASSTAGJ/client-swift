@@ -44,31 +44,13 @@ struct ProfileView: View {
         return userId == currentUserId
     }
 
-    private var isLikesVisible: Bool {
-        isOwnProfile || isVisible(displayedUser?.parameters?.likesVisibility ?? .public)
-    }
-
-    private var isStatsVisible: Bool {
-        isOwnProfile || isVisible(displayedUser?.parameters?.statsVisibility ?? .public)
-    }
-
-    private var isFollowersVisible: Bool {
-        isOwnProfile || isVisible(displayedUser?.parameters?.followersVisibility ?? .public)
-    }
-
-    private var isFollowingVisible: Bool {
-        isOwnProfile || isVisible(displayedUser?.parameters?.followingVisibility ?? .public)
-    }
-
-    /// Checks if content is visible based on the visibility option and the current user's relationship
-    private func isVisible(_ visibility: VisibilityOption) -> Bool {
+    private func canView(_ keyPath: KeyPath<UserParameter, VisibilityOption>) -> Bool {
+        guard !isOwnProfile else { return true }
+        let visibility = displayedUser?.parameters?[keyPath: keyPath] ?? .public
         switch visibility {
-        case .public:
-            return true
-        case .friends:
-            return isFollowingTarget && isTargetFollowingMe
-        case .private:
-            return false
+        case .public: return true
+        case .friends: return isFollowingTarget && isTargetFollowingMe
+        case .private: return false
         }
     }
 
@@ -141,7 +123,7 @@ struct ProfileView: View {
                     .tag(ProfileTab.likes)
 
                 Group {
-                    if !isStatsVisible {
+                    if !canView(\.statsVisibility) {
                         PrivacyLockedView(message: "This user doesn't share their listening statistics.")
                     } else {
                         ProfileStatsView(viewModel: statsViewModel)
@@ -215,12 +197,12 @@ struct ProfileView: View {
                 case .followers:
                     FollowersView(
                         userId: userId ?? userStore.user?.id,
-                        isPublic: isFollowersVisible
+                        isPublic: canView(\.followersVisibility)
                     )
                 case .following:
                     FollowingView(
                         userId: userId ?? userStore.user?.id,
-                        isPublic: isFollowingVisible
+                        isPublic: canView(\.followingVisibility)
                     )
                 }
             }
@@ -329,7 +311,7 @@ struct ProfileView: View {
 
     private var likesGrid: some View {
         VStack(spacing: 0) {
-            if !isLikesVisible {
+            if !canView(\.likesVisibility) {
                 PrivacyLockedView(message: "This user doesn't share their liked posts.")
             } else if viewModel.isLoading {
                 loadingState()
