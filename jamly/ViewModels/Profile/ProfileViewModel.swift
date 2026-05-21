@@ -278,13 +278,33 @@ final class ProfileViewModel: ObservableObject {
         Task {
             do {
                 let response = try await fetch()
+
                 if response.statusCode == 200 {
                     assign(response.value)
+
                 } else {
                     errorMessage = "Une erreur est survenue lors du chargement des \(label)."
                 }
             } catch {
                 errorMessage = "Impossible de charger les \(label)."
+            }
+        }
+    }
+
+    func getFollowing(userId: Int) {
+        Task {
+            do {
+                let response = try await FollowingAction.getFollowingUsers(userId: userId)
+
+                switch response.statusCode {
+                case 200:
+                    following = response.value
+
+                default:
+                    errorMessage = "Une erreur est survenue lors du chargement des following."
+                }
+            } catch {
+                errorMessage = "Impossible de charger les following."
             }
         }
     }

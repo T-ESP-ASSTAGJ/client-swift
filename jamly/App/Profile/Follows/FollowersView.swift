@@ -44,7 +44,7 @@ struct FollowersView: View {
         self.userId = userId
         self.isPublic = isPublic
     }
-    
+
     var filteredFollowers: [FollowerUser] {
         if searchText.isEmpty {
             return followerViewModel.followers
