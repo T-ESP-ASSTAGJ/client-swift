@@ -7,6 +7,7 @@ final class LoginViewModel: ObservableObject {
         case idle
         case loading
         case success
+        case codeSent
         case emailNotFound
         case invalidCode
         case error
@@ -33,11 +34,11 @@ final class LoginViewModel: ObservableObject {
             
             do {
                 let response = try await AuthActions.request(email: email)
-                
+
                 switch response.statusCode {
                 case 201:
-                    state = .success
-                    
+                    state = .codeSent
+
                 case 400:
                     state = .invalidCode
                     errorMessage = "Requête invalide."

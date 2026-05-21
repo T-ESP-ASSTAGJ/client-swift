@@ -108,19 +108,29 @@ struct jamlyApp: App {
 
 struct RootView: View {
     @EnvironmentObject private var authManager: AuthManager
-    
+    @EnvironmentObject private var userStore: UserStore
+
     var body: some View {
         Group {
-            if !authManager.completedOnboarding && !authManager.isAuthenticated {
-                OnboardingView()
-                    .environmentObject(authManager)
-            }else if authManager.isAuthenticated {
-                MainTabView()
-            } else {
+            if !authManager.isAuthenticated {
                 NavigationStack {
                     LoginView()
                 }
+            } else if needsProfileSetup {
+                ProfileSetupView()
+            } else if !authManager.completedOnboarding {
+                OnboardingView()
+                    .environmentObject(authManager)
+            } else {
+                MainTabView()
             }
         }
+    }
+
+    private var needsProfileSetup: Bool {
+        guard let user = userStore.user else { return false }
+        // Photo de profil optionnelle : seul un username vide bloque l'utilisateur sur l'écran
+        // de setup. L'app affiche un placeholder (icône person.fill) pour les users sans photo.
+        return user.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

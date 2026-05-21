@@ -44,6 +44,9 @@ final class AuthManager: ObservableObject {
 
         print("🔐 AuthManager init - Checking token...")
 
+        // Restaure l'état d'onboarding depuis UserDefaults
+        completedOnboarding = UserDefaults.standard.bool(forKey: "jamly.hasSeenOnboarding")
+
         // Vérifier si un token existe déjà dans SecureStore
         if secureStore.retrieve() != nil {
             isAuthenticated = true

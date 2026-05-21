@@ -40,30 +40,18 @@ struct ProfileHeaderView: View {
     }
 
     private var profilePicture: some View {
-        Group {
-            if let picture = user?.profilePicture {
-                AsyncImage(url: URL(string: picture)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 85, height: 85)
-                        .clipShape(Circle())
-                } placeholder: {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 85, height: 85)
-                        .overlay { ProgressView() }
-                }
-            } else {
-                Circle()
-                    .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                    .frame(width: 85, height: 85)
-                    .overlay {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 35))
-                            .foregroundColor(.gray)
-                    }
-            }
+        let pictureURL = user?.displayProfilePictureURL ?? Config.defaultProfilePictureURL
+        return AsyncImage(url: URL(string: pictureURL)) { image in
+            image
+                .resizable()
+                .scaledToFill()
+                .frame(width: 85, height: 85)
+                .clipShape(Circle())
+        } placeholder: {
+            Circle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(width: 85, height: 85)
+                .overlay { ProgressView() }
         }
     }
 

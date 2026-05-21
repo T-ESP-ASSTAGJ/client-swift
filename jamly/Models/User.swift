@@ -23,6 +23,36 @@ struct User: Codable {
     enum CodingKeys: String, CodingKey {
         case id, username, email, profilePicture, phoneNumber, bio, followingCount, followersCount
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(Int.self, forKey: .id)
+        // username/counts peuvent être null côté API pour un compte fraîchement créé,
+        // d'où le fallback plutôt qu'un decode strict.
+        self.username = (try? container.decodeIfPresent(String.self, forKey: .username)) ?? ""
+        self.email = try container.decode(String.self, forKey: .email)
+        self.profilePicture = try? container.decodeIfPresent(String.self, forKey: .profilePicture)
+        self.phoneNumber = try? container.decodeIfPresent(String.self, forKey: .phoneNumber)
+        self.bio = try? container.decodeIfPresent(String.self, forKey: .bio)
+        self.followingCount = (try? container.decodeIfPresent(Int.self, forKey: .followingCount)) ?? 0
+        self.followersCount = (try? container.decodeIfPresent(Int.self, forKey: .followersCount)) ?? 0
+    }
+
+    /// URL effective à utiliser pour afficher la photo de profil, avec fallback configurable
+    /// (voir ``Config/defaultProfilePictureURL``) quand l'utilisateur n'a pas défini de photo.
+    var displayProfilePictureURL: String {
+        Self.displayProfilePictureURL(from: profilePicture)
+    }
+
+    static func displayProfilePictureURL(
+        from profilePicture: String?,
+        fallback: String = Config.defaultProfilePictureURL
+    ) -> String {
+        if let picture = profilePicture, !picture.isEmpty {
+            return picture
+        }
+        return fallback
+    }
 }
 
 
