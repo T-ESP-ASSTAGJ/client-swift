@@ -5,31 +5,31 @@ import Foundation
 import SwiftUI
 
 enum VisibilityOption: String, Codable, CaseIterable {
-    case `public` = "public"
+    case publicVisibility = "public"
     case friends = "friends"
-    case `private` = "private"
+    case privateVisibility = "private"
 
     var label: String {
         switch self {
-        case .public: return "Public"
+        case .publicVisibility: return "Public"
         case .friends: return "Friends"
-        case .private: return "Private"
+        case .privateVisibility: return "Private"
         }
     }
 
     var icon: String {
         switch self {
-        case .public: return "globe"
+        case .publicVisibility: return "globe"
         case .friends: return "person.2"
-        case .private: return "lock"
+        case .privateVisibility: return "lock"
         }
     }
 
     var color: Color {
         switch self {
-        case .public: return .blue
+        case .publicVisibility: return .blue
         case .friends: return .green
-        case .private: return .red
+        case .privateVisibility: return .red
         }
     }
 }

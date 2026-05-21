@@ -11,11 +11,11 @@ struct ProfileHeaderView: View {
     @Binding var selectedFollowView: FollowViews?
 
     private var isFollowingVisible: Bool {
-        isOwnProfile || (user?.parameters?.followingVisibility ?? .public) == .public
+        isOwnProfile || (user?.parameters?.followingVisibility ?? .publicVisibility) == .publicVisibility
     }
 
     private var isFollowersVisible: Bool {
-        isOwnProfile || (user?.parameters?.followersVisibility ?? .public) == .public
+        isOwnProfile || (user?.parameters?.followersVisibility ?? .publicVisibility) == .publicVisibility
     }
 
     var body: some View {

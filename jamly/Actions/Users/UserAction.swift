@@ -16,17 +16,21 @@ import Foundation
 /// Regrouper ces constantes en un seul point permet de modifier l'arborescence de l'API
 /// sans avoir à parcourir tous les appels.
 struct UserEndpoints {
-    // Base paths
-    static let me = "/users/me"
-    static let meParameters = "/users/me/parameters"
-    static let users = "/users"
-    static let posts = "/posts"
+    // Configurable base paths
+    static var basePath = "/users"
+    static var postsBasePath = "/posts"
+
+    // Derived paths
+    static var me: String { "\(basePath)/me" }
+    static var meParameters: String { "\(basePath)/me/parameters" }
+    static var users: String { basePath }
+    static var posts: String { postsBasePath }
 
     // Helpers to build parameterized paths
-    static func user(_ id: Int) -> String { "/users/\(id)" }
-    static func follow(_ id: Int) -> String { "/users/\(id)/follow" }
-    static func unfollow(_ id: Int) -> String { "/users/\(id)/unfollow" }
-    static func likes(_ id: Int) -> String { "/users/\(id)/likes" }
+    static func user(_ id: Int) -> String { "\(basePath)/\(id)" }
+    static func follow(_ id: Int) -> String { "\(basePath)/\(id)/follow" }
+    static func unfollow(_ id: Int) -> String { "\(basePath)/\(id)/unfollow" }
+    static func likes(_ id: Int) -> String { "\(basePath)/\(id)/likes" }
 }
 
 

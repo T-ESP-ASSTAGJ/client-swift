@@ -46,11 +46,11 @@ struct ProfileView: View {
 
     private func canView(_ keyPath: KeyPath<UserParameter, VisibilityOption>) -> Bool {
         guard !isOwnProfile else { return true }
-        let visibility = displayedUser?.parameters?[keyPath: keyPath] ?? .public
+        let visibility = displayedUser?.parameters?[keyPath: keyPath] ?? .publicVisibility
         switch visibility {
-        case .public: return true
+        case .publicVisibility: return true
         case .friends: return isFollowingTarget && isTargetFollowingMe
-        case .private: return false
+        case .privateVisibility: return false
         }
     }
 
