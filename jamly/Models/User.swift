@@ -37,6 +37,22 @@ struct User: Codable {
         self.followingCount = (try? container.decodeIfPresent(Int.self, forKey: .followingCount)) ?? 0
         self.followersCount = (try? container.decodeIfPresent(Int.self, forKey: .followersCount)) ?? 0
     }
+
+    /// URL effective à utiliser pour afficher la photo de profil, avec fallback configurable
+    /// (voir ``Config/defaultProfilePictureURL``) quand l'utilisateur n'a pas défini de photo.
+    var displayProfilePictureURL: String {
+        Self.displayProfilePictureURL(from: profilePicture)
+    }
+
+    static func displayProfilePictureURL(
+        from profilePicture: String?,
+        fallback: String = Config.defaultProfilePictureURL
+    ) -> String {
+        if let picture = profilePicture, !picture.isEmpty {
+            return picture
+        }
+        return fallback
+    }
 }
 
 

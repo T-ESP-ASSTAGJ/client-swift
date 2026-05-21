@@ -129,9 +129,8 @@ struct RootView: View {
 
     private var needsProfileSetup: Bool {
         guard let user = userStore.user else { return false }
-        // TODO: réactiver le check photo quand l'upload sera implémenté côté API.
-        // let missingPhoto = (user.profilePicture ?? "").isEmpty
-        let missingUsername = user.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        return missingUsername
+        // Photo de profil optionnelle : seul un username vide bloque l'utilisateur sur l'écran
+        // de setup. L'app affiche un placeholder (icône person.fill) pour les users sans photo.
+        return user.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

@@ -384,7 +384,7 @@ struct OTPDigitTextField: UIViewRepresentable {
             parent.text = sender.text ?? ""
         }
 
-        func textFieldDidBeginEditing(_ textField: UITextField) {
+        func textFieldDidBeginEditing(_: UITextField) {
             DispatchQueue.main.async { [weak self] in
                 self?.parent.onFocusGained()
             }
@@ -403,16 +403,5 @@ final class BackspaceDetectingTextField: UITextField {
         if wasEmpty {
             onBackspaceOnEmpty?()
         }
-    }
-}
-
-#Preview {
-    let userStore = UserStore()
-    let authManager = AuthManager(userStore: userStore)
-    
-    return NavigationStack {
-        OtpLoginView(email: "john@doe.fr")
-            .environmentObject(authManager)
-            .environmentObject(userStore)
     }
 }
