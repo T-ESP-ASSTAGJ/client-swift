@@ -82,6 +82,32 @@ struct ProfileView: View {
         GridItem(.flexible(), spacing: 2)
     ]
 
+    // MARK: - Follow Actions
+
+    private func handleFollow() {
+        Task {
+            guard let targetUserId = userId else { return }
+            await userStore.followUser(userId: targetUserId)
+            isFollowingTarget = true
+            refreshTargetProfile(targetUserId)
+        }
+    }
+
+    private func handleUnfollow() {
+        Task {
+            guard let targetUserId = userId else { return }
+            await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
+            isFollowingTarget = false
+            refreshTargetProfile(targetUserId)
+        }
+    }
+
+    private func refreshTargetProfile(_ targetUserId: Int) {
+        viewModel.getFollowers(userId: targetUserId)
+        viewModel.getFollowing(userId: targetUserId)
+        viewModel.fetchUserProfile(userId: targetUserId)
+    }
+
     // MARK: - Scroll Content
 
     private var scrollContent: some View {
@@ -91,26 +117,8 @@ struct ProfileView: View {
             if !isOwnProfile {
                 ProfileFollowButton(
                     isFollowing: isFollowingTarget,
-                    onFollow: {
-                        Task {
-                            guard let targetUserId = userId else { return }
-                            await userStore.followUser(userId: targetUserId)
-                            isFollowingTarget = true
-                            viewModel.getFollowers(userId: targetUserId)
-                            viewModel.getFollowing(userId: targetUserId)
-                            viewModel.fetchUserProfile(userId: targetUserId)
-                        }
-                    },
-                    onUnfollow: {
-                        Task {
-                            guard let targetUserId = userId else { return }
-                            await userStore.unfollowUser(userId: targetUserId, autoRefresh: true)
-                            isFollowingTarget = false
-                            viewModel.getFollowers(userId: targetUserId)
-                            viewModel.getFollowing(userId: targetUserId)
-                            viewModel.fetchUserProfile(userId: targetUserId)
-                        }
-                    }
+                    onFollow: { handleFollow() },
+                    onUnfollow: { handleUnfollow() }
                 )
                 .padding(.horizontal)
                 .padding(.bottom, 16)
@@ -134,7 +142,7 @@ struct ProfileView: View {
 
                 Group {
                     if !isStatsVisible {
-                        privacyLockedView(message: "This user doesn't share their listening statistics.")
+                        PrivacyLockedView(message: "This user doesn't share their listening statistics.")
                     } else {
                         ProfileStatsView(viewModel: statsViewModel)
                     }
@@ -322,7 +330,7 @@ struct ProfileView: View {
     private var likesGrid: some View {
         VStack(spacing: 0) {
             if !isLikesVisible {
-                privacyLockedView(message: "This user doesn't share their liked posts.")
+                PrivacyLockedView(message: "This user doesn't share their liked posts.")
             } else if viewModel.isLoading {
                 loadingState()
             } else if viewModel.likedPosts.isEmpty {
@@ -380,21 +388,6 @@ struct ProfileView: View {
 
     // MARK: - Helpers
 
-    private func privacyLockedView(message: String) -> some View {
-        VStack(spacing: 16) {
-            Spacer().frame(height: 60)
-            Image(systemName: "lock.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-    }
 
     private func emptyState(message: String) -> some View {
         VStack(spacing: 12) {

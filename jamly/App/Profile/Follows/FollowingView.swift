@@ -45,21 +45,6 @@ struct FollowingView: View {
         self.isPublic = isPublic
     }
 
-    private var privacyLockedView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "lock.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
-            Text("This user doesn't share their following list.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    
     var filteredFollowings: [FollowingUser] {
         if searchText.isEmpty {
             return followingViewModel.followingUsers
@@ -102,7 +87,7 @@ struct FollowingView: View {
     var body: some View {
         Group {
             if !isPublic && !isOwnProfile {
-                privacyLockedView
+                PrivacyLockedView(message: "This user doesn't share their following list.", expandVertically: true)
             } else if followingViewModel.isLoading {
                 // État de chargement
                 VStack(spacing: 12) {

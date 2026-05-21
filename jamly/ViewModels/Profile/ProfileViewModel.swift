@@ -255,37 +255,36 @@ final class ProfileViewModel: ObservableObject {
     ///
     /// - Parameter userId: Identifiant de l'utilisateur observé.
     func getFollowers(userId: Int) {
-        Task {
-            do {
-                let response = try await FollowerAction.getFollowerUsers(userId: userId)
-
-                switch response.statusCode {
-                case 200:
-                    followers = response.value
-
-                default:
-                    errorMessage = "Une erreur est survenue lors du chargement des followers."
-                }
-            } catch {
-                errorMessage = "Impossible de charger les followers."
-            }
-        }
+        fetchRelation(
+            fetch: { try await FollowerAction.getFollowerUsers(userId: userId) },
+            assign: { self.followers = $0 },
+            label: "followers"
+        )
     }
 
     func getFollowing(userId: Int) {
+        fetchRelation(
+            fetch: { try await FollowingAction.getFollowingUsers(userId: userId) },
+            assign: { self.following = $0 },
+            label: "following"
+        )
+    }
+
+    private func fetchRelation<T>(
+        fetch: @escaping () async throws -> APIResponse<[T]>,
+        assign: @escaping ([T]) -> Void,
+        label: String
+    ) {
         Task {
             do {
-                let response = try await FollowingAction.getFollowingUsers(userId: userId)
-
-                switch response.statusCode {
-                case 200:
-                    following = response.value
-
-                default:
-                    errorMessage = "Une erreur est survenue lors du chargement des following."
+                let response = try await fetch()
+                if response.statusCode == 200 {
+                    assign(response.value)
+                } else {
+                    errorMessage = "Une erreur est survenue lors du chargement des \(label)."
                 }
             } catch {
-                errorMessage = "Impossible de charger les following."
+                errorMessage = "Impossible de charger les \(label)."
             }
         }
     }
