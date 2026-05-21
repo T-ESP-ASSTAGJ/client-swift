@@ -1,10 +1,11 @@
 import SwiftUI
+import UIKit
 
 struct OtpLoginView: View {
     let email: String
-    
+
     @State private var otpDigits: [String] = Array(repeating: "", count: 6)
-    @FocusState private var focusedField: Int?
+    @State private var focusedField: Int? = 0
     @StateObject private var viewModel = LoginViewModel()
     @EnvironmentObject private var userStore: UserStore
     @EnvironmentObject private var authManager: AuthManager
@@ -95,7 +96,7 @@ struct OtpLoginView: View {
                     .opacity(animateContent ? 1 : 0)
                     .offset(y: animateContent ? 0 : -20)
                     .animation(.easeOut(duration: 0.8), value: animateContent)
-                    
+
                     // OTP Card
                     VStack(spacing: 24) {
                         // OTP Digits
@@ -104,15 +105,12 @@ struct OtpLoginView: View {
                                 OTPDigitField(
                                     digit: $otpDigits[index],
                                     isFocused: focusedField == index,
-                                    index: index
+                                    index: index,
+                                    onFocusGained: { focusedField = index },
+                                    onBackspaceOnEmpty: { handleBackspaceOnEmpty(at: index) }
                                 )
-                                .focused($focusedField, equals: index)
                                 .onChange(of: otpDigits[index]) { oldValue, newValue in
                                     handleDigitChange(at: index, oldValue: oldValue, newValue: newValue)
-                                }
-                                .onKeyPress(.delete) {
-                                    handleDelete(at: index)
-                                    return .handled
                                 }
                             }
                         }
@@ -242,13 +240,10 @@ struct OtpLoginView: View {
         }
     }
     
-    private func handleDelete(at index: Int) {
-        if otpDigits[index].isEmpty && index > 0 {
-            otpDigits[index - 1] = ""
-            focusedField = index - 1
-        } else {
-            otpDigits[index] = ""
-        }
+    private func handleBackspaceOnEmpty(at index: Int) {
+        guard index > 0 else { return }
+        otpDigits[index - 1] = ""
+        focusedField = index - 1
     }
     
     private func handleVerify() {
@@ -294,37 +289,120 @@ struct OTPDigitField: View {
     @Binding var digit: String
     let isFocused: Bool
     let index: Int
-    
+    let onFocusGained: () -> Void
+    let onBackspaceOnEmpty: () -> Void
+
     var body: some View {
-        TextField("", text: $digit)
-            .font(.custom("Poppins-Bold", size: 24))
-            .foregroundColor(.white)
-            .multilineTextAlignment(.center)
-            .keyboardType(.numberPad)
-            .frame(width: 48, height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.white.opacity(isFocused ? 0.1 : 0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                isFocused ?
+        OTPDigitTextField(
+            text: $digit,
+            isFocused: isFocused,
+            onFocusGained: onFocusGained,
+            onBackspaceOnEmpty: onBackspaceOnEmpty
+        )
+        .frame(width: 48, height: 56)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.white.opacity(isFocused ? 0.1 : 0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            isFocused ?
+                            LinearGradient(
+                                colors: [Color.cyan, Color.blue],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ) :
                                 LinearGradient(
-                                    colors: [Color.cyan, Color.blue],
+                                    colors: [.white.opacity(0.2), .white.opacity(0.1)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
-                                ) :
-                                    LinearGradient(
-                                        colors: [.white.opacity(0.2), .white.opacity(0.1)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                lineWidth: isFocused ? 2 : 1
-                            )
-                    )
-            )
-            .animation(.easeInOut(duration: 0.2), value: isFocused)
-            .textContentType(.oneTimeCode)
+                                ),
+                            lineWidth: isFocused ? 2 : 1
+                        )
+                )
+        )
+        .animation(.easeInOut(duration: 0.2), value: isFocused)
+    }
+}
+
+// MARK: - OTP Digit TextField (UIKit bridge)
+/// `UITextField` enveloppé pour pouvoir intercepter `deleteBackward()` même quand
+/// le champ est vide — ce que `SwiftUI.TextField` + `.onKeyPress(.delete)` ne fait
+/// pas avec le clavier soft d'iOS.
+struct OTPDigitTextField: UIViewRepresentable {
+    @Binding var text: String
+    let isFocused: Bool
+    let onFocusGained: () -> Void
+    let onBackspaceOnEmpty: () -> Void
+
+    func makeUIView(context: Context) -> BackspaceDetectingTextField {
+        let textField = BackspaceDetectingTextField()
+        textField.keyboardType = .numberPad
+        textField.textContentType = .oneTimeCode
+        textField.textAlignment = .center
+        textField.textColor = .white
+        textField.tintColor = .white
+        textField.font = UIFont(name: "Poppins-Bold", size: 24)
+            ?? .systemFont(ofSize: 24, weight: .bold)
+        textField.delegate = context.coordinator
+        textField.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.textChanged(_:)),
+            for: .editingChanged
+        )
+        textField.onBackspaceOnEmpty = onBackspaceOnEmpty
+        return textField
+    }
+
+    func updateUIView(_ uiView: BackspaceDetectingTextField, context: Context) {
+        if uiView.text != text {
+            uiView.text = text
+        }
+        uiView.onBackspaceOnEmpty = onBackspaceOnEmpty
+        context.coordinator.parent = self
+
+        // Ne demande que la prise de focus : iOS résigne automatiquement le textField
+        // précédemment first responder dès qu'un autre le devient. Appeler resignFirstResponder
+        // explicitement créerait un instant sans first responder et ferait clignoter le clavier.
+        if isFocused, !uiView.isFirstResponder {
+            DispatchQueue.main.async {
+                uiView.becomeFirstResponder()
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: OTPDigitTextField
+
+        init(_ parent: OTPDigitTextField) {
+            self.parent = parent
+        }
+
+        @objc func textChanged(_ sender: UITextField) {
+            parent.text = sender.text ?? ""
+        }
+
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            DispatchQueue.main.async { [weak self] in
+                self?.parent.onFocusGained()
+            }
+        }
+    }
+}
+
+/// `UITextField` qui signale les appuis sur la touche backspace alors que le champ
+/// est déjà vide (sinon `editingChanged` ne fire pas et la touche est silencieuse).
+final class BackspaceDetectingTextField: UITextField {
+    var onBackspaceOnEmpty: (() -> Void)?
+
+    override func deleteBackward() {
+        let wasEmpty = (text ?? "").isEmpty
+        super.deleteBackward()
+        if wasEmpty {
+            onBackspaceOnEmpty?()
+        }
     }
 }
 

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct LoginView: View {
     @State private var email: String = ""
-    @State private var animateContent = false
     @State private var navigateToOtp = false
     @StateObject private var viewModel = LoginViewModel()
     
@@ -36,8 +35,6 @@ struct LoginView: View {
                     .frame(width: 300, height: 300)
                     .blur(radius: 100)
                     .offset(x: -100, y: -50)
-                    .opacity(animateContent ? 1 : 0)
-                    .animation(.easeInOut(duration: 1.5), value: animateContent)
                 
                 Circle()
                     .fill(
@@ -50,8 +47,6 @@ struct LoginView: View {
                     .frame(width: 250, height: 250)
                     .blur(radius: 90)
                     .offset(x: geometry.size.width - 150, y: geometry.size.height - 200)
-                    .opacity(animateContent ? 1 : 0)
-                    .animation(.easeInOut(duration: 1.5).delay(0.2), value: animateContent)
             }
             
             // Main content
@@ -80,10 +75,7 @@ struct LoginView: View {
                             .shadow(color: .purple.opacity(0.3), radius: 20, x: 0, y: 10)
                             .offset(y: -15)
                     }
-                    .opacity(animateContent ? 1 : 0)
-                    .offset(y: animateContent ? 0 : -20)
-                    .animation(.easeOut(duration: 0.8), value: animateContent)
-                    
+
                     // Card
                     VStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 8) {
@@ -168,9 +160,6 @@ struct LoginView: View {
                         .disabled(viewModel.isLoading || !email.isValidEmail)
                     }
                     .padding(10)
-                    .opacity(animateContent ? 1 : 0)
-                    .offset(y: animateContent ? 0 : 30)
-                    .animation(.easeOut(duration: 0.8).delay(0.2), value: animateContent)
                 }
                 .padding(.horizontal, 20)
                 
@@ -185,19 +174,5 @@ struct LoginView: View {
                 navigateToOtp = true
             }
         }
-        .onAppear {
-            animateContent = true
-        }
-    }
-}
-
-#Preview {
-    let userStore = UserStore()
-    let authManager = AuthManager(userStore: userStore)
-    
-    return NavigationStack {
-        LoginView()
-            .environmentObject(authManager)
-            .environmentObject(userStore)
     }
 }
