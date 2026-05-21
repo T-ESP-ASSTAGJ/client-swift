@@ -122,15 +122,25 @@ struct ProfileView: View {
                 likesGrid
                     .tag(ProfileTab.likes)
 
-                        if isOwnProfile {
-                            ProfileStatsView(viewModel: statsViewModel)
-                                .tag(ProfileTab.stats)
-                        }
+                Group {
+                    if !canView(\.statsVisibility) {
+                        PrivacyLockedView(message: "This user doesn't share their listening statistics.")
+                    } else {
+                        ProfileStatsView(viewModel: statsViewModel)
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: calculateGridHeight())
-                    .clipped()
                 }
+                .tag(ProfileTab.stats)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: calculateGridHeight())
+            .clipped()
+        }
+    }
+
+    private var mainContent: some View {
+        ZStack(alignment: .top) {
+            ScrollView {
+                scrollContent
             }
             .coordinateSpace(name: "scroll")
 
