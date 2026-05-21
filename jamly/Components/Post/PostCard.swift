@@ -117,7 +117,9 @@ struct PostCard: View {
                     onDeleted?()
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button("Cancel", role: .cancel) {
+                // No action needed — SwiftUI dismisses the alert automatically for .cancel buttons
+            }
         } message: {
             Text("This action cannot be undone.")
         }
