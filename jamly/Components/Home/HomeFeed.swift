@@ -114,8 +114,10 @@ struct HomeFeed: View {
         PostCard(
             post: post,
             isCurrentPost: post.id == currentScrollPosition,
+            currentUserId: userStore.user?.id,
             onSeeMore: { selectedPostForDetail = post },
             onOpenComments: { selectedPostForComments = post },
+            onDeleted: { userStore.removePost(id: post.id) },
             showPostDetail: $showPostDetail,
             musicManager: musicManager
         )
