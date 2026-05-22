@@ -16,9 +16,9 @@ import Foundation
 /// Regrouper ces constantes en un seul point permet de modifier l'arborescence de l'API
 /// sans avoir à parcourir tous les appels.
 struct UserEndpoints {
-    // Configurable base paths
-    static var basePath = "/users"
-    static var postsBasePath = "/posts"
+    // Base paths from Config
+    static var basePath: String { Config.usersPath }
+    static var postsBasePath: String { Config.postsPath }
 
     // Derived paths
     static var me: String { "\(basePath)/me" }

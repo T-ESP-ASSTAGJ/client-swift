@@ -2,11 +2,18 @@ import SwiftUI
 import MusicKit
 import Combine
 
+// MARK: - App Accent Colors
+extension Color {
+    static let appAccentPurple = Color(red: 0.6, green: 0.4, blue: 0.9)
+    static let appAccentPink = Color(red: 0.8, green: 0.4, blue: 0.7)
+}
+
 /// View to share a playlist to a specific conversation
 struct ShareToConversationView: View {
     let playlist: Playlist
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var userStore: UserStore
     private let shareService = PlaylistShareService.shared
     @StateObject private var viewModel = ShareToConversationViewModel()
     
@@ -62,7 +69,7 @@ struct ShareToConversationView: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .foregroundColor(.pink)
+                    .foregroundColor(.appAccentPink)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -74,7 +81,7 @@ struct ShareToConversationView: View {
                 }
             }
             .task {
-                await viewModel.loadConversations()
+                await viewModel.loadConversations(currentUserId: userStore.user?.id ?? 0)
             }
             .alert("Share Playlist", isPresented: $shareSuccess) {
                 Button("OK") {
@@ -133,7 +140,7 @@ struct ShareToConversationView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "applelogo")
                         .font(.caption)
-                        .foregroundColor(.pink)
+                        .foregroundColor(.appAccentPink)
                     Text("Apple Music")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -267,17 +274,18 @@ struct ShareConversationRow: View {
                 // Selection Indicator
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.pink)
+                        .foregroundColor(.appAccentPink)
                         .font(.title2)
                 }
             }
             .padding()
+            .contentShape(Rectangle())
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(isSelected ? Color.white.opacity(0.15) : Color.clear)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2)
+                            .stroke(isSelected ? .appAccentPurple : Color.clear, lineWidth: 2)
                     )
             )
         }
@@ -293,14 +301,14 @@ class ShareToConversationViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var error: String?
     
-    func loadConversations() async {
+    func loadConversations(currentUserId: Int) async {
         isLoading = true
         defer { isLoading = false }
-        
+
         do {
             // Load conversations from API
             let response = try await ConversationAction.getConversations()
-            conversations = response.value.map { ConversationPreview(from: $0) }
+            conversations = response.value.map { ConversationPreview(from: $0, currentUserId: currentUserId) }
         } catch {
             self.error = error.localizedDescription
         }
@@ -314,16 +322,12 @@ struct ConversationPreview: Identifiable {
     let displayName: String
     let avatarURL: String?
     let lastMessage: String?
-    
-    init(from conversation: Conversation) {
+
+    init(from conversation: Conversation, currentUserId: Int) {
         self.id = conversation.id
-        // Use groupName for groups, or first participant's username for direct messages
-        if conversation.isGroup {
-            self.displayName = conversation.groupName ?? "Group Chat"
-        } else {
-            self.displayName = conversation.participants.first?.username ?? "Unknown"
-        }
-        self.avatarURL = conversation.participants.first?.profilePicture
+        self.displayName = conversation.displayName(currentUserId: currentUserId)
+        self.avatarURL = conversation.displayProfilePicture(currentUserId: currentUserId)
+            ?? conversation.participants.first?.profilePicture
         self.lastMessage = conversation.lastMessage?.displayPreview
     }
 }

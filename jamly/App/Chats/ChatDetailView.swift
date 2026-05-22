@@ -50,7 +50,9 @@ struct MessageBubble: View {
                 }
                 
                 // Contenu du message
-                if message.isMusicMessage {
+                if isSharedPost(message.content) {
+                    SharedPostBubble(postId: parseSharedPostId(message.content)!)
+                } else if message.isMusicMessage {
                     // Bulle de message musical
                     MusicMessageView(message: message)
                 } else if isPlaylistLink(message.content) {
@@ -106,6 +108,19 @@ struct MessageBubble: View {
             }
     }
 
+    private static let sharedPostPrefix = Config.baseURL + MessageEndpoint.sharedPostPath
+
+    private func isSharedPost(_ content: String?) -> Bool {
+        guard let content = content else { return false }
+        return content.hasPrefix(Self.sharedPostPrefix) && parseSharedPostId(content) != nil
+    }
+
+    private func parseSharedPostId(_ content: String?) -> Int? {
+        guard let content = content,
+              content.hasPrefix(Self.sharedPostPrefix) else { return nil }
+        return Int(content.dropFirst(Self.sharedPostPrefix.count))
+    }
+
     /// Check if message content is an Apple Music playlist link
     private func isPlaylistLink(_ content: String?) -> Bool {
         guard let content = content else { return false }
@@ -113,6 +128,132 @@ struct MessageBubble: View {
         if trimmed.contains(Config.appleMusicHost) && trimmed.contains(Config.appleMusicPlaylistPath) { return true }
         // Legacy format: "🎵 Name\nURL"
         return content.contains("🎵") && content.contains(Config.appleMusicHost)
+    }
+}
+
+// MARK: - Shared Post Bubble
+/// Displays a shared post preview. Fetches post data by ID and renders a compact card.
+struct SharedPostBubble: View {
+    let postId: Int
+
+    @State private var post: Post?
+    @State private var isLoading = true
+    @State private var failed = false
+
+    var body: some View {
+        Group {
+            if isLoading {
+                loadingView
+            } else if let post {
+                NavigationLink(destination: PostDetailView(post: post, highlightedCommentId: nil)) {
+                    postPreview(post)
+                }
+                .buttonStyle(PlainButtonStyle())
+            } else {
+                unavailableView
+            }
+        }
+        .frame(maxWidth: 280)
+        .task(id: postId) { await loadPost() }
+    }
+
+    private var loadingView: some View {
+        HStack(spacing: 12) {
+            ProgressView().tint(.white)
+            Text("Loading post...")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.7))
+        }
+        .padding(12)
+        .background(Color.gray.opacity(0.3))
+        .cornerRadius(16)
+    }
+
+    private func postPreview(_ post: Post) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Post image + user info
+            HStack(spacing: 12) {
+                CachedAsyncImage(
+                    url: URL(string: post.frontImage),
+                    targetSize: CGSize(width: 60, height: 60)
+                ) {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.15))
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                }
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(post.user.username)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+
+                    if !post.caption.isEmpty {
+                        Text(post.caption)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.8))
+                            .lineLimit(2)
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+
+            // Track info
+            HStack(spacing: 8) {
+                Image(systemName: "music.note")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+                Text(post.track.title)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+                    .lineLimit(1)
+                Text("- \(post.track.artistName)")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.6))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 10)
+        }
+        .background(
+            LinearGradient(
+                colors: [Color.purple.opacity(0.6), Color.blue.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(16)
+    }
+
+    private var unavailableView: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "eye.slash")
+                .foregroundColor(.white.opacity(0.6))
+            Text("Post unavailable")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.6))
+        }
+        .padding(12)
+        .background(Color.gray.opacity(0.3))
+        .cornerRadius(16)
+    }
+
+    private func loadPost() async {
+        isLoading = true
+        do {
+            let response = try await PostActions.fetchPost(id: postId)
+            post = response.value
+        } catch {
+            failed = true
+        }
+        isLoading = false
     }
 }
 

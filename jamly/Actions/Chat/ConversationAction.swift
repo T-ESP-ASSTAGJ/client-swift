@@ -8,12 +8,10 @@
 /// Chemins des endpoints liés aux conversations, centralisés pour éviter les chaînes magiques
 /// dispersées dans les actions.
 struct ConversationEndpoint {
-    static let conversations = "/conversations"
-    static let createConversation = "/conversations"
+    static var basePath: String { Config.conversationsPath }
 
-    static func conversation(_ id: Int) -> String { "/conversations/\(id)" }
-    static func deleteConversation(_ id: Int) -> String { "/conversations/\(id)" }
-    static func markAsRead(_ id: Int) -> String { "/conversations/\(id)/read"}
+    static func conversation(_ id: Int) -> String { "\(basePath)/\(id)" }
+    static func markAsRead(_ id: Int) -> String { "\(basePath)/\(id)/read" }
 }
 
 /// Corps de la requête de création d'une conversation.
@@ -34,7 +32,7 @@ enum ConversationAction {
     /// - Throws: ``APIError`` en cas d'échec.
     static func getConversations(page: Int = 1) async throws -> APIResponse<[Conversation]> {
         let response = try await APIClient.shared.request(
-            ConversationEndpoint.conversations,
+            ConversationEndpoint.basePath,
             method: .get,
             query: ["page": String(page)],
             responseType: [Conversation].self
@@ -64,7 +62,7 @@ enum ConversationAction {
     /// - Throws: ``APIError`` en cas d'échec.
     static func deleteConversation(id: Int) async throws -> APIResponse<EmptyResponse> {
         let response = try await APIClient.shared.request(
-            ConversationEndpoint.deleteConversation(id),
+            ConversationEndpoint.conversation(id),
             method: .delete,
             responseType: EmptyResponse.self
         )
@@ -103,7 +101,7 @@ enum ConversationAction {
         participants: [Int]
     ) async throws -> APIResponse<Conversation> {
         let response = try await APIClient.shared.request(
-            ConversationEndpoint.createConversation,
+            ConversationEndpoint.basePath,
             method: .post,
             body: ConversationRequestResponse(isGroup: isGroup, groupName: groupName, participants: participants),
             responseType: Conversation.self

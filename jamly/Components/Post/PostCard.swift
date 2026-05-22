@@ -38,6 +38,7 @@ struct PostCard: View {
     @State private var isReported = false
     @State private var showAlreadyReportedToast = false
     @State private var showDeleteConfirmation = false
+    @State private var showShareSheet = false
 
     @State private var currentTime = Date()
 
@@ -127,6 +128,9 @@ struct PostCard: View {
         } message: {
             Text("This action cannot be undone.")
         }
+        .sheet(isPresented: $showShareSheet) {
+            SharePostToConversationView(post: post)
+        }
         .onAppear {
             viewModel.viewPost(post: post)
         }
@@ -179,6 +183,12 @@ struct PostCard: View {
                     currentTime = Date()
                  }
             Menu {
+                Button {
+                    showShareSheet = true
+                } label: {
+                    Label("Share", systemImage: "arrowshape.turn.up.right")
+                }
+
                 if post.user.id == currentUserId {
                     Button(role: .destructive) {
                         showDeleteConfirmation = true
@@ -335,6 +345,7 @@ struct PostCard: View {
                     .foregroundColor(.white)
                     .opacity(0.8)
             }
+
         }
         .offset(y: -20)
     }
