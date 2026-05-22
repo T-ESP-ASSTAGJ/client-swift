@@ -107,6 +107,7 @@
 		C372E1502F892F1200FE51CF /* PlaylistShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E14F2F892F1200FE51CF /* PlaylistShareService.swift */; };
 		C372E1522F892F4900FE51CF /* PlaylistShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1512F892F4900FE51CF /* PlaylistShareSheetView.swift */; };
 		C372E1542F892FA400FE51CF /* ShareToConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1532F892FA400FE51CF /* ShareToConversationView.swift */; };
+		C372E1642F8932B300FE51CF /* SharePostToConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */; };
 		C372E1562F8932B300FE51CF /* PlaylistPickerForMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */; };
 		C372E1602F8932B300FE51CF /* TrackPickerForMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */; };
 		C372E1612F8932B300FE51CF /* MusicPickerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */; };
@@ -266,6 +267,7 @@
 		C372E14F2F892F1200FE51CF /* PlaylistShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistShareService.swift; sourceTree = "<group>"; };
 		C372E1512F892F4900FE51CF /* PlaylistShareSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistShareSheetView.swift; sourceTree = "<group>"; };
 		C372E1532F892FA400FE51CF /* ShareToConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareToConversationView.swift; sourceTree = "<group>"; };
+		C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePostToConversationView.swift; sourceTree = "<group>"; };
 		C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistPickerForMessageView.swift; sourceTree = "<group>"; };
 		C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackPickerForMessageView.swift; sourceTree = "<group>"; };
 		C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPickerComponents.swift; sourceTree = "<group>"; };
@@ -530,6 +532,7 @@
 				C372E14F2F892F1200FE51CF /* PlaylistShareService.swift */,
 				C372E1512F892F4900FE51CF /* PlaylistShareSheetView.swift */,
 				C372E1532F892FA400FE51CF /* ShareToConversationView.swift */,
+				C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */,
 				C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */,
 				C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */,
 				C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */,
@@ -1180,6 +1183,7 @@
 				76385AC32EE76651000B0320 /* PostAction.swift in Sources */,
 				7965AA672F50867C005E6504 /* MessageAction.swift in Sources */,
 				C372E1542F892FA400FE51CF /* ShareToConversationView.swift in Sources */,
+				C372E1642F8932B300FE51CF /* SharePostToConversationView.swift in Sources */,
 				761C50632EE458880053AD1F /* AuthManager.swift in Sources */,
 				761C505E2EE458450053AD1F /* APIClient.swift in Sources */,
 				C3A4B15A2F01D3AA004F721A /* SearchResultsView.swift in Sources */,

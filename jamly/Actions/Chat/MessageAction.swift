@@ -11,28 +11,15 @@ import UIKit
 /// Centralise les chemins d'endpoints liés aux messages individuels.
 struct MessageEndpoint {
     static let messages = "/messages"
+    static let sharedPostPath = "/post/"
 }
 
 // MARK: - Request Bodies
 
-/// Corps de la requête d'envoi de message texte.
-struct SendTextMessageRequest: Codable {
+/// Corps générique d'envoi de message (texte, share, image).
+/// Le champ `type` détermine comment le backend interprète `content`.
+struct SendMessageRequest: Codable {
     let conversationId: Int
-    let content: String
-    let type: String
-}
-
-/// Corps de la requête d'envoi de message « share » (lien de morceau ou playlist Apple Music).
-struct SendShareMessageRequest: Codable {
-    let conversationId: Int
-    let content: String
-    let type: String
-}
-
-/// Corps de la requête d'envoi de message image.
-struct SendImageMessageRequest: Codable {
-    let conversationId: Int
-    /// Image encodée en Base64 préfixée par un data URI (`data:image/jpeg;base64,...`).
     let content: String
     let type: String
 }
@@ -55,7 +42,7 @@ enum MessageAction {
         conversationId: Int,
         content: String
     ) async throws -> APIResponse<Message> {
-        let body = SendTextMessageRequest(
+        let body = SendMessageRequest(
             conversationId: conversationId,
             content: content,
             type: "text"
@@ -79,7 +66,7 @@ enum MessageAction {
         conversationId: Int,
         content: String
     ) async throws -> APIResponse<Message> {
-        let body = SendShareMessageRequest(
+        let body = SendMessageRequest(
             conversationId: conversationId,
             content: content,
             type: "share"
@@ -92,6 +79,33 @@ enum MessageAction {
         )
     }
     
+    /// Envoie un partage de post dans une conversation.
+    ///
+    /// Le contenu du message est une URL `{baseURL}/post/{postId}`, ce qui permet au client
+    /// de détecter le pattern et d'afficher un aperçu riche du post.
+    ///
+    /// - Parameters:
+    ///   - conversationId: Identifiant de la conversation cible.
+    ///   - postId: Identifiant du post à partager.
+    /// - Returns: Le message tel que persisté côté serveur.
+    /// - Throws: ``APIError`` en cas d'échec.
+    static func sendPostMessage(
+        conversationId: Int,
+        postId: Int
+    ) async throws -> APIResponse<Message> {
+        let body = SendMessageRequest(
+            conversationId: conversationId,
+            content: "\(Config.baseURL)\(MessageEndpoint.sharedPostPath)\(postId)",
+            type: "share"
+        )
+        return try await APIClient.shared.request(
+            MessageEndpoint.messages,
+            method: .post,
+            body: body,
+            responseType: Message.self
+        )
+    }
+
     /// Envoie un message image dans une conversation.
     ///
     /// L'image est encodée en JPEG (qualité 0.8) puis transmise en Base64 préfixée par
@@ -119,7 +133,7 @@ enum MessageAction {
         let base64String = imageData.base64EncodedString()
         let dataURI = "data:image/jpeg;base64,\(base64String)"
         
-        let body = SendImageMessageRequest(
+        let body = SendMessageRequest(
             conversationId: conversationId,
             content: dataURI,
             type: "image"
