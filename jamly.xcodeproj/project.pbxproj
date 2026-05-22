@@ -40,6 +40,7 @@
 		763EF3B72EE5E53F0096A522 /* ValidatorSchemas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763EF3B62EE5E53F0096A522 /* ValidatorSchemas.swift */; };
 		763EF3B92EE5FCBE0096A522 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763EF3B82EE5FCBE0096A522 /* SplashScreenView.swift */; };
 		763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763EF3BE2EE5FE580096A522 /* Color+Extensions.swift */; };
+		7B11000000000000C0DEFEE2 /* View+Keyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B11000000000000C0DEFEE1 /* View+Keyboard.swift */; };
 		763EF3C22EE600E00096A522 /* BrandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763EF3C12EE600E00096A522 /* BrandingView.swift */; };
 		7642FF722EE783BA0063DE3A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF712EE783BA0063DE3A /* ImagePicker.swift */; };
 		7642FF742EE783BF0063DE3A /* MusicPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7642FF732EE783BF0063DE3A /* MusicPickerView.swift */; };
@@ -90,6 +91,7 @@
 		79CA2F222F033085002C55CC /* FollowerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CA2F212F033082002C55CC /* FollowerAction.swift */; };
 		79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */; };
 		79F034052F5B0D8400BF7673 /* MercureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F034042F5B0D8400BF7673 /* MercureService.swift */; };
+		7B11000000000000C0DEFEE4 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B11000000000000C0DEFEE3 /* LocationService.swift */; };
 		79FA25B52F057261008A9398 /* FollowerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FA25B42F05725B008A9398 /* FollowerViewModel.swift */; };
 		79FA25B92F057272008A9398 /* FollowingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FA25B82F05726E008A9398 /* FollowingViewModel.swift */; };
 		79FC690D2F3DE9FA00AD716C /* ConversationAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC690C2F3DE98B00AD716C /* ConversationAction.swift */; };
@@ -197,6 +199,7 @@
 		763EF3B62EE5E53F0096A522 /* ValidatorSchemas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidatorSchemas.swift; sourceTree = "<group>"; };
 		763EF3B82EE5FCBE0096A522 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		763EF3BE2EE5FE580096A522 /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
+		7B11000000000000C0DEFEE1 /* View+Keyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Keyboard.swift"; sourceTree = "<group>"; };
 		763EF3C12EE600E00096A522 /* BrandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandingView.swift; sourceTree = "<group>"; };
 		763EF3C32EE614C00096A522 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		7642FF712EE783BA0063DE3A /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -247,6 +250,7 @@
 		79CA2F212F033082002C55CC /* FollowerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerAction.swift; sourceTree = "<group>"; };
 		79F033FC2F5AE1E800BF7673 /* MercureConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MercureConfig.swift; sourceTree = "<group>"; };
 		79F034042F5B0D8400BF7673 /* MercureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MercureService.swift; sourceTree = "<group>"; };
+		7B11000000000000C0DEFEE3 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		79FA25B42F05725B008A9398 /* FollowerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerViewModel.swift; sourceTree = "<group>"; };
 		79FA25B82F05726E008A9398 /* FollowingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingViewModel.swift; sourceTree = "<group>"; };
 		79FC690C2F3DE98B00AD716C /* ConversationAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAction.swift; sourceTree = "<group>"; };
@@ -378,6 +382,7 @@
 			isa = PBXGroup;
 			children = (
 				763EF3BE2EE5FE580096A522 /* Color+Extensions.swift */,
+				7B11000000000000C0DEFEE1 /* View+Keyboard.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -864,9 +869,18 @@
 			isa = PBXGroup;
 			children = (
 				794070382FA3880B00CCE9F6 /* Image */,
+				7B11000000000000C0DEFEE5 /* Location */,
 				79F034072F5B259700BF7673 /* Mercure */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		7B11000000000000C0DEFEE5 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				7B11000000000000C0DEFEE3 /* LocationService.swift */,
+			);
+			path = Location;
 			sourceTree = "<group>";
 		};
 		79F034072F5B259700BF7673 /* Mercure */ = {
@@ -1173,6 +1187,7 @@
 				761C505C2EE458420053AD1F /* APIError.swift in Sources */,
 				76883EEC2EE501AC006A3955 /* UserStore.swift in Sources */,
 				79F034052F5B0D8400BF7673 /* MercureService.swift in Sources */,
+				7B11000000000000C0DEFEE4 /* LocationService.swift in Sources */,
 				763EF3B42EE5D5380096A522 /* LoginView.swift in Sources */,
 				7665D4792F02964100D420C1 /* ImageSourceSheet.swift in Sources */,
 				C372E1562F8932B300FE51CF /* PlaylistPickerForMessageView.swift in Sources */,
@@ -1184,6 +1199,7 @@
 				AA100004AA10000400AA0004 /* Report.swift in Sources */,
 				7917F0942F6D52C7003C6389 /* AppDelegate.swift in Sources */,
 				763EF3C02EE5FEFF0096A522 /* Color+Extensions.swift in Sources */,
+				7B11000000000000C0DEFEE2 /* View+Keyboard.swift in Sources */,
 				79F033FD2F5AE1E800BF7673 /* MercureConfig.swift in Sources */,
 				76385AC52EE767EC000B0320 /* Post.swift in Sources */,
 				4A6E6A9BCB344F46B4D2B1EF /* UserParameter.swift in Sources */,

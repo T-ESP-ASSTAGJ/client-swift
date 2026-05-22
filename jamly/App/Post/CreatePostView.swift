@@ -212,6 +212,12 @@ struct CreatePostView: View {
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
         }
+        .task {
+            print("📍 CreatePostView .task fired, current location='\(viewModel.location)'")
+            if viewModel.location.isEmpty {
+                await viewModel.loadCurrentLocation()
+            }
+        }
         .navigationTitle("New Post")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showSourceSheet) {
@@ -384,7 +390,20 @@ class CreatePostViewModel: ObservableObject {
     @Published var caption: String = ""
     @Published var selectedSong: Song?
     @Published var selectedCatalogId: String?
-    @Published var location: String = "Paris"
+    @Published var location: String = ""
+
+    /// Charge la ville + pays courants via ``LocationService``.
+    /// Si la permission est refusée ou que le geocoding échoue, `location` reste vide
+    /// et l'utilisateur peut toujours saisir manuellement.
+    @MainActor func loadCurrentLocation() async {
+        print("📍 loadCurrentLocation() triggered")
+        if let cityCountry = await LocationService.shared.currentCityAndCountry() {
+            print("📍 Setting location to: '\(cityCountry)'")
+            location = cityCountry
+        } else {
+            print("📍 LocationService returned nil — location stays empty")
+        }
+    }
     @Published var isPublishing = false
     @Published var errorMessage: String?
     
@@ -508,13 +527,5 @@ class CreatePostViewModel: ObservableObject {
         }
         print("📍 Location: \(location.isEmpty ? "Non défini" : location)")
         print("📤 =========================")
-    }
-}
-
-#Preview {
-    NavigationStack {
-        CreatePostView(selectedTab: .constant(.create))
-            .environmentObject(UserStore())
-            .environmentObject(MusicManager())
     }
 }

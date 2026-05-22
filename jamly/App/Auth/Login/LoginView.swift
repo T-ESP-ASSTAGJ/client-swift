@@ -166,6 +166,7 @@ struct LoginView: View {
                 Spacer()
             }
         }
+        .dismissKeyboardOnTap()
         .navigationDestination(isPresented: $navigateToOtp) {
             OtpLoginView(email: email)
         }
