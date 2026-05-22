@@ -20,39 +20,52 @@ struct ProfileSetupView: View {
     }
 
     var body: some View {
-        ZStack {
-            backgroundLayer
+        NavigationStack {
+            ZStack {
+                backgroundLayer
 
-            VStack(spacing: 0) {
-                Spacer()
+                VStack(spacing: 0) {
+                    Spacer()
 
-                Group {
-                    switch step {
-                    case .username:
-                        usernameStepContent.transition(Self.slideTransition(edge: .leading))
-                    case .photo:
-                        photoStepContent.transition(Self.slideTransition(edge: .trailing))
+                    Group {
+                        switch step {
+                        case .username:
+                            usernameStepContent.transition(Self.slideTransition(edge: .leading))
+                        case .photo:
+                            photoStepContent.transition(Self.slideTransition(edge: .trailing))
+                        }
                     }
-                }
-                .padding(.horizontal, 32)
+                    .padding(.horizontal, 20)
 
-                Spacer()
-                Spacer()
-            }
-
-            if step == .photo {
-                VStack {
-                    HStack {
-                        backButton
-                        Spacer()
-                    }
+                    Spacer()
                     Spacer()
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .transition(.opacity)
             }
+            .toolbar {
+                if step == .photo {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: goBackToUsernameStep) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                        .disabled(isSaving)
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: { save(withPhoto: false) }) {
+                            Text("Skip")
+                                .font(.custom("Poppins-Medium", size: 15))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .disabled(isSaving)
+                    }
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .navigationBarBackButtonHidden(true)
         }
+        .dismissKeyboardOnTap()
         .onAppear {
             animateContent = true
             usernameFocused = true
@@ -60,21 +73,6 @@ struct ProfileSetupView: View {
         .onChange(of: selectedPhoto) { _, _ in
             handlePhotoSelection()
         }
-    }
-
-    private var backButton: some View {
-        Button(action: goBackToUsernameStep) {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white.opacity(0.85))
-                .frame(width: 40, height: 40)
-                .background(
-                    Circle()
-                        .fill(.white.opacity(0.06))
-                        .overlay(Circle().stroke(Self.glassStrokeGradient, lineWidth: 1))
-                )
-        }
-        .disabled(isSaving)
     }
 
     // MARK: - Background
@@ -133,9 +131,12 @@ struct ProfileSetupView: View {
 
     private var usernameStepContent: some View {
         VStack(spacing: 28) {
-            stepHeader(title: "Welcome", subtitle: "Choose your username")
+            stepHeader(
+                title: "Choose a username",
+                subtitle: "This is how others will find you"
+            )
 
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Username")
                         .font(.custom("Poppins-Regular", size: 15))
@@ -166,7 +167,7 @@ struct ProfileSetupView: View {
 
                 continueButton(isEnabled: !trimmedUsername.isEmpty, action: goToPhotoStep)
             }
-            .padding(28)
+            .padding(10)
         }
     }
 
@@ -174,29 +175,23 @@ struct ProfileSetupView: View {
 
     private var photoStepContent: some View {
         VStack(spacing: 28) {
-            stepHeader(title: "Profile picture", subtitle: "Add a photo, or skip this step")
+            stepHeader(
+                title: "Add a profile picture",
+                subtitle: "This helps others recognize you"
+            )
 
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 profilePictureSection
 
                 errorBanner
 
-                VStack(spacing: 12) {
-                    continueButton(
-                        isLoading: isSaving,
-                        isEnabled: selectedImageData != nil && !isSaving,
-                        action: { save(withPhoto: true) }
-                    )
-
-                    Button(action: { save(withPhoto: false) }) {
-                        Text("Skip for now")
-                            .font(.custom("Poppins-Medium", size: 14))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                    .disabled(isSaving)
-                }
+                continueButton(
+                    isLoading: isSaving,
+                    isEnabled: selectedImageData != nil && !isSaving,
+                    action: { save(withPhoto: true) }
+                )
             }
-            .padding(28)
+            .padding(10)
         }
     }
 
@@ -205,7 +200,7 @@ struct ProfileSetupView: View {
     private func stepHeader(title: String, subtitle: String) -> some View {
         VStack(spacing: 8) {
             Text(title)
-                .font(.custom("Poppins-Bold", size: 42))
+                .font(.custom("Poppins-Bold", size: 36))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.white, Color(white: 0.9)],
@@ -213,12 +208,17 @@ struct ProfileSetupView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: .cyan.opacity(0.3), radius: 20, x: 0, y: 10)
+                .shadow(color: .purple.opacity(0.3), radius: 20, x: 0, y: 10)
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .frame(maxWidth: .infinity)
 
             Text(subtitle)
                 .font(.custom("Poppins-Regular", size: 14))
                 .foregroundColor(.white.opacity(0.5))
                 .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
         }
     }
 
@@ -239,11 +239,11 @@ struct ProfileSetupView: View {
 
     private static let accentGradient = LinearGradient(
         colors: [
-            Color(red: 0.4, green: 0.6, blue: 0.9),
-            Color(red: 0.5, green: 0.7, blue: 0.95)
+            Color(red: 0.6, green: 0.4, blue: 0.9),
+            Color(red: 0.8, green: 0.4, blue: 0.7)
         ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
+        startPoint: .leading,
+        endPoint: .trailing
     )
 
     private static let glassStrokeGradient = LinearGradient(
@@ -279,7 +279,7 @@ struct ProfileSetupView: View {
                     if isEnabled {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Self.accentGradient)
-                            .shadow(color: Color.cyan.opacity(0.4), radius: 20, x: 0, y: 10)
+                            .shadow(color: Color.purple.opacity(0.4), radius: 20, x: 0, y: 10)
                     } else {
                         RoundedRectangle(cornerRadius: 16).fill(.white.opacity(0.1))
                     }
@@ -320,7 +320,7 @@ struct ProfileSetupView: View {
                         .background(
                             Circle()
                                 .fill(Self.accentGradient)
-                                .shadow(color: Color.cyan.opacity(0.4), radius: 8, x: 0, y: 4)
+                                .shadow(color: Color.purple.opacity(0.4), radius: 8, x: 0, y: 4)
                         )
                         .overlay(Circle().stroke(Color.black.opacity(0.6), lineWidth: 2))
                 }

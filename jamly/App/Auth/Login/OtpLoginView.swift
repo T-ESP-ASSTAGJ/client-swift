@@ -192,6 +192,7 @@ struct OtpLoginView: View {
                 Spacer()
             }
         }
+        .dismissKeyboardOnTap()
         .onChange(of: viewModel.state) { _, newValue in
             if newValue == .success {
                 handleAuthenticationSuccess()
