@@ -291,7 +291,7 @@ struct ProfileView: View {
 
     private var postsGrid: some View {
         VStack(spacing: 0) {
-            if viewModel.isLoading {
+            if viewModel.isLoadingPosts && !viewModel.hasLoadedPosts {
                 loadingState()
             } else if viewModel.posts.isEmpty {
                 emptyState(message: "No posts yet.")
@@ -333,7 +333,8 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
-            guard let targetUserId = userId ?? userStore.user?.id else { return }
+            guard !viewModel.hasLoadedPosts, !viewModel.isLoadingPosts,
+                  let targetUserId = userId ?? userStore.user?.id else { return }
             viewModel.getPosts(id: targetUserId)
         }
     }
@@ -344,7 +345,7 @@ struct ProfileView: View {
         VStack(spacing: 0) {
             if !canView(\.likesVisibility) {
                 PrivacyLockedView(message: "This user doesn't share their liked posts.")
-            } else if viewModel.isLoading {
+            } else if viewModel.isLoadingLikes && !viewModel.hasLoadedLikes {
                 loadingState()
             } else if viewModel.likedPosts.isEmpty {
                 emptyState(message: "No liked posts yet")
@@ -375,7 +376,9 @@ struct ProfileView: View {
             }
         }
         .onAppear {
-            guard let targetUserId = userId ?? userStore.user?.id else { return }
+            guard !viewModel.hasLoadedLikes, !viewModel.isLoadingLikes,
+                  canView(\.likesVisibility),
+                  let targetUserId = userId ?? userStore.user?.id else { return }
             viewModel.getLikedPosts(id: targetUserId)
         }
     }
@@ -459,6 +462,9 @@ struct ProfileView: View {
         selectedPost = nil
         showMusicPlaylists = false
         showProfileEdit = false
+        // Rechargera posts/likes à la prochaine ouverture du profil (données fraîches),
+        // sans refetch en boucle pendant la visite.
+        viewModel.resetLoadState()
     }
 }
 
