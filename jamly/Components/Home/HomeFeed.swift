@@ -118,6 +118,7 @@ struct HomeFeed: View {
             onSeeMore: { selectedPostForDetail = post },
             onOpenComments: { selectedPostForComments = post },
             onDeleted: { userStore.removePost(id: post.id) },
+            onTogglePlayback: { handlePostTap(post) },
             showPostDetail: $showPostDetail,
             musicManager: musicManager
         )
@@ -125,9 +126,6 @@ struct HomeFeed: View {
         .id(post.id)
         .onAppear {
             handlePostAppear(post)
-        }
-        .onTapGesture {
-            handlePostTap(post)
         }
     }
     

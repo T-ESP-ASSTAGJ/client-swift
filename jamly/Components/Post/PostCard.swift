@@ -15,6 +15,9 @@ struct PostCard: View {
     let onSeeMore: () -> Void
     let onOpenComments: () -> Void
     let onDeleted: (() -> Void)?
+    /// Toggle play/pause déclenché par un tap sur l'image uniquement (pas toute la carte),
+    /// pour ne pas voler les taps des contrôles (user, menu, see more).
+    let onTogglePlayback: (() -> Void)?
 
     @Binding var showPostDetail: Bool
 
@@ -41,13 +44,14 @@ struct PostCard: View {
     private let captionTruncationThreshold = 80
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
-    init(post: Post, isCurrentPost: Bool, currentUserId: Int?, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, onDeleted: (() -> Void)? = nil, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
+    init(post: Post, isCurrentPost: Bool, currentUserId: Int?, onSeeMore: @escaping () -> Void, onOpenComments: @escaping () -> Void, onDeleted: (() -> Void)? = nil, onTogglePlayback: (() -> Void)? = nil, showPostDetail: Binding<Bool>, musicManager: MusicManager) {
         self.post = post
         self.isCurrentPost = isCurrentPost
         self.currentUserId = currentUserId
         self.onSeeMore = onSeeMore
         self.onOpenComments = onOpenComments
         self.onDeleted = onDeleted
+        self.onTogglePlayback = onTogglePlayback
 
         self._showPostDetail = showPostDetail
         self._musicManager = ObservedObject(initialValue: musicManager)
@@ -234,6 +238,8 @@ struct PostCard: View {
             }
             .frame(width: 370, height: 400)
             .clipShape(RoundedRectangle(cornerRadius: 24))
+            .contentShape(RoundedRectangle(cornerRadius: 24))
+            .onTapGesture { onTogglePlayback?() }
 
             HStack(alignment: .top) {
                 playingBadge
