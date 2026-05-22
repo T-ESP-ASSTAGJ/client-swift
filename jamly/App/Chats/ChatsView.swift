@@ -570,7 +570,20 @@ struct FollowerRow: View {
             Spacer()
 
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(isSelected ? .blue : .gray)
+                .foregroundStyle(
+                    isSelected
+                        ? AnyShapeStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.6, green: 0.4, blue: 0.9),
+                                    Color(red: 0.8, green: 0.4, blue: 0.7)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        : AnyShapeStyle(Color.gray)
+                )
                 .font(.title3)
                 .animation(.spring(response: 0.2), value: isSelected)
         }

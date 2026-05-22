@@ -167,14 +167,14 @@ struct OtpLoginView: View {
                                             .fill(
                                                 LinearGradient(
                                                     colors: [
-                                                        Color(red: 0.4, green: 0.6, blue: 0.9),
-                                                        Color(red: 0.5, green: 0.7, blue: 0.95)
+                                                        Color(red: 0.6, green: 0.4, blue: 0.9),
+                                                        Color(red: 0.8, green: 0.4, blue: 0.7)
                                                     ],
                                                     startPoint: .leading,
                                                     endPoint: .trailing
                                                 )
                                             )
-                                            .shadow(color: Color.cyan.opacity(0.4), radius: 20, x: 0, y: 10)
+                                            .shadow(color: Color.purple.opacity(0.4), radius: 20, x: 0, y: 10)
                                     }
                                 }
                             )

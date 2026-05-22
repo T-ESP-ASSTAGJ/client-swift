@@ -74,7 +74,22 @@ struct MessageBubble: View {
                     Text(message.content ?? "")
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(isFromCurrentUser ? Color.blue : Color.gray.opacity(0.3))
+                        .background(
+                            Group {
+                                if isFromCurrentUser {
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.6, green: 0.4, blue: 0.9),
+                                            Color(red: 0.8, green: 0.4, blue: 0.7)
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                } else {
+                                    Color.gray.opacity(0.3)
+                                }
+                            }
+                        )
                         .foregroundColor(.white)
                         .cornerRadius(20)
                 }
@@ -779,7 +794,20 @@ struct ChatDetailView: View {
             } label: {
                 Image(systemName: selectedImage == nil ? "plus.circle.fill" : "photo.circle.fill")
                     .font(.system(size: 28))
-                    .foregroundColor(selectedImage == nil ? .blue : .green)
+                    .foregroundStyle(
+                        selectedImage == nil
+                            ? AnyShapeStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.6, green: 0.4, blue: 0.9),
+                                        Color(red: 0.8, green: 0.4, blue: 0.7)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            : AnyShapeStyle(Color.green)
+                    )
             }
             .padding(.leading, 4)
             .disabled(isSendingImage)
@@ -824,7 +852,16 @@ struct ChatDetailView: View {
                     } else {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 28))
-                            .foregroundColor(.blue)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.6, green: 0.4, blue: 0.9),
+                                        Color(red: 0.8, green: 0.4, blue: 0.7)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                     }
                 }
                 .padding(.trailing, 4)

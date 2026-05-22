@@ -190,7 +190,7 @@ struct CreatePostView: View {
                         HStack {
                             if viewModel.isPublishing {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(.black)
                             } else {
                                 Text("Publish")
                                     .font(.custom("Poppins-SemiBold", size: 17))
@@ -421,7 +421,7 @@ class CreatePostViewModel: ObservableObject {
     
     private func artworkToBase64(artwork: Artwork, width: Int = 36, height: Int = 36) async -> String? {
         guard let url = artwork.url(width: width, height: height) else { return nil }
-        
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let base64 = data.base64EncodedString()
@@ -482,13 +482,13 @@ class CreatePostViewModel: ObservableObject {
         
         do {
             _ = try await PostActions.create(post: request)
-            
+
             // ✅ Rafraîchir le feed discovery (public)
             await userStore.loadFeed(page: 1, forceRefresh: true, mode: "public")
-            
+
             // Reset le formulaire
             resetForm()
-            
+
             isPublishing = false
             return true
         } catch {

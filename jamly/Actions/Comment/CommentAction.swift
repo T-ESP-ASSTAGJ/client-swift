@@ -91,6 +91,23 @@ enum CommentAction {
         return response
     }
     
+    /// Supprime un commentaire dont l'utilisateur connecté est l'auteur.
+    ///
+    /// Le serveur renvoie 403 si l'utilisateur tente de supprimer un commentaire qui n'est
+    /// pas le sien.
+    ///
+    /// - Parameter commentId: Identifiant du commentaire à supprimer.
+    /// - Throws: ``APIError`` en cas d'échec.
+    static func delete(commentId: Int) async throws -> APIResponse<EmptyResponse> {
+        let response = try await APIClient.shared.request(
+            "/comments/\(commentId)",
+            method: .delete,
+            responseType: EmptyResponse.self
+        )
+
+        return response
+    }
+
     /// Retire le like précédemment posé sur un commentaire.
     ///
     /// - Parameter commentId: Identifiant du commentaire à unliker.
