@@ -10,13 +10,9 @@ import UIKit
 
 /// Centralise les chemins d'endpoints liés aux messages individuels.
 struct MessageEndpoint {
-    // Configurable base path
+    // Configurable base paths
     static var basePath = "/messages"
-    static var sharedPostBasePath = "/post/"
-
-    // Derived paths
-    static var messages: String { basePath }
-    static var sharedPostPath: String { sharedPostBasePath }
+    static var sharedPostPath = "/post/"
 }
 
 // MARK: - Request Bodies
@@ -53,7 +49,7 @@ enum MessageAction {
             type: "text"
         )
         return try await APIClient.shared.request(
-            MessageEndpoint.messages,
+            MessageEndpoint.basePath,
             method: .post,
             body: body,
             responseType: Message.self
@@ -77,7 +73,7 @@ enum MessageAction {
             type: "share"
         )
         return try await APIClient.shared.request(
-            MessageEndpoint.messages,
+            MessageEndpoint.basePath,
             method: .post,
             body: body,
             responseType: Message.self
@@ -104,7 +100,7 @@ enum MessageAction {
             type: "share"
         )
         return try await APIClient.shared.request(
-            MessageEndpoint.messages,
+            MessageEndpoint.basePath,
             method: .post,
             body: body,
             responseType: Message.self
@@ -145,7 +141,7 @@ enum MessageAction {
         )
         
         let response = try await APIClient.shared.request(
-            MessageEndpoint.messages,
+            MessageEndpoint.basePath,
             method: .post,
             body: body,
             responseType: Message.self
