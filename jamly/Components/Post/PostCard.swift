@@ -182,7 +182,9 @@ struct PostCard: View {
                         Label("Delete", systemImage: "trash")
                     }
                 } else {
-                    Button(role: .destructive) {
+                    // Report n'est pas une action destructive pour l'utilisateur courant :
+                    // texte par défaut (blanc), contrairement à Delete qui reste rouge.
+                    Button {
                         if isReported {
                             showAlreadyReportedToast = true
                         } else {

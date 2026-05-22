@@ -40,6 +40,21 @@ final class ProfileViewModel: ObservableObject {
 
     // MARK: - Actions
 
+    /// Supprime un post de l'utilisateur courant et le retire localement des listes affichées.
+    ///
+    /// - Parameter postId: Identifiant du post à supprimer.
+    func deletePost(postId: Int) {
+        Task {
+            do {
+                _ = try await PostActions.deletePost(postId: postId)
+                posts.removeAll { $0.id == postId }
+                likedPosts.removeAll { $0.id == postId }
+            } catch {
+                errorMessage = "Impossible de supprimer le post."
+            }
+        }
+    }
+
     /// Récupère le profil utilisateur par son identifiant.
     ///
     /// - Parameter userId: Identifiant du profil à charger.
