@@ -102,14 +102,21 @@ struct AccountVisibilityView: View {
                 if showSavedToast {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.white)
+                            .foregroundColor(.green)
                         Text("Saved")
                             .font(.subheadline.weight(.medium))
-                            .foregroundColor(.white)
+                            .foregroundColor(.green)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.green.opacity(0.85)))
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(white: 0.15).opacity(0.95))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                    )
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
@@ -148,17 +155,43 @@ struct AccountVisibilityView: View {
                     }
                 }
             } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: selection.wrappedValue.icon)
-                        .font(.caption)
-                    Text(selection.wrappedValue.label)
-                        .font(.subheadline)
+                ZStack {
+                    // Phantom : réserve la place pour l'option la plus longue,
+                    // évite tout redimensionnement quand on change de sélection.
+                    ForEach(VisibilityOption.allCases, id: \.self) { option in
+                        HStack(spacing: 6) {
+                            Image(systemName: option.icon)
+                                .font(.caption)
+                            Text(option.label)
+                                .font(.subheadline)
+                                .lineLimit(1)
+                        }
+                        .opacity(0)
+                    }
+
+                    // Contenu visible
+                    HStack(spacing: 6) {
+                        Image(systemName: selection.wrappedValue.icon)
+                            .font(.caption)
+                        Text(selection.wrappedValue.label)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                    }
+                    .foregroundColor(selection.wrappedValue.color)
                 }
-                .foregroundColor(selection.wrappedValue.color)
+                .fixedSize(horizontal: true, vertical: false)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(selection.wrappedValue.color.opacity(0.15))
-                .cornerRadius(8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(selection.wrappedValue.color.opacity(0.15))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(selection.wrappedValue.color.opacity(0.4), lineWidth: 1)
+                )
+                .animation(nil, value: selection.wrappedValue)
+                .transaction { $0.animation = nil }
             }
         }
         .listRowBackground(Color.white.opacity(0.02))

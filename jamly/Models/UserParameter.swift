@@ -27,7 +27,7 @@ enum VisibilityOption: String, Codable, CaseIterable {
 
     var color: Color {
         switch self {
-        case .publicVisibility: return .blue
+        case .publicVisibility: return Color(red: 0.6, green: 0.4, blue: 0.9)
         case .friends: return .green
         case .privateVisibility: return .red
         }
