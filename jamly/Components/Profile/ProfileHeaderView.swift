@@ -49,19 +49,29 @@ struct ProfileHeaderView: View {
     }
 
     private var profilePicture: some View {
-        let pictureURL = user?.displayProfilePictureURL ?? Config.defaultProfilePictureURL
-        return AsyncImage(url: URL(string: pictureURL)) { image in
-            image
-                .resizable()
-                .scaledToFill()
-                .frame(width: 85, height: 85)
-                .clipShape(Circle())
-        } placeholder: {
+        // `displayProfilePictureURL` renvoie la photo de l'utilisateur ou l'avatar
+        // par défaut ; `fullImageURL` préfixe `Config.baseURL` si le chemin est relatif.
+        let pictureURL = fullImageURL(user?.displayProfilePictureURL ?? Config.defaultProfilePictureURL)
+
+        return CachedAsyncImage(
+            url: URL(string: pictureURL),
+            targetSize: CGSize(width: 85, height: 85)
+        ) {
             Circle()
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 85, height: 85)
                 .overlay { ProgressView() }
         }
+        .frame(width: 85, height: 85)
+        .clipShape(Circle())
+    }
+
+    /// Préfixe l'URL avec ``Config/baseURL`` quand le backend renvoie un chemin relatif,
+    /// comme le fait `PostCard` pour son image principale.
+    private func fullImageURL(_ urlString: String) -> String {
+        if urlString.hasPrefix("http://") || urlString.hasPrefix("https://") {
+            return urlString
+        }
+        return Config.baseURL + urlString
     }
 
     private var userInfo: some View {
