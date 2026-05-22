@@ -124,10 +124,14 @@ struct ProfileView: View {
                     .tag(ProfileTab.likes)
 
                 Group {
-                    if !canView(\.statsVisibility) {
+                    if isOwnProfile {
+                        // Les stats viennent de MusicKit (appareil local) : elles ne sont
+                        // disponibles que pour l'utilisateur courant, jamais pour un autre profil.
+                        ProfileStatsView(viewModel: statsViewModel)
+                    } else if !canView(\.statsVisibility) {
                         PrivacyLockedView(message: "This user doesn't share their listening statistics.")
                     } else {
-                        ProfileStatsView(viewModel: statsViewModel)
+                        PrivacyLockedView(message: "Listening statistics are only available on your own profile.")
                     }
                 }
                 .tag(ProfileTab.stats)
@@ -419,7 +423,9 @@ struct ProfileView: View {
     private func calculateGridHeight() -> CGFloat {
         switch selectedTab {
         case .stats:
-            return calculateStatsHeight()
+            // Hauteur réelle des stats seulement sur son profil ; sinon un message
+            // (PrivacyLockedView) avec une hauteur fixe confortable.
+            return isOwnProfile ? calculateStatsHeight() : 400
         default:
             let itemCount = selectedTab == .posts ? viewModel.posts.count : viewModel.likedPosts.count
             let rowCount = ceil(Double(itemCount) / 3.0)
