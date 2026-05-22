@@ -304,6 +304,7 @@ struct PostCard: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
+                .sensoryFeedback(.impact(weight: .medium), trigger: isLiked)
 
                 Text(String(likesCount))
                     .font(.headline)
