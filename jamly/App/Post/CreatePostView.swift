@@ -10,6 +10,7 @@ struct CreatePostView: View {
     @StateObject private var viewModel = CreatePostViewModel()
     @State private var showSourceSheet = false
     @State private var showMusicPicker = false
+    @State private var showMusicAuthAlert = false
     @State private var showImagePicker = false
     @State private var showBackImagePicker = false
     @State private var showCamera = false
@@ -107,7 +108,7 @@ struct CreatePostView: View {
                     
                     // Music Selection
                     Button(action: {
-                        showMusicPicker = true
+                        Task { await handleMusicTap() }
                     }) {
                         HStack {
                             if let selectedSong = viewModel.selectedSong {
@@ -175,7 +176,7 @@ struct CreatePostView: View {
                         )
                     }
                     .padding(.horizontal)
-                    
+
                     // Publish Button
                     Button(action: {
                         Task {
@@ -255,6 +256,45 @@ struct CreatePostView: View {
                 backImage: $viewModel.backImage
             )
             .environmentObject(musicManager)
+        }
+        .alert("Connecte Apple Music", isPresented: $showMusicAuthAlert) {
+            Button("Ouvrir les réglages") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Annuler", role: .cancel) {
+                // Ferme l'alerte sans action : l'utilisateur reste sur l'écran de création.
+            }
+        } message: {
+            Text("Pour ajouter une musique à ton post, autorise l'accès à Apple Music dans les réglages. Aucun abonnement n'est nécessaire.")
+        }
+    }
+
+    // MARK: - Music Authorization Gate
+
+    /// Ouvre le picker musique uniquement si Apple Music est autorisé.
+    ///
+    /// - `.notDetermined` : demande l'autorisation (prompt système, gratuit), puis ouvre
+    ///   le picker si accordée.
+    /// - `.authorized` : ouvre directement le picker.
+    /// - `.denied`/`.restricted` : invite à activer l'accès dans les réglages.
+    ///
+    /// La recherche catalogue (donc le choix d'un morceau) fonctionne dès l'autorisation,
+    /// sans abonnement Apple Music.
+    private func handleMusicTap() async {
+        switch musicManager.authorizationStatus {
+        case .authorized:
+            showMusicPicker = true
+        case .notDetermined:
+            await musicManager.requestAuthorization()
+            if musicManager.authorizationStatus == .authorized {
+                showMusicPicker = true
+            } else {
+                showMusicAuthAlert = true
+            }
+        default:
+            showMusicAuthAlert = true
         }
     }
 }

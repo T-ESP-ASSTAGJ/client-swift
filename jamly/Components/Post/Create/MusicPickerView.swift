@@ -23,6 +23,7 @@ struct MusicPickerView: View {
     @State private var searchResults: [Song] = []
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>?
+    @State private var isResolving = false
 
     @Binding var selectedSong: Song?
     @Binding var selectedCatalogID: String?
@@ -45,17 +46,26 @@ struct MusicPickerView: View {
                     if isSearching {
                         loadingView
                     } else if searchText.isEmpty {
-                        emptySearchView
+                        if musicManager.playlists.isEmpty {
+                            emptySearchView
+                        } else {
+                            libraryView
+                        }
                     } else if searchResults.isEmpty {
                         noResultsView
                     } else {
                         searchResultsView
                     }
                 }
+
+                if isResolving {
+                    SharingOverlay(label: "Loading...")
+                }
             }
             .navigationTitle("Choose a song")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: closeButton)
+            .task { await loadLibraryIfNeeded() }
         }
     }
 
@@ -152,6 +162,36 @@ struct MusicPickerView: View {
         }
     }
 
+    private var libraryView: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                Text("Your playlists")
+                    .font(.custom("Poppins-SemiBold", size: 14))
+                    .foregroundColor(.gray)
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+
+                ForEach(musicManager.playlists, id: \.id) { playlist in
+                    if let tracks = playlist.tracks, !tracks.isEmpty {
+                        Text(playlist.name)
+                            .font(.custom("Poppins-SemiBold", size: 16))
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 16)
+                            .padding(.bottom, 4)
+
+                        ForEach(tracks, id: \.id) { track in
+                            LibraryTrackRow(track: track) {
+                                Task { await handleLibraryTrackSelection(track) }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.vertical)
+        }
+    }
+
     private var searchResultsView: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
@@ -170,6 +210,26 @@ struct MusicPickerView: View {
     }
 
     // MARK: - Helper Functions
+
+    /// Charge les playlists de la bibliothèque si elles ne sont pas encore disponibles,
+    /// afin d'avoir de la matière à proposer sans que l'utilisateur ait à chercher.
+    private func loadLibraryIfNeeded() async {
+        guard musicManager.playlists.isEmpty else { return }
+        guard musicManager.authorizationStatus == .authorized else { return }
+        await musicManager.loadPlaylists()
+    }
+
+    /// Résout un morceau de playlist vers un `Song` catalogue puis le sélectionne.
+    private func handleLibraryTrackSelection(_ track: Track) async {
+        isResolving = true
+        defer { isResolving = false }
+
+        guard let song = await musicManager.resolveCatalogSong(for: track) else { return }
+
+        selectedCatalogID = song.id.rawValue
+        selectedSong = song
+        dismiss()
+    }
 
     private func debouncedSearch(query: String) {
         searchTask?.cancel()
@@ -298,6 +358,53 @@ struct CatalogSongRow: View {
         } message: {
             Text("You can use the cover of \"\(song.title)\" for your post")
         }
+    }
+}
+
+// MARK: - Library Track Row
+struct LibraryTrackRow: View {
+    let track: Track
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 12) {
+                if let artwork = track.artwork {
+                    ArtworkImage(artwork, width: 60, height: 60)
+                        .cornerRadius(8)
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 60, height: 60)
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .foregroundColor(.gray)
+                        )
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(track.title)
+                        .font(.custom("Poppins-SemiBold", size: 15))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+
+                    Text(track.artistName)
+                        .font(.custom("Poppins-Regular", size: 13))
+                        .foregroundColor(.gray)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.gray)
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

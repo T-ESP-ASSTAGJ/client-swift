@@ -16,11 +16,36 @@ struct ProfileStatsView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 40)
                     .padding(.bottom, 40)
+            } else if !viewModel.isAppleMusicConnected {
+                notConnectedView
             } else {
                 content
             }
         }
         .task { await viewModel.loadStats() }
+    }
+
+    // MARK: - Empty State (Apple Music non connecté)
+
+    private var notConnectedView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "music.note.list")
+                .font(.system(size: 48))
+                .foregroundColor(.pink)
+
+            Text("Apple Music non connecté")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            Text("Connecte ton compte Apple Music pour voir tes statistiques d'écoute.")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 40)
+        .padding(.bottom, 40)
     }
 
     private var content: some View {
