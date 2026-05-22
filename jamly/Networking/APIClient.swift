@@ -63,7 +63,9 @@ final class APIClient {
     private init(secureStore: SecureStore = .shared) {
         self.secureStore = secureStore
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 5
+        // 5 s était trop court : certains endpoints déclenchent un service externe
+        // (ex. envoi d'OTP par SMS sur /auth/request) et dépassent ce délai.
+        config.timeoutIntervalForRequest = 30
         config.httpAdditionalHeaders = [
             "Content-Type": "application/json",
             "Accept": "application/json"

@@ -19,7 +19,8 @@ struct User: Codable {
     let bio: String?
     let followingCount: Int
     let followersCount: Int
-let parameters: UserParameter?
+    let parameters: UserParameter?
+
     enum CodingKeys: String, CodingKey {
         case id, username, email, profilePicture, phoneNumber, bio, followingCount, followersCount, parameters
     }
@@ -36,6 +37,7 @@ let parameters: UserParameter?
         self.bio = try? container.decodeIfPresent(String.self, forKey: .bio)
         self.followingCount = (try? container.decodeIfPresent(Int.self, forKey: .followingCount)) ?? 0
         self.followersCount = (try? container.decodeIfPresent(Int.self, forKey: .followersCount)) ?? 0
+        self.parameters = try? container.decodeIfPresent(UserParameter.self, forKey: .parameters)
     }
 
     /// URL effective à utiliser pour afficher la photo de profil, avec fallback configurable
