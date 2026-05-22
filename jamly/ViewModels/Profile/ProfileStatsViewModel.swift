@@ -19,6 +19,9 @@ final class ProfileStatsViewModel: ObservableObject {
     @Published var recentHistory: [Song] = []
     @Published var totalListeningTime: TimeInterval = 0
     @Published var isLoading = false
+    /// `false` quand l'utilisateur n'a pas connecté/autorisé Apple Music : la vue affiche
+    /// alors un empty state au lieu de statistiques vides.
+    @Published var isAppleMusicConnected = true
 
     private let statsService = MusicStatsService()
 
@@ -43,7 +46,11 @@ final class ProfileStatsViewModel: ObservableObject {
     /// mais n'interrompent pas le chargement des autres jeux de données (chacun a son `try`
     /// propre via les `async let`).
     func loadStats() async {
-        guard MusicAuthorization.currentStatus == .authorized else { return }
+        guard MusicAuthorization.currentStatus == .authorized else {
+            isAppleMusicConnected = false
+            return
+        }
+        isAppleMusicConnected = true
         isLoading = true
         defer { isLoading = false }
 

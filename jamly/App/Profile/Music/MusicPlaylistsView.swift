@@ -133,30 +133,29 @@ struct MusicPlaylistsView: View {
     }
     
     private var deniedView: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle")
+        VStack(spacing: 16) {
+            Image(systemName: "music.note.list")
                 .font(.system(size: 60))
-                .foregroundColor(.orange)
-            
-            VStack(spacing: 8) {
-                VStack {
-                    Text("Access Refused")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    
-                    Text("Activate access to Apple Music in Settings")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                .foregroundColor(.pink)
+
+            Text("Apple Music non connecté")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            Text("Pour voir tes playlists, autorise l'accès à Apple Music dans les réglages de l'iPhone.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button("Ouvrir les réglages") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
                 }
-                
-                Button("Open Settings") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                .buttonStyle(.borderedProminent)
             }
+            .buttonStyle(.borderedProminent)
+            .tint(.white)
+            .foregroundColor(.black)
         }
         .padding()
     }

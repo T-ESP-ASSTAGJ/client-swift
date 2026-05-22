@@ -226,16 +226,27 @@ final class MusicManager: ObservableObject {
 
     /// Résout l'URL du preview pour un identifiant catalogue donné.
     ///
-    /// Le résultat est mis en cache afin d'éviter des appels MusicKit répétés lors d'un scroll
+    /// Le résultat est mis en cache afin d'éviter des appels réseau répétés lors d'un scroll
     /// rapide.
     ///
-    /// - Parameter songId: Identifiant catalogue Apple Music.
+    /// La résolution privilégie l'API iTunes Lookup (publique, **sans autorisation Apple Music**)
+    /// afin que tout utilisateur puisse écouter l'extrait 30 s même sans compte connecté. En cas
+    /// d'échec, on retombe sur MusicKit (qui requiert l'autorisation).
+    ///
+    /// - Parameter songId: Identifiant catalogue Apple Music (= adam ID iTunes).
     /// - Returns: L'URL du fichier preview, ou `nil` si aucun preview n'est disponible.
     private func fetchPreviewUrl(songId: String) async -> URL? {
         if let cached = previewUrlCache[songId] {
             return cached
         }
 
+        // 1) iTunes Lookup — public, aucune autorisation requise.
+        if let previewUrl = await fetchPreviewUrlFromITunes(songId: songId) {
+            previewUrlCache[songId] = previewUrl
+            return previewUrl
+        }
+
+        // 2) Fallback MusicKit (nécessite l'autorisation Apple Music).
         do {
             let musicItemID = MusicItemID(songId)
             let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: musicItemID)
@@ -250,6 +261,34 @@ final class MusicManager: ObservableObject {
             return previewUrl
         } catch {
             print("❌ Error fetching preview for \(songId): \(error)")
+            return nil
+        }
+    }
+
+    /// Récupère l'URL du preview via l'API iTunes Lookup, qui ne demande aucune autorisation.
+    ///
+    /// - Parameter songId: Identifiant catalogue Apple Music (numérique pour un morceau du
+    ///   catalogue universel). Les identifiants de bibliothèque (`i.xxx`) ne sont pas pris en
+    ///   charge par iTunes Lookup et déclencheront le fallback MusicKit.
+    /// - Returns: L'URL du preview, ou `nil` si l'API ne renvoie pas d'extrait.
+    private func fetchPreviewUrlFromITunes(songId: String) async -> URL? {
+        guard !songId.hasPrefix("i."),
+              var components = URLComponents(string: Config.itunesLookupBaseURL) else {
+            return nil
+        }
+        components.queryItems = [URLQueryItem(name: "id", value: songId)]
+        guard let url = components.url else { return nil }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let result = try JSONDecoder().decode(ITunesLookupResponse.self, from: data)
+            guard let previewString = result.results.first?.previewUrl,
+                  let previewUrl = URL(string: previewString) else {
+                return nil
+            }
+            return previewUrl
+        } catch {
+            print("⚠️ iTunes lookup preview indisponible pour \(songId): \(error)")
             return nil
         }
     }
@@ -311,6 +350,27 @@ final class MusicManager: ObservableObject {
         }
     }
 
+    /// Résout un morceau de bibliothèque en `Song` du catalogue Apple Music.
+    ///
+    /// Le picker de création de post manipule des `Song` (catalogue). Les playlists locales
+    /// exposent des `Track` ; cette méthode fait le pont via ``getCatalogID(for:)`` puis
+    /// récupère le `Song` correspondant.
+    ///
+    /// - Parameter track: Morceau issu d'une playlist de la bibliothèque.
+    /// - Returns: Le `Song` catalogue, ou `nil` si la résolution échoue.
+    func resolveCatalogSong(for track: Track) async -> Song? {
+        guard let catalogID = await getCatalogID(for: track) else { return nil }
+
+        do {
+            let request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: MusicItemID(catalogID))
+            let response = try await request.response()
+            return response.items.first
+        } catch {
+            print("❌ Error resolving catalog song for \(track.title): \(error)")
+            return nil
+        }
+    }
+
     // MARK: - Controls
 
     /// Met la lecture en pause et annule toute tâche de préparation en cours.
@@ -327,4 +387,16 @@ final class MusicManager: ObservableObject {
         player?.play()
         isPlaying = true
     }
+}
+
+// MARK: - iTunes Lookup API
+
+/// Réponse de l'API publique iTunes Lookup (`https://itunes.apple.com/lookup`).
+private struct ITunesLookupResponse: Decodable {
+    let results: [ITunesTrack]
+}
+
+/// Élément de résultat iTunes contenant l'URL de l'extrait 30 s.
+private struct ITunesTrack: Decodable {
+    let previewUrl: String?
 }

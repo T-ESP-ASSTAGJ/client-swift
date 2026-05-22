@@ -16,6 +16,10 @@ enum Config {
     static let appleMusicBaseURL = "https://music.apple.com/"
     static let appleMusicPlaylistPath = "/playlist/"
 
+    /// Endpoint public iTunes Lookup, utilisé pour récupérer les previews 30 s
+    /// sans autorisation Apple Music.
+    static let itunesLookupBaseURL = "https://itunes.apple.com/lookup"
+
     static let defaultProfilePictureURL = "https://www.gravatar.com/avatar/?d=mp&s=300"
 }
 
