@@ -38,6 +38,14 @@ final class ProfileViewModel: ObservableObject {
     @Published var hasMoreLikedPosts: Bool = true
     @Published var hasMoreUserPosts: Bool = true
 
+    // Chargements dédiés par dataset pour éviter qu'un grid ne clignote/saute quand l'autre
+    // charge (les deux partageaient `isLoading` auparavant).
+    @Published var isLoadingPosts: Bool = false
+    @Published var isLoadingLikes: Bool = false
+    // Empêche le re-fetch à chaque réapparition d'un onglet (TabView paginée = onAppear répété).
+    @Published var hasLoadedPosts: Bool = false
+    @Published var hasLoadedLikes: Bool = false
+
     // MARK: - Actions
 
     /// Supprime un post de l'utilisateur courant et le retire localement des listes affichées.
@@ -53,6 +61,14 @@ final class ProfileViewModel: ObservableObject {
                 errorMessage = "Impossible de supprimer le post."
             }
         }
+    }
+
+    /// Réinitialise les drapeaux de chargement pour forcer un rechargement à la prochaine
+    /// visite du profil (ex. retour sur l'onglet après publication d'un post), tout en évitant
+    /// le refetch lors des changements d'onglet au sein d'une même visite.
+    func resetLoadState() {
+        hasLoadedPosts = false
+        hasLoadedLikes = false
     }
 
     /// Récupère le profil utilisateur par son identifiant.
@@ -94,16 +110,14 @@ final class ProfileViewModel: ObservableObject {
     ///   - page: Numéro de page à charger.
     func getLikedPosts(id: Int, page: Int = 1) {
         Task {
-            isLoading = true
+            isLoadingLikes = true
             errorMessage = nil
-            state = .loading
-            
+
             do {
                 let response = try await UserActions.getLikedPostsByUser(userId: id, page: page)
-                
+
                 switch response.statusCode {
                 case 200:
-                    state = .success
                     if page == 1 {
                         likedPosts = response.value
                         currentLikesPage = 1
@@ -111,17 +125,16 @@ final class ProfileViewModel: ObservableObject {
                     } else {
                         likedPosts.append(contentsOf: response.value)
                     }
-                    
+                    hasLoadedLikes = true
+
                 default:
-                    state = .error
                     errorMessage = "Une erreur est survenue."
                 }
             } catch {
-                state = .error
                 errorMessage = "Une erreur est survenue."
             }
-            
-            isLoading = false
+
+            isLoadingLikes = false
         }
     }
     
@@ -185,16 +198,14 @@ final class ProfileViewModel: ObservableObject {
     ///   - page: Numéro de page à charger.
     func getPosts(id: Int, page: Int = 1) {
         Task {
-            isLoading = true
+            isLoadingPosts = true
             errorMessage = nil
-            state = .loading
-            
+
             do {
                 let response = try await UserActions.getPostsByUser(userId: id, page: page)
-                
+
                 switch response.statusCode {
                 case 200:
-                    state = .success
                     if page == 1 {
                         posts = response.value
                         currentPostsPage = 1
@@ -202,16 +213,15 @@ final class ProfileViewModel: ObservableObject {
                     } else {
                         posts.append(contentsOf: response.value)
                     }
+                    hasLoadedPosts = true
                 default:
-                    state = .error
                     errorMessage = "Une erreur est survenue."
                 }
             } catch {
-                state = .error
                 errorMessage = "Une erreur est survenue."
             }
-            
-            isLoading = false
+
+            isLoadingPosts = false
         }
     }
     
