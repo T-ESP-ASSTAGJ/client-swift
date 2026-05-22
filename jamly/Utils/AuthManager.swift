@@ -44,9 +44,18 @@ final class AuthManager: ObservableObject {
 
         print("🔐 AuthManager init - Checking token...")
 
-        // Restaure l'état d'onboarding depuis UserDefaults
-        completedOnboarding = UserDefaults.standard.bool(forKey: "jamly.hasSeenOnboarding")
+        // ⚠️ Le Keychain survit à la désinstallation de l'app (contrairement à UserDefaults).
+        // À la première exécution après une (ré)installation, on purge tout token résiduel
+        // pour éviter d'entrer dans l'app avec une session fantôme alors qu'on n'est pas connecté.
+        let hasLaunchedKey = "jamly.hasLaunchedBefore"
+        if !UserDefaults.standard.bool(forKey: hasLaunchedKey) {
+            print("🔐 Première exécution après installation → purge du Keychain")
+            secureStore.delete()
+            UserDefaults.standard.set(true, forKey: hasLaunchedKey)
+        }
 
+        // Restaurer l'état onboarding depuis UserDefaults
+        self.completedOnboarding = UserDefaults.standard.bool(forKey: "jamly.hasSeenOnboarding")
         // Vérifier si un token existe déjà dans SecureStore
         if secureStore.retrieve() != nil {
             isAuthenticated = true
