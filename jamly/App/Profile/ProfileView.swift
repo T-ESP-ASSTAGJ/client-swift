@@ -32,6 +32,7 @@ struct ProfileView: View {
     @State private var isFollowingTarget: Bool = false
     @State private var isTargetFollowingMe: Bool = false
     @State private var unreadNotificationsCount = 2
+    @State private var postPendingDeletion: Post? = nil
 
     // MARK: - Computed Properties
 
@@ -211,6 +212,23 @@ struct ProfileView: View {
                     PostDetailView(post: post)
                 }
             }
+            .alert("Delete this post?", isPresented: Binding(
+                get: { postPendingDeletion != nil },
+                set: { if !$0 { postPendingDeletion = nil } }
+            )) {
+                Button("Delete", role: .destructive) {
+                    if let post = postPendingDeletion {
+                        viewModel.deletePost(postId: post.id)
+                    }
+                    postPendingDeletion = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    // Ferme l'alerte sans supprimer.
+                    postPendingDeletion = nil
+                }
+            } message: {
+                Text("This action cannot be undone.")
+            }
     }
 
     var body: some View {
@@ -280,6 +298,15 @@ struct ProfileView: View {
                             .onTapGesture {
                                 selectedPost = post
                                 isShowingPostDetail = true
+                            }
+                            .contextMenu {
+                                if isOwnProfile {
+                                    Button(role: .destructive) {
+                                        postPendingDeletion = post
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                             }
                             .onAppear {
                                 if post.id == viewModel.posts.last?.id {
