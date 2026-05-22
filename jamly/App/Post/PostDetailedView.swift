@@ -24,6 +24,9 @@ struct PostDetailView: View {
 
     @State private var didScrollToHighlighted = false
 
+    @State private var commentToDelete: CommentResponse?
+    @State private var showDeleteConfirmation: Bool = false
+
     @FocusState private var isTextFieldFocused: Bool
 
     init(post: Post, highlightedCommentId: Int? = nil) {
@@ -34,35 +37,52 @@ struct PostDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // MARK - Post Card
-                        PostCard(
-                            post: post,
-                            isCurrentPost: true,
-                            currentUserId: userStore.user?.id,
-                        onSeeMore: { },  // Vide car déjà dans le détail
-                        onOpenComments: { },
+                List {
+                    PostCard(
+                        post: post,
+                        isCurrentPost: true,
+                        currentUserId: userStore.user?.id,
+                        onSeeMore: {
+                            // Volontairement vide : on est déjà dans la vue détail, pas de navigation à effectuer.
+                        },
+                        onOpenComments: {
+                            // Volontairement vide : les commentaires sont affichés inline dans cette vue, pas dans une sheet.
+                        },
                         onDeleted: { navigateToProfile = post.user.id },
-                            showPostDetail: .constant(true),
-                            musicManager: musicManager
-                        )
+                        showPostDetail: .constant(true),
+                        musicManager: musicManager
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
 
-                        // MARK: - Track Card
-                        trackCard
-                            .padding(.top, 20)
+                    trackCard
+                        .listRowInsets(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
 
-                        // MARK: - Caption
-                        if !post.caption.isEmpty {
-                            captionSection
-                                .padding(.top, 20)
-                        }
-
-                        // MARK: - Comments Section
-                        commentsSection
-                            .padding(.top, 24)
+                    if !post.caption.isEmpty {
+                        captionSection
+                            .listRowInsets(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
+
+                    commentsHeader
+                        .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+
+                    Divider()
+                        .background(.white.opacity(0.1))
+                        .listRowInsets(EdgeInsets(top: 16, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+
+                    commentsListContent
                 }
+                .scrollContentBackground(.hidden)
+                .listStyle(.plain)
                 .safeAreaInset(edge: .bottom) {
                     commentInputSection
                 }
@@ -75,9 +95,83 @@ struct PostDetailView: View {
                 .onTapGesture {
                     isTextFieldFocused = false
                 }
+                .alert("Delete this comment?", isPresented: $showDeleteConfirmation) {
+                    Button("Cancel", role: .cancel) {
+                        commentToDelete = nil
+                    }
+                    Button("Delete", role: .destructive) {
+                        if let comment = commentToDelete {
+                            Task {
+                                await commentViewModel.deleteComment(commentId: comment.id)
+                            }
+                        }
+                        commentToDelete = nil
+                    }
+                } message: {
+                    Text("This action cannot be undone.")
+                }
             }
             .navigationDestination(item: $navigateToProfile) { userId in
                 ProfileView(userId: userId)
+            }
+        }
+    }
+
+    // MARK: - Comments Header & List
+
+    private var commentsHeader: some View {
+        HStack {
+            Text("Comments")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            Text("(\(commentViewModel.comments.count))")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.5))
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+    }
+
+    @ViewBuilder
+    private var commentsListContent: some View {
+        if commentViewModel.comments.isEmpty && !isLoading {
+            emptyCommentsView
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+        } else if isLoading {
+            HStack {
+                Spacer()
+                ProgressView()
+                    .tint(.white)
+                Spacer()
+            }
+            .padding(.top, 30)
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+        } else {
+            ForEach(commentViewModel.comments) { comment in
+                CommentRow(
+                    comment: comment,
+                    isHighlighted: comment.id == highlightedCommentId
+                )
+                .id(comment.id)
+                .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    if isOwnComment(comment) {
+                        Button(role: .destructive) {
+                            commentToDelete = comment
+                            showDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
             }
         }
     }
@@ -169,53 +263,6 @@ struct PostDetailView: View {
         .padding(.horizontal, 20)
     }
     
-    // MARK: - Comments Section
-    
-    private var commentsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Section header
-            HStack {
-                Text("Comments")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Text("(\(commentViewModel.comments.count))")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.5))
-                
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            
-            Divider()
-                .background(.white.opacity(0.1))
-            
-            // Comments list
-            if commentViewModel.comments.isEmpty && !isLoading {
-                emptyCommentsView
-            } else if isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                        .tint(.white)
-                    Spacer()
-                }
-                .padding(.top, 30)
-            } else {
-                LazyVStack(spacing: 16) {
-                    ForEach(commentViewModel.comments) { comment in
-                        CommentRow(
-                            comment: comment,
-                            isHighlighted: comment.id == highlightedCommentId
-                        )
-                        .id(comment.id)
-                        .padding(.horizontal, 20)
-                    }
-                }
-            }
-        }
-    }
-    
     // MARK: - Empty Comments View
     
     private var emptyCommentsView: some View {
@@ -281,19 +328,33 @@ struct PostDetailView: View {
                     .font(.system(size: 32))
                     .foregroundStyle(
                         newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        ? .white.opacity(0.3)
-                        : .white
+                            ? AnyShapeStyle(Color.white.opacity(0.3))
+                            : AnyShapeStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.6, green: 0.4, blue: 0.9),
+                                        Color(red: 0.8, green: 0.4, blue: 0.7)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                     )
             }
             .disabled(newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.ultraThinMaterial)
+        .background(isTextFieldFocused ? AnyShapeStyle(Color.clear) : AnyShapeStyle(.ultraThinMaterial))
+        .animation(.easeInOut(duration: 0.2), value: isTextFieldFocused)
     }
     
     // MARK: - Methods
-    
+
+    private func isOwnComment(_ comment: CommentResponse) -> Bool {
+        userStore.user?.id == comment.user.id
+    }
+
     private func loadData() async {
         // Load cover image
         if let url = URL(string: post.backImage) {

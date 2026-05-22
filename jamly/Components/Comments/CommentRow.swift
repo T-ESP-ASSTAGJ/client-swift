@@ -73,12 +73,10 @@ struct CommentRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: isLiked ? "heart.fill" : "heart")
                                 .foregroundStyle(isLiked ? .red : .secondary)
-                            
-                            if likesCount > 0 {
-                                Text("\(likesCount)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
+
+                            Text("\(likesCount)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -97,10 +95,9 @@ struct CommentRow: View {
             }
             Spacer()
         }
-        .padding(12)
+        .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isHighlighted ? Color(.systemGray3) : Color(.systemGray6))
+            isHighlighted ? Color(.systemGray5) : Color.clear
         )
     }
     

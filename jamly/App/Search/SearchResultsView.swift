@@ -136,7 +136,22 @@ struct FilterPill: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(isSelected ? Color.blue : Color.gray.opacity(0.1))
+            .background(
+                Group {
+                    if isSelected {
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.6, green: 0.4, blue: 0.9),
+                                Color(red: 0.8, green: 0.4, blue: 0.7)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    } else {
+                        Color.gray.opacity(0.1)
+                    }
+                }
+            )
             .foregroundColor(isSelected ? .white : .gray)
             .cornerRadius(20)
         }

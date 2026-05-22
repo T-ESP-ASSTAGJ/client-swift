@@ -17,54 +17,21 @@ struct CommentsSheetView: View {
     
     @State private var newCommentText: String = ""
     @State private var isLoading: Bool = false
-    
+
+    @State private var commentToDelete: CommentResponse?
+    @State private var showDeleteConfirmation: Bool = false
+
     @FocusState private var isTextFieldFocused: Bool
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 commentHeader
-                
+
                 Divider()
                     .padding(.top, 20)
-                
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        if commentViewModel.comments.isEmpty && !commentViewModel.isLoading {
-                            Spacer()
-                            emptyStateView
-                            Spacer()
-                        } else if commentViewModel.isLoading {
-                            Spacer()
-                            ProgressView()
-                                .scaleEffect(1.2)
-                                .padding(.top, 60)
-                            Spacer()
-                        } else {
-                            ForEach(commentViewModel.comments) { comment in
-                                CommentRow(comment: comment)
-                                    .padding(.horizontal)
-                                    .onAppear {
-                                        if comment.id == commentViewModel.comments.last?.id {
-                                            Task {
-                                                await commentViewModel.loadMoreComments()
-                                            }
-                                        }
-                                    }
-                            }
-                        }
-                        if commentViewModel.isLoadingMore {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                    .padding(.vertical, 20)
-                                Spacer()
-                            }
-                        }
-                    }
-                    .padding(.vertical)
-                }
-            
+
+                commentsContent
             }
             .safeAreaInset(edge: .bottom) {
                 commentInputSection
@@ -86,7 +53,81 @@ struct CommentsSheetView: View {
             .task {
                 await commentViewModel.getComments(post: post)
             }
+            .alert("Delete this comment?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {
+                    commentToDelete = nil
+                }
+                Button("Delete", role: .destructive) {
+                    if let comment = commentToDelete {
+                        Task {
+                            await commentViewModel.deleteComment(commentId: comment.id)
+                        }
+                    }
+                    commentToDelete = nil
+                }
+            } message: {
+                Text("This action cannot be undone.")
+            }
         }
+    }
+
+    // MARK: - Comments Content
+
+    @ViewBuilder
+    private var commentsContent: some View {
+        if commentViewModel.isLoading {
+            Spacer()
+            ProgressView()
+                .scaleEffect(1.2)
+                .padding(.top, 60)
+            Spacer()
+        } else if commentViewModel.comments.isEmpty {
+            Spacer()
+            emptyStateView
+            Spacer()
+        } else {
+            List {
+                ForEach(commentViewModel.comments) { comment in
+                    CommentRow(comment: comment)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if isOwnComment(comment) {
+                                Button(role: .destructive) {
+                                    commentToDelete = comment
+                                    showDeleteConfirmation = true
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                        .onAppear {
+                            if comment.id == commentViewModel.comments.last?.id {
+                                Task {
+                                    await commentViewModel.loadMoreComments()
+                                }
+                            }
+                        }
+                }
+                if commentViewModel.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.vertical, 20)
+                        Spacer()
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .listStyle(.plain)
+        }
+    }
+
+    private func isOwnComment(_ comment: CommentResponse) -> Bool {
+        userStore.user?.id == comment.user.id
     }
     
     // MARK: - Post Header
@@ -125,18 +166,16 @@ struct CommentsSheetView: View {
             Image(systemName: "bubble.left.and.bubble.right")
                 .font(.system(size: 60))
                 .foregroundStyle(.secondary)
-            
-            Text("Any comments")
+
+            Text("No comments yet")
                 .font(.title3)
                 .fontWeight(.medium)
-            
+
             Text("Be the first to comment!")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 60)
-        .offset(y: 90)
     }
     
     // MARK: - Comment Input Section
@@ -158,7 +197,20 @@ struct CommentsSheetView: View {
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .gray : .blue)
+                    .foregroundStyle(
+                        newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            ? AnyShapeStyle(Color.gray)
+                            : AnyShapeStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.6, green: 0.4, blue: 0.9),
+                                        Color(red: 0.8, green: 0.4, blue: 0.7)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
             }
             .disabled(newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
         }

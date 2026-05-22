@@ -160,7 +160,16 @@ struct RecentSearchesView: View {
                             SearchHistoryManager.shared.clearHistory()
                         }
                         .font(.system(size: 14))
-                        .foregroundColor(.blue)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.6, green: 0.4, blue: 0.9),
+                                    Color(red: 0.8, green: 0.4, blue: 0.7)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                     }
                 }
                 .padding(.horizontal)

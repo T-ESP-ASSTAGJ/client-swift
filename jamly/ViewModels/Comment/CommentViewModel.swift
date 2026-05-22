@@ -145,6 +145,30 @@ final class CommentViewModel: ObservableObject {
     ///   - content: Contenu textuel du commentaire (non vide).
     /// - Returns: Le commentaire créé tel qu'inséré dans ``comments``.
     /// - Throws: ``APIError`` ou toute erreur renvoyée par ``CommentAction/CreateComment(postId:content:)``.
+    /// Supprime un commentaire dont l'utilisateur connecté est l'auteur, et le retire
+    /// de la liste locale de façon optimiste.
+    ///
+    /// - Parameter commentId: Identifiant du commentaire à supprimer.
+    /// - Returns: `true` si la suppression a réussi, `false` sinon (le commentaire est
+    ///   alors restauré dans la liste).
+    @discardableResult
+    func deleteComment(commentId: Int) async -> Bool {
+        guard let index = comments.firstIndex(where: { $0.id == commentId }) else {
+            return false
+        }
+        let removed = comments.remove(at: index)
+
+        do {
+            _ = try await CommentAction.delete(commentId: commentId)
+            return true
+        } catch {
+            print("❌ Failed to delete comment \(commentId): \(error)")
+            comments.insert(removed, at: index)
+            errorMessage = "Failed to delete comment"
+            return false
+        }
+    }
+
     func sendComment(postId: Int, content: String) async throws -> CommentResponse {
         errorMessage = nil
         
