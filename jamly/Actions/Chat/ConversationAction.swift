@@ -8,12 +8,16 @@
 /// Chemins des endpoints liés aux conversations, centralisés pour éviter les chaînes magiques
 /// dispersées dans les actions.
 struct ConversationEndpoint {
-    static let conversations = "/conversations"
-    static let createConversation = "/conversations"
+    // Configurable base path
+    static var basePath = "/conversations"
 
-    static func conversation(_ id: Int) -> String { "/conversations/\(id)" }
-    static func deleteConversation(_ id: Int) -> String { "/conversations/\(id)" }
-    static func markAsRead(_ id: Int) -> String { "/conversations/\(id)/read"}
+    // Derived paths
+    static var conversations: String { basePath }
+    static var createConversation: String { basePath }
+
+    static func conversation(_ id: Int) -> String { "\(basePath)/\(id)" }
+    static func deleteConversation(_ id: Int) -> String { "\(basePath)/\(id)" }
+    static func markAsRead(_ id: Int) -> String { "\(basePath)/\(id)/read" }
 }
 
 /// Corps de la requête de création d'une conversation.
