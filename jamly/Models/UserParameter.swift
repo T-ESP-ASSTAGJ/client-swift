@@ -40,8 +40,8 @@ struct UserParameter: Codable {
     var statsVisibility: VisibilityOption
     var playlistVisibility: VisibilityOption
     var likesVisibility: VisibilityOption
-    var notifNewFollower: VisibilityOption
-    var notifNewLike: VisibilityOption
-    var notifNewComment: VisibilityOption
-    var notifNewMessage: VisibilityOption
+    var notifNewFollower: Bool
+    var notifNewLike: Bool
+    var notifNewComment: Bool
+    var notifNewMessage: Bool
 }

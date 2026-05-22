@@ -52,25 +52,25 @@ struct AccountVisibilityView: View {
                         }
 
                         Section(header: Text("Notifications")) {
-                            visibilityRow(
+                            notificationToggle(
                                 icon: "person.badge.plus",
                                 title: "New Follower",
-                                selection: binding.notifNewFollower
+                                isOn: binding.notifNewFollower
                             )
-                            visibilityRow(
+                            notificationToggle(
                                 icon: "heart",
                                 title: "New Like",
-                                selection: binding.notifNewLike
+                                isOn: binding.notifNewLike
                             )
-                            visibilityRow(
+                            notificationToggle(
                                 icon: "bubble.left",
                                 title: "New Comment",
-                                selection: binding.notifNewComment
+                                isOn: binding.notifNewComment
                             )
-                            visibilityRow(
+                            notificationToggle(
                                 icon: "message",
                                 title: "New Message",
-                                selection: binding.notifNewMessage
+                                isOn: binding.notifNewMessage
                             )
                         }
                     }
@@ -160,6 +160,18 @@ struct AccountVisibilityView: View {
                 .background(selection.wrappedValue.color.opacity(0.15))
                 .cornerRadius(8)
             }
+        }
+        .listRowBackground(Color.white.opacity(0.02))
+    }
+
+    private func notificationToggle(icon: String, title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.white)
+                .frame(width: 24)
+            Toggle(title, isOn: isOn)
+                .foregroundColor(.white)
+                .tint(.green)
         }
         .listRowBackground(Color.white.opacity(0.02))
     }
