@@ -10,6 +10,8 @@ struct ProfileHeaderView: View {
     let isOwnProfile: Bool
     @Binding var selectedFollowView: FollowViews?
 
+    @State private var showFullScreenAvatar = false
+
     private var isFollowingVisible: Bool {
         isOwnProfile || (user?.parameters?.followingVisibility ?? .publicVisibility) == .publicVisibility
     }
@@ -24,6 +26,7 @@ struct ProfileHeaderView: View {
                 profilePicture
                     .padding(.vertical)
                     .padding(.horizontal, 7)
+                    .onTapGesture { showFullScreenAvatar = true }
 
                 userInfo
 
@@ -46,6 +49,11 @@ struct ProfileHeaderView: View {
             .padding(.horizontal, 15)
         }
         .padding(.bottom, 24)
+        .fullScreenCover(isPresented: $showFullScreenAvatar) {
+            FullScreenImageViewer(
+                url: URL(string: fullImageURL(user?.displayProfilePictureURL ?? Config.defaultProfilePictureURL))
+            )
+        }
     }
 
     private var profilePicture: some View {
@@ -105,6 +113,94 @@ struct StatView: View {
                 .font(.footnote)
                 .foregroundColor(.gray)
         }
+    }
+}
+
+// MARK: - Full Screen Image Viewer
+
+/// Affiche une image en plein écran avec zoom (pincement / double-tap) et fermeture par
+/// glissement vers le bas ou bouton de fermeture. Utilisé pour agrandir une photo de profil.
+struct FullScreenImageViewer: View {
+    let url: URL?
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var scale: CGFloat = 1
+    @State private var dragOffset: CGSize = .zero
+
+    var body: some View {
+        ZStack {
+            Color.black
+                .opacity(backgroundOpacity)
+                .ignoresSafeArea()
+
+            CachedAsyncImage(
+                url: url,
+                targetSize: CGSize(width: 1000, height: 1000)
+            ) {
+                ProgressView().tint(.white)
+            }
+            .scaledToFit()
+            .scaleEffect(scale)
+            .offset(dragOffset)
+            .gesture(magnification)
+            .gesture(dragToDismiss)
+            .onTapGesture(count: 2) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    scale = scale > 1 ? 1 : 2.5
+                }
+            }
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                    .padding(.top, 12)
+                    .padding(.trailing, 16)
+                }
+                Spacer()
+            }
+        }
+        .statusBarHidden()
+    }
+
+    /// Le fond s'éclaircit à mesure qu'on glisse l'image pour la fermer.
+    private var backgroundOpacity: Double {
+        max(0, 1 - Double(abs(dragOffset.height)) / 400)
+    }
+
+    private var magnification: some Gesture {
+        MagnificationGesture()
+            .onChanged { scale = max(1, $0) }
+            .onEnded { _ in
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    scale = max(1, min(scale, 4))
+                }
+            }
+    }
+
+    /// Glissement vertical pour fermer (actif uniquement quand l'image n'est pas zoomée).
+    private var dragToDismiss: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                guard scale <= 1 else { return }
+                dragOffset = value.translation
+            }
+            .onEnded { value in
+                guard scale <= 1 else { return }
+                if abs(value.translation.height) > 120 {
+                    dismiss()
+                } else {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        dragOffset = .zero
+                    }
+                }
+            }
     }
 }
 
