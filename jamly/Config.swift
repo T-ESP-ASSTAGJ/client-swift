@@ -7,7 +7,7 @@
 
 enum Config {
 #if DEBUG
-    static let baseURL = "http://10.68.245.180:80"
+    static let baseURL = "http://10.68.245.113:80"
 #else
     static let baseURL = "https://api.jamly.eu"
 #endif
@@ -21,5 +21,12 @@ enum Config {
     static let itunesLookupBaseURL = "https://itunes.apple.com/lookup"
 
     static let defaultProfilePictureURL = "https://www.gravatar.com/avatar/?d=mp&s=300"
+
+    // API endpoint base paths
+    static let usersPath = "/users"
+    static let postsPath = "/posts"
+    static let messagesPath = "/messages"
+    static let conversationsPath = "/conversations"
+    static let sharedPostPath = "/post/"
 }
 

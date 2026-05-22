@@ -10,9 +10,8 @@ import UIKit
 
 /// Centralise les chemins d'endpoints liés aux messages individuels.
 struct MessageEndpoint {
-    // Configurable base paths
-    static var basePath = "/messages"
-    static var sharedPostPath = "/post/"
+    static var basePath: String { Config.messagesPath }
+    static var sharedPostPath: String { Config.sharedPostPath }
 }
 
 // MARK: - Request Bodies
