@@ -23,7 +23,7 @@ struct NotificationManagerEndpoint {
 
 final class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
-    
+
     @Published var deviceToken: String?
     @Published var fcmToken: String?  // 🔥 Token Firebase
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
@@ -34,9 +34,19 @@ final class NotificationManager: ObservableObject {
     @Published var pendingHighlightedCommentId: Int?
     @Published var pendingProfileUserId: Int?
     @Published var pendingConversationId: Int?
-    
-    private init() {
-        // Initialisation privée pour singleton
+
+    /// Dernier token effectivement enregistré côté backend, persisté entre les lancements
+    /// pour éviter de réémettre le même `POST /users/device-token` à chaque démarrage.
+    /// Réinitialisé au logout pour qu'un autre utilisateur sur le même device force un re-sync.
+    private static let lastSyncedTokenKey = "jamly.notification.lastSyncedDeviceToken"
+    private let secureStore: SecureStore
+
+    /// Sérialise les tentatives de sync pour éviter d'envoyer deux POST concurrents
+    /// (ex. FCM et APNs qui arrivent en même temps post-login).
+    private var syncTask: Task<Void, Never>?
+
+    private init(secureStore: SecureStore = .shared) {
+        self.secureStore = secureStore
     }
     
     /// Demande l'autorisation et enregistre l'appareil pour les notifications push
@@ -68,86 +78,106 @@ final class NotificationManager: ObservableObject {
         UIApplication.shared.registerForRemoteNotifications()
     }
     
-    /// Appelé quand le device token est reçu
+    /// Appelé quand le device token APNs est reçu
     @MainActor
     func didReceiveDeviceToken(_ deviceToken: Data) {
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         self.deviceToken = tokenString
-        
+
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         print("📱 DEVICE TOKEN REÇU")
         print("   Token: \(tokenString)")
         print("   Copié dans le clipboard ✓")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
-        // Copie automatiquement dans le clipboard
+
         UIPasteboard.general.string = tokenString
-        
-        // Envoyer au serveur
-        Task {
-            await sendTokenToServer(tokenString)
-        }
+        syncDeviceTokenIfNeeded()
     }
-    
+
     /// Appelé en cas d'erreur d'enregistrement
     @MainActor
     func didFailToRegisterForRemoteNotifications(with error: Error) {
         print("❌ Échec d'enregistrement APNs: \(error.localizedDescription)")
     }
-    
-    /// Envoie le token au serveur backend
-    private func sendTokenToServer(_ token: String) async {
-        do {
-            try await APIClient.shared.request(
-                NotificationManagerEndpoint.deviceToken,
-                method: .post,
-                body: ["deviceToken": token],
-                responseType: EmptyResponse.self
-            )
-            print("✅ Device token envoyé au serveur")
-        } catch {
-            print("⚠️ Impossible d'envoyer le token au serveur: \(error)")
-        }
-    }
-    
-    /// Envoie le device token manuellement (peut être appelé après connexion)
-    @MainActor
-    func sendDeviceTokenToServer() async {
-        guard let token = deviceToken else {
-            print("⚠️ Pas de device token disponible")
-            return
-        }
-        
-        await sendTokenToServer(token)
-    }
-    
-    /// Appelé quand le FCM token Firebase est reçu
+
+    /// Appelé quand le FCM token Firebase est reçu ou rafraîchi
     @MainActor
     func didReceiveFCMToken(_ token: String) {
         self.fcmToken = token
-        
-        // Copie automatiquement dans le clipboard pour votre collègue
         UIPasteboard.general.string = token
-        
-        // Envoyer le FCM token au serveur
-        Task {
-            await sendFCMTokenToServer(token)
+        syncDeviceTokenIfNeeded()
+    }
+
+    // MARK: - Synchronisation device token
+
+    /// Synchronise le device token avec le backend si nécessaire.
+    ///
+    /// Idempotent et auto-réparant : à appeler à chaque point d'entrée où l'état
+    /// `(token, auth)` peut avoir changé (login, réception du token APNs/FCM,
+    /// retour au premier plan, démarrage de l'app).
+    ///
+    /// Conditions pour un envoi effectif :
+    /// - Un token est disponible (FCM prioritaire, sinon APNs brut).
+    /// - L'utilisateur est authentifié (présence d'un JWT dans le Keychain).
+    /// - Le token diffère du dernier token déjà synchronisé.
+    ///
+    /// Sur échec réseau, retry avec backoff exponentiel (1s, 2s, 4s).
+    @MainActor
+    func syncDeviceTokenIfNeeded() {
+        // Sérialise les appels concurrents : on annule le job en cours et on relance.
+        syncTask?.cancel()
+        syncTask = Task { [weak self] in
+            await self?.performSync()
         }
     }
-    
-    /// Envoie le FCM token au serveur backend
-    private func sendFCMTokenToServer(_ token: String) async {
-        do {
-            try await APIClient.shared.request(
-                NotificationManagerEndpoint.deviceToken,
-                method: .post,
-                body: ["deviceToken": token],
-                responseType: EmptyResponse.self
-            )
-            print("✅ FCM Token envoyé au serveur")
-        } catch {
-            print("⚠️ Impossible d'envoyer le FCM token au serveur: \(error)")
+
+    /// Réinitialise le marqueur de synchronisation. À appeler au logout pour qu'un
+    /// autre utilisateur connecté sur le même device force un nouvel envoi du token.
+    @MainActor
+    func resetSyncState() {
+        UserDefaults.standard.removeObject(forKey: Self.lastSyncedTokenKey)
+    }
+
+    @MainActor
+    private func performSync() async {
+        guard secureStore.retrieve() != nil else {
+            print("ℹ️ Sync device token: utilisateur non authentifié, skip")
+            return
         }
+
+        guard let token = fcmToken ?? deviceToken else {
+            print("ℹ️ Sync device token: aucun token disponible, skip")
+            return
+        }
+
+        let lastSynced = UserDefaults.standard.string(forKey: Self.lastSyncedTokenKey)
+        guard token != lastSynced else {
+            print("ℹ️ Sync device token: déjà à jour, skip")
+            return
+        }
+
+        let maxAttempts = 3
+        for attempt in 1...maxAttempts {
+            if Task.isCancelled { return }
+            do {
+                try await APIClient.shared.request(
+                    NotificationManagerEndpoint.deviceToken,
+                    method: .post,
+                    body: ["deviceToken": token],
+                    responseType: EmptyResponse.self
+                )
+                UserDefaults.standard.set(token, forKey: Self.lastSyncedTokenKey)
+                print("✅ Device token synchronisé (tentative \(attempt))")
+                return
+            } catch {
+                print("⚠️ Échec sync device token (tentative \(attempt)/\(maxAttempts)): \(error)")
+                if attempt < maxAttempts {
+                    let delayNs = UInt64(pow(2.0, Double(attempt - 1)) * 1_000_000_000)
+                    try? await Task.sleep(nanoseconds: delayNs)
+                }
+            }
+        }
+        print("❌ Sync device token abandonnée après \(maxAttempts) tentatives")
     }
     
     /// Vérifie le statut actuel des notifications

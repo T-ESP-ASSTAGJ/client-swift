@@ -88,7 +88,8 @@ struct SearchResultsList: View {
                                 localFollowingState: $localFollowingState,
                                 followingUsers: followingViewModel.followingUsers,
                                 onToggleFollow: toggleFollow,
-                                style: cardStyle
+                                style: cardStyle,
+                                currentUserId: userStore.user?.id
                             )
                                 .onTapGesture {
                                     onSelectUser?(user)
@@ -131,10 +132,17 @@ struct UserSearchResultCard: View {
     let followingUsers: [FollowingUser]
     let onToggleFollow: (SearchUser) async -> Void
     var style: CardStyle = .default
-    
+    /// ID de l'utilisateur connecté. Sert à masquer le bouton Follow sur sa propre fiche
+    /// quand on se cherche soi-même dans les résultats.
+    var currentUserId: Int? = nil
+
     enum CardStyle {
         case `default`  // For SearchView (compact)
         case prominent  // For SearchResultsView (with background)
+    }
+
+    private var isCurrentUser: Bool {
+        currentUserId == user.id
     }
     
     // Check if a user is locally followed
@@ -183,21 +191,23 @@ struct UserSearchResultCard: View {
             }
             
             Spacer()
-            
-            Button {
-                Task {
-                    await onToggleFollow(user)
+
+            if !isCurrentUser {
+                Button {
+                    Task {
+                        await onToggleFollow(user)
+                    }
+                } label: {
+                    Text(isFollowing ? "Unfollow" : "Follow")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                        .cornerRadius(8)
                 }
-            } label: {
-                Text(isFollowing ? "Unfollow" : "Follow")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
-                    .cornerRadius(8)
+                .buttonStyle(.glass)
+                .fixedSize(horizontal: true, vertical: false)
             }
-            .buttonStyle(.glass)
-            .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.horizontal, horizontalPadding)
         .padding(.vertical, verticalPadding)
