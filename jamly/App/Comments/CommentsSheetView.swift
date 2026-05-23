@@ -39,7 +39,7 @@ struct CommentsSheetView: View {
             .onTapGesture {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
             }
-            .navigationTitle("\(post.commentsCount) comments")
+            .navigationTitle("\(commentViewModel.commentsCount) \(commentViewModel.commentsCount == 1 ? "comment" : "comments")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

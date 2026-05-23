@@ -24,6 +24,10 @@ final class CommentViewModel: ObservableObject {
     @Published var comments: [CommentResponse] = []
     @Published var state: VerifyState = .loading
     @Published var isLoading: Bool = false
+    /// Total de commentaires sur le post (source de vérité pour les compteurs affichés).
+    /// Initialisé depuis `post.commentsCount` puis maintenu localement à chaque envoi/suppression
+    /// pour éviter de re-fetcher le post entier juste pour mettre à jour un titre.
+    @Published var commentsCount: Int = 0
 
     private var currentPage: Int = 1
     private var hasMorePages: Bool = true
@@ -52,6 +56,7 @@ final class CommentViewModel: ObservableObject {
             hasMorePages = true
             currentPostId = post.id
             self.highlightedCommentId = highlightedCommentId
+            commentsCount = post.commentsCount
 
             do {
                 // Commentaire mis en avant (récupéré à part pour garantir qu'il s'affiche)
@@ -158,12 +163,15 @@ final class CommentViewModel: ObservableObject {
         }
         let removed = comments.remove(at: index)
 
+        commentsCount = max(0, commentsCount - 1)
+
         do {
             _ = try await CommentAction.delete(commentId: commentId)
             return true
         } catch {
             print("❌ Failed to delete comment \(commentId): \(error)")
             comments.insert(removed, at: index)
+            commentsCount += 1
             errorMessage = "Failed to delete comment"
             return false
         }
@@ -190,7 +198,8 @@ final class CommentViewModel: ObservableObject {
             
             // Ajouter le commentaire à la liste
             comments.insert(commentResponse, at: 0)
-            
+            commentsCount += 1
+
             return commentResponse
         } catch {
             print("❌ Failed to send comment: \(error)")

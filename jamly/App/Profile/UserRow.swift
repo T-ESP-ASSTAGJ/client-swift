@@ -4,7 +4,7 @@ import SwiftUI
 protocol UserRowRepresentable {
     var id: Int { get }
     var username: String { get }
-    var profilePicture: String { get }
+    var profilePicture: String? { get }
 }
 
 // Conformance pour FollowerUser
@@ -25,7 +25,7 @@ struct UserRow<User: UserRowRepresentable>: View {
         HStack(spacing: 8) {
             // Image
             HStack(spacing: 15) {
-                AsyncImage(url: URL(string: user.profilePicture)) { phase in
+                AsyncImage(url: URL(string: user.profilePicture?.isEmpty == false ? user.profilePicture! : Config.defaultProfilePictureURL)) { phase in
                     Group {
                         if let image = phase.image {
                             image.resizable().scaledToFill()

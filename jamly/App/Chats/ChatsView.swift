@@ -86,7 +86,7 @@ struct ConversationRow: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.blue)
+                            .background(Color.purple)
                             .clipShape(Capsule())
                     }
                 }
@@ -476,6 +476,11 @@ struct NewConversationView: View {
                 }
             }
         }
+        // Le ScrollView consomme le swipe-down via .refreshable, ce qui empêche la sheet
+        // de se fermer par accident quand l'utilisateur veut juste rafraîchir la liste.
+        .refreshable {
+            await viewModel.loadFollowers()
+        }
     }
 
     // MARK: - Empty State
@@ -508,8 +513,8 @@ struct SelectedUserChip: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            if !user.profilePicture.isEmpty {
-                AsyncImage(url: URL(string: user.profilePicture)) { image in
+            if let profilePicture = user.profilePicture, !profilePicture.isEmpty {
+                AsyncImage(url: URL(string: profilePicture)) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     Circle().fill(Color.gray.opacity(0.3))
@@ -548,8 +553,8 @@ struct FollowerRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Avatar
-            if !follower.profilePicture.isEmpty {
-                AsyncImage(url: URL(string: follower.profilePicture)) { image in
+            if let profilePicture = follower.profilePicture, !profilePicture.isEmpty {
+                AsyncImage(url: URL(string: profilePicture)) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     Circle().fill(Color.gray.opacity(0.3))

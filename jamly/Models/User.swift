@@ -61,18 +61,21 @@ struct User: Codable {
 ///
 /// Version allégée de ``User`` sans email, bio ni compteurs : seul le nécessaire à l'affichage
 /// dans une cellule est sérialisé.
+///
+/// `profilePicture` est optionnel : l'API renvoie `null` pour les utilisateurs sans avatar.
 struct FollowerUser: Codable, Identifiable, Equatable {
     let id: Int
     let username: String
-    let profilePicture: String
-
+    let profilePicture: String?
 }
 
 /// Utilisateur tel qu'il apparaît dans la liste des followings (utilisateurs suivis).
+///
+/// `profilePicture` est optionnel : l'API renvoie `null` pour les utilisateurs sans avatar.
 struct FollowingUser: Codable, Identifiable, Equatable {
     let id: Int
     let username: String
-    let profilePicture: String
+    let profilePicture: String?
 }
 
 /// Représentation minimale d'un utilisateur, utilisée comme auteur dans les messages,
