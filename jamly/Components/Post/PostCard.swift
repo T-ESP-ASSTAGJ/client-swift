@@ -141,7 +141,7 @@ struct PostCard: View {
     private var userHeader: some View {
         HStack {
             CachedAsyncImage(
-                url: URL(string: post.user.profilePicture),
+                url: URL(string: User.displayProfilePictureURL(from: post.user.profilePicture)),
                 targetSize: CGSize(width: 40, height: 40)
             ) {
                 Circle()

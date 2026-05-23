@@ -46,10 +46,13 @@ struct Post: Codable, Identifiable, Hashable {
     let createdAt: String
 
     /// Auteur du post, version réduite avec uniquement les champs nécessaires à l'affichage.
+    ///
+    /// `profilePicture` est optionnel car l'API peut renvoyer `null` pour les utilisateurs
+    /// n'ayant pas défini de photo de profil.
     struct User: Codable {
         let id: Int
         let username: String
-        let profilePicture: String
+        let profilePicture: String?
         let createdAt: String
     }
 
