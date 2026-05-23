@@ -17,7 +17,10 @@ struct MessageBubble: View {
     let message: Message
     let showSenderName: Bool // Pour les groupes
     let currentUserId: Int
-    
+    /// Callback invoqué lorsqu'on tape sur l'avatar de l'auteur d'un message reçu.
+    /// Permet au parent d'ouvrir la `ProfileView` correspondante.
+    var onAuthorTap: ((Int) -> Void)? = nil
+
     var isFromCurrentUser: Bool {
         message.isFromCurrentUser(currentUserId: currentUserId)
     }
@@ -30,14 +33,19 @@ struct MessageBubble: View {
             
             // Avatar pour les messages reçus
             if !isFromCurrentUser {
-                CachedAsyncImage(
-                    url: URL(string: message.author.profilePicture ?? ""),
-                    targetSize: CGSize(width: 32, height: 32)
-                ) {
-                    defaultAvatar
+                Button {
+                    onAuthorTap?(message.author.id)
+                } label: {
+                    CachedAsyncImage(
+                        url: URL(string: message.author.profilePicture ?? ""),
+                        targetSize: CGSize(width: 32, height: 32)
+                    ) {
+                        defaultAvatar
+                    }
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
                 }
-                .frame(width: 32, height: 32)
-                .clipShape(Circle())
+                .buttonStyle(.plain)
             }
             
             VStack(alignment: isFromCurrentUser ? .trailing : .leading, spacing: 4) {
@@ -446,6 +454,9 @@ struct ChatDetailView: View {
     @State private var selectedImage: UIImage?
     @State private var isSendingImage = false
 
+    // Navigation vers le profil d'un participant (tap sur un avatar)
+    @State private var selectedUserId: Int?
+
     // Dependencies
     @EnvironmentObject private var userStore: UserStore
     @StateObject private var mercureService = MercureService.shared
@@ -483,6 +494,9 @@ struct ChatDetailView: View {
             ToolbarItem(placement: .principal) {
                 conversationHeader
             }
+        }
+        .navigationDestination(item: $selectedUserId) { userId in
+            ProfileView(userId: userId)
         }
         .onAppear {
             Task {
@@ -563,7 +577,13 @@ struct ChatDetailView: View {
     // MARK: - Conversation Header
     
     private var conversationHeader: some View {
-        HStack(spacing: 12) {
+        // En 1:1, le header (avatar + nom) est tappable pour ouvrir le profil de
+        // l'autre participant. En groupe, pas de navigation (pas de cible unique).
+        let otherUserId = conversation.isGroup
+            ? nil
+            : conversation.otherParticipant(currentUserId: currentUserId)?.id
+
+        return HStack(spacing: 12) {
             // Photo de profil (pour les conversations directes)
             if let profilePicture = conversation.displayProfilePicture(currentUserId: currentUserId) {
                 CachedAsyncImage(
@@ -590,18 +610,25 @@ struct ChatDetailView: View {
                             .foregroundColor(.blue)
                     }
             }
-            
+
             // Nom
             VStack(alignment: .leading, spacing: 2) {
                 Text(conversation.displayName(currentUserId: currentUserId))
                     .font(.headline)
                     .foregroundColor(.primary)
-                
+
                 if conversation.isGroup {
                     Text("\(conversation.memberCount) membres")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+            }
+        }
+        // contentShape rend les zones vides (spacing entre avatar et texte) cliquables aussi.
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if let otherUserId {
+                selectedUserId = otherUserId
             }
         }
     }
@@ -715,7 +742,8 @@ struct ChatDetailView: View {
                 MessageBubble(
                     message: message,
                     showSenderName: true,
-                    currentUserId: currentUserId
+                    currentUserId: currentUserId,
+                    onAuthorTap: { selectedUserId = $0 }
                 )
                 .id(message.id)
             }
@@ -1159,7 +1187,7 @@ struct PlaylistLinkMessageView: View {
         }
         .background(
             LinearGradient(
-                colors: [Color.pink.opacity(0.7), Color.pink.opacity(0.5)],
+                colors: [Color.purple.opacity(0.6), Color.blue.opacity(0.5)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

@@ -48,11 +48,11 @@ struct jamlyApp: App {
                 
                 // ✅ Demande l'autorisation pour les notifications push
                 await notificationManager.requestAuthorization()
-                
-                // 📱 Envoyer le device token si l'utilisateur est déjà connecté
-                if authManager.isAuthenticated {
-                    await notificationManager.sendDeviceTokenToServer()
-                }
+
+                // 📱 Tente de synchroniser le device token (no-op s'il n'est pas encore
+                // disponible ou si l'utilisateur n'est pas connecté ; la sync se redéclenchera
+                // automatiquement à la réception du token APNs/FCM ou au login).
+                notificationManager.syncDeviceTokenIfNeeded()
                 
                 // ✅ Charge les playlists EN ARRIÈRE-PLAN seulement si déjà autorisé
                 await loadMusicIfAuthorized()
@@ -79,6 +79,9 @@ struct jamlyApp: App {
                     // App redevient active → ne fait rien
                     // (la musique reprendra quand l'user retourne sur le feed)
                     print("🎵 App active")
+                    // Filet de sécurité : iOS peut rotate le device token, ou la sync au
+                    // démarrage peut avoir échoué silencieusement (réseau coupé). On retente.
+                    notificationManager.syncDeviceTokenIfNeeded()
                     
                 @unknown default:
                     break

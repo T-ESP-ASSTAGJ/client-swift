@@ -107,10 +107,10 @@
 		C372E1502F892F1200FE51CF /* PlaylistShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E14F2F892F1200FE51CF /* PlaylistShareService.swift */; };
 		C372E1522F892F4900FE51CF /* PlaylistShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1512F892F4900FE51CF /* PlaylistShareSheetView.swift */; };
 		C372E1542F892FA400FE51CF /* ShareToConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1532F892FA400FE51CF /* ShareToConversationView.swift */; };
-		C372E1642F8932B300FE51CF /* SharePostToConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */; };
 		C372E1562F8932B300FE51CF /* PlaylistPickerForMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */; };
 		C372E1602F8932B300FE51CF /* TrackPickerForMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */; };
 		C372E1612F8932B300FE51CF /* MusicPickerComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */; };
+		C372E1642F8932B300FE51CF /* SharePostToConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */; };
 		C39A5DCC2F04686800945A76 /* Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DCB2F04686800945A76 /* Search.swift */; };
 		C39A5DCE2F0468AE00945A76 /* SearchAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DCD2F0468AE00945A76 /* SearchAction.swift */; };
 		C39A5DD12F046B9600945A76 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A5DD02F046B9600945A76 /* SearchViewModel.swift */; };
@@ -267,10 +267,10 @@
 		C372E14F2F892F1200FE51CF /* PlaylistShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistShareService.swift; sourceTree = "<group>"; };
 		C372E1512F892F4900FE51CF /* PlaylistShareSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistShareSheetView.swift; sourceTree = "<group>"; };
 		C372E1532F892FA400FE51CF /* ShareToConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareToConversationView.swift; sourceTree = "<group>"; };
-		C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePostToConversationView.swift; sourceTree = "<group>"; };
 		C372E1552F8932B300FE51CF /* PlaylistPickerForMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistPickerForMessageView.swift; sourceTree = "<group>"; };
 		C372E15F2F8932B300FE51CF /* TrackPickerForMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackPickerForMessageView.swift; sourceTree = "<group>"; };
 		C372E1622F8932B300FE51CF /* MusicPickerComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPickerComponents.swift; sourceTree = "<group>"; };
+		C372E1632F8932B300FE51CF /* SharePostToConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePostToConversationView.swift; sourceTree = "<group>"; };
 		C39A5DCB2F04686800945A76 /* Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Search.swift; sourceTree = "<group>"; };
 		C39A5DCD2F0468AE00945A76 /* SearchAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchAction.swift; sourceTree = "<group>"; };
 		C39A5DD02F046B9600945A76 /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
@@ -1626,7 +1626,7 @@
 				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1656,7 +1656,7 @@
 				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

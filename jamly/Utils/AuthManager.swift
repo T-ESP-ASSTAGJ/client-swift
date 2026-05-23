@@ -86,23 +86,23 @@ final class AuthManager: ObservableObject {
         print("🔐 AuthManager.logout called")
         userStore.logout()
         isAuthenticated = false
+        // Sans ça, un autre utilisateur connecté sur le même device ne re-pousserait
+        // pas son token (de-dup côté NotificationManager) et resterait invisible côté backend.
+        NotificationManager.shared.resetSyncState()
     }
 
     /// Authentifie l'utilisateur avec le token fourni et déclenche les effets de bord post-login.
     ///
-    /// Délègue la persistance du token au ``UserStore`` puis envoie de manière asynchrone
-    /// le device token APNs au serveur afin d'activer les notifications push.
+    /// Délègue la persistance du token au ``UserStore`` puis demande à ``NotificationManager``
+    /// de synchroniser le device token (no-op s'il n'est pas encore disponible : la sync se
+    /// redéclenchera automatiquement à la réception du token APNs/FCM).
     ///
     /// - Parameter token: JWT renvoyé par l'API après authentification.
     func login(token: String) {
         print("🔐 AuthManager.login called")
         userStore.setToken(token)
         isAuthenticated = true
-
-        // 📱 Envoyer le device token après la connexion
-        Task {
-            await NotificationManager.shared.sendDeviceTokenToServer()
-        }
+        NotificationManager.shared.syncDeviceTokenIfNeeded()
     }
 
     /// Marque l'onboarding comme terminé et persiste l'information dans `UserDefaults`
