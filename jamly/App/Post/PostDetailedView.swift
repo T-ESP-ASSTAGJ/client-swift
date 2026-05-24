@@ -39,8 +39,12 @@ struct PostDetailView: View {
                     post: post,
                     isCurrentPost: true,
                     currentUserId: userStore.user?.id,
-                    onSeeMore: {},
-                    onOpenComments: {},
+                    onSeeMore: {
+                        // No-op : on est déjà dans la vue détail, pas de navigation à effectuer.
+                    },
+                    onOpenComments: {
+                        // No-op : les commentaires sont affichés inline plus bas, pas dans une sheet.
+                    },
                     onDeleted: { navigateToProfile = post.user.id },
                     showPostDetail: .constant(true),
                     musicManager: musicManager
