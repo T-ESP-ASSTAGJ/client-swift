@@ -98,6 +98,7 @@ struct OnboardingView: View {
                         }
                     }
                 }
+                .accessibilityIdentifier(isLastSlide ? "onboarding.doneButton" : "onboarding.nextButton")
                 .padding(.bottom, 40)
             }
             .padding(.horizontal, 24)
@@ -220,20 +221,12 @@ private struct OnboardingHero: View {
         VStack(spacing: 0) {
             // Header — user
             HStack(spacing: 10) {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: slide.accentColors,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                Image("avatar3")
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 34, height: 34)
-                    .overlay {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white)
-                    }
+                    .clipShape(Circle())
+                    .overlay { Circle().stroke(Color.white.opacity(0.2), lineWidth: 1) }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Toi")
@@ -255,22 +248,14 @@ private struct OnboardingHero: View {
             }
             .padding(14)
 
-            // Cover area with playing badge
+            // Cover area with playing badge + selfie BeReal-style
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(
-                        LinearGradient(
-                            colors: slide.accentColors,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(height: 150)
-                    .overlay {
-                        Image(systemName: "music.quarternote.3")
-                            .font(.system(size: 48, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.35))
-                    }
+                Image("capture-front")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 220)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
                     .overlay {
                         RoundedRectangle(cornerRadius: 18)
                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
@@ -288,31 +273,35 @@ private struct OnboardingHero: View {
                 .background(.ultraThinMaterial, in: Capsule())
                 .overlay { Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1) }
                 .padding(12)
+
+                // BeReal-style selfie inset
+                Image("capture-back")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.white.opacity(0.6), lineWidth: 1.5)
+                    }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .topTrailing)
             }
             .padding(.horizontal, 14)
 
             // Track info row
             HStack(spacing: 10) {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(
-                        LinearGradient(
-                            colors: slide.accentColors.reversed(),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 36, height: 36)
-                    .overlay {
-                        Image(systemName: "music.note")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.white)
-                    }
+                Image("mock_cover_2")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 38, height: 38)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Midnight Drive")
+                    Text("Blinding Lights")
                         .font(.custom("Poppins-SemiBold", size: 13))
                         .foregroundStyle(.white)
-                    Text("Arctic Synthwave")
+                    Text("The Weeknd")
                         .font(.custom("Poppins-Regular", size: 11))
                         .foregroundStyle(.white.opacity(0.6))
                 }
@@ -353,29 +342,20 @@ private struct OnboardingHero: View {
 
     private var discoverHero: some View {
         VStack(spacing: 12) {
-            trackRow(title: "Echoes", artist: "Lila Monroe", opacity: 0.50)
-            trackRow(title: "Slow Dancer", artist: "Owen Wave", opacity: 0.78)
-            trackRow(title: "Midnight Drive", artist: "Arctic Synthwave", opacity: 1)
+            trackRow(cover: "mock_cover_1", title: "Bella", artist: "Maître Gims", opacity: 0.50)
+            trackRow(cover: "mock_cover_3", title: "FE!N", artist: "Travis Scott", opacity: 0.78)
+            trackRow(cover: "mock_cover_2", title: "Blinding Lights", artist: "The Weeknd", opacity: 1)
         }
         .frame(width: 290)
     }
 
-    private func trackRow(title: String, artist: String, opacity: Double) -> some View {
+    private func trackRow(cover: String, title: String, artist: String, opacity: Double) -> some View {
         HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(
-                    LinearGradient(
-                        colors: slide.accentColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            Image(cover)
+                .resizable()
+                .scaledToFill()
                 .frame(width: 52, height: 52)
-                .overlay {
-                    Image(systemName: "music.note")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.7))
-                }
+                .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
@@ -430,7 +410,7 @@ private struct OnboardingHero: View {
             chatBubble(
                 icon: "heart.fill",
                 title: "Lila a aimé ton post",
-                message: "Midnight Drive — Arctic Synthwave",
+                message: "Blinding Lights — The Weeknd",
                 isLeading: true
             )
             chatBubble(
@@ -442,7 +422,7 @@ private struct OnboardingHero: View {
             chatBubble(
                 icon: "music.note",
                 title: "Sarah a partagé un morceau",
-                message: "Echoes — Lila Monroe",
+                message: "FE!N — Travis Scott",
                 isLeading: true
             )
         }

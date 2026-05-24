@@ -16,10 +16,8 @@ struct PostDetailView: View {
 
     @StateObject private var commentViewModel = CommentViewModel()
 
-    @State private var coverUIImage: UIImage?
     @State private var newCommentText: String = ""
-    @State private var isLoading: Bool = false
-    @State private var isPlaying = true
+    @State private var isSending: Bool = false
     @State private var navigateToProfile: Int? = nil
 
     @State private var didScrollToHighlighted = false
@@ -33,101 +31,99 @@ struct PostDetailView: View {
         self.post = post
         self.highlightedCommentId = highlightedCommentId
     }
-    
+
     var body: some View {
-        NavigationStack {
-            ScrollViewReader { proxy in
-                List {
-                    PostCard(
-                        post: post,
-                        isCurrentPost: true,
-                        currentUserId: userStore.user?.id,
-                        onSeeMore: {
-                            // Volontairement vide : on est déjà dans la vue détail, pas de navigation à effectuer.
-                        },
-                        onOpenComments: {
-                            // Volontairement vide : les commentaires sont affichés inline dans cette vue, pas dans une sheet.
-                        },
-                        onDeleted: { navigateToProfile = post.user.id },
-                        showPostDetail: .constant(true),
-                        musicManager: musicManager
-                    )
-                    .listRowInsets(EdgeInsets())
+        ScrollViewReader { proxy in
+            List {
+                PostCard(
+                    post: post,
+                    isCurrentPost: true,
+                    currentUserId: userStore.user?.id,
+                    onSeeMore: {
+                        // No-op : on est déjà dans la vue détail, pas de navigation à effectuer.
+                    },
+                    onOpenComments: {
+                        // No-op : les commentaires sont affichés inline plus bas, pas dans une sheet.
+                    },
+                    onDeleted: { navigateToProfile = post.user.id },
+                    showPostDetail: .constant(true),
+                    musicManager: musicManager
+                )
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+
+                trackCard
+                    .listRowInsets(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
 
-                    trackCard
-                        .listRowInsets(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
+                if !post.caption.isEmpty {
+                    captionSection
+                        .listRowInsets(EdgeInsets(top: 18, leading: 0, bottom: 0, trailing: 0))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
+                }
 
-                    if !post.caption.isEmpty {
-                        captionSection
-                            .listRowInsets(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    }
+                commentsHeader
+                    .listRowInsets(EdgeInsets(top: 28, leading: 0, bottom: 8, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
 
-                    commentsHeader
-                        .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 0, trailing: 0))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-
-                    Divider()
-                        .background(.white.opacity(0.1))
-                        .listRowInsets(EdgeInsets(top: 16, leading: 0, bottom: 0, trailing: 0))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-
-                    commentsListContent
+                commentsListContent
+            }
+            .scrollContentBackground(.hidden)
+            .listStyle(.plain)
+            .background(Color.appBackground.ignoresSafeArea())
+            .safeAreaInset(edge: .bottom) {
+                commentInputSection
+            }
+            .task {
+                await commentViewModel.getComments(post: post, highlightedCommentId: highlightedCommentId)
+            }
+            .onChange(of: commentViewModel.comments.count) { _, _ in
+                scrollToHighlightedComment(proxy: proxy)
+            }
+            .onTapGesture {
+                isTextFieldFocused = false
+            }
+            .alert("Delete this comment?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {
+                    commentToDelete = nil
                 }
-                .scrollContentBackground(.hidden)
-                .listStyle(.plain)
-                .safeAreaInset(edge: .bottom) {
-                    commentInputSection
-                }
-                .task {
-                    await loadData()
-                }
-                .onChange(of: commentViewModel.comments.count) { _, _ in
-                    scrollToHighlightedComment(proxy: proxy)
-                }
-                .onTapGesture {
-                    isTextFieldFocused = false
-                }
-                .alert("Delete this comment?", isPresented: $showDeleteConfirmation) {
-                    Button("Cancel", role: .cancel) {
-                        commentToDelete = nil
-                    }
-                    Button("Delete", role: .destructive) {
-                        if let comment = commentToDelete {
-                            Task {
-                                await commentViewModel.deleteComment(commentId: comment.id)
-                            }
+                Button("Delete", role: .destructive) {
+                    if let comment = commentToDelete {
+                        Task {
+                            await commentViewModel.deleteComment(commentId: comment.id)
                         }
-                        commentToDelete = nil
                     }
-                } message: {
-                    Text("This action cannot be undone.")
+                    commentToDelete = nil
                 }
+            } message: {
+                Text("This action cannot be undone.")
             }
-            .navigationDestination(item: $navigateToProfile) { userId in
-                ProfileView(userId: userId)
-            }
+        }
+        .navigationDestination(item: $navigateToProfile) { userId in
+            ProfileView(userId: userId)
         }
     }
 
     // MARK: - Comments Header & List
 
     private var commentsHeader: some View {
-        HStack {
+        HStack(spacing: 8) {
             Text("Comments")
                 .font(.headline)
                 .foregroundColor(.white)
 
-            Text("(\(commentViewModel.comments.count))")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.5))
+            if !commentViewModel.comments.isEmpty {
+                Text("\(commentViewModel.comments.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.white.opacity(0.1), in: Capsule())
+            }
 
             Spacer()
         }
@@ -136,22 +132,11 @@ struct PostDetailView: View {
 
     @ViewBuilder
     private var commentsListContent: some View {
-        if commentViewModel.comments.isEmpty && !isLoading {
+        if commentViewModel.comments.isEmpty {
             emptyCommentsView
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-        } else if isLoading {
-            HStack {
-                Spacer()
-                ProgressView()
-                    .tint(.white)
-                Spacer()
-            }
-            .padding(.top, 30)
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
         } else {
             ForEach(commentViewModel.comments) { comment in
                 CommentRow(
@@ -182,7 +167,6 @@ struct PostDetailView: View {
               commentViewModel.comments.contains(where: { $0.id == highlightedCommentId })
         else { return }
         didScrollToHighlighted = true
-        // Petit délai pour laisser la LazyVStack rendre ses enfants
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 200_000_000)
             withAnimation(.easeInOut(duration: 0.4)) {
@@ -192,213 +176,201 @@ struct PostDetailView: View {
     }
 
     // MARK: - Track Card
-    
+
     private var trackCard: some View {
         HStack(spacing: 14) {
-            // Cover art
             ProfilePostThumbnail(imageURL: post.track.coverImage)
-                .frame(width: 56, height: 56)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            
-            VStack(alignment: .leading, spacing: 4) {
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
                 Text(post.track.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                
-                Text(post.track.artistName)
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
-                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    Image(systemName: "music.note")
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.5))
+                    Text(post.track.artistName)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(1)
+                }
             }
-            
+
             Spacer()
-            
-            // Play button
+
             Button {
-                 Task { await togglePlayPause() }
+                Task { await togglePlayPause() }
             } label: {
-                Image(systemName: musicManager.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 36, height: 36)
-                    .background(.white.opacity(0.15))
-                    .clipShape(Circle())
-            }
-            
-            // Apple Music button
-            Button {
-                // Open in Apple Music
-            } label: {
-                Image(systemName: "apple.logo")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.white.opacity(0.7))
-                    .frame(width: 36, height: 36)
-                    .background(.ultraThinMaterial)
+                Image(systemName: isCurrentTrackPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.6, green: 0.4, blue: 0.9),
+                                Color(red: 0.8, green: 0.4, blue: 0.7)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .clipShape(Circle())
             }
         }
-        .padding(14)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(.white.opacity(0.1), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(.white.opacity(0.08), lineWidth: 1)
                 }
         )
         .padding(.horizontal, 20)
     }
-    
+
     // MARK: - Caption Section
-    
+
     private var captionSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(post.caption)
-                .font(.body)
+        (
+            Text("@\(post.user.username) ")
+                .font(.body.weight(.semibold))
                 .foregroundColor(.white)
-                .lineSpacing(4)
-        }
+            + Text(post.caption)
+                .font(.body)
+                .foregroundColor(.white.opacity(0.9))
+        )
+        .lineSpacing(4)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
     }
-    
+
     // MARK: - Empty Comments View
-    
+
     private var emptyCommentsView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 40))
-                .foregroundStyle(.white.opacity(0.3))
-            
+                .font(.system(size: 34, weight: .light))
+                .foregroundStyle(.white.opacity(0.25))
+
             Text("No comments yet")
                 .font(.subheadline.weight(.medium))
-                .foregroundColor(.white.opacity(0.6))
-            
-            Text("Be the first to comment!")
+                .foregroundColor(.white.opacity(0.55))
+
+            Text("Be the first to comment")
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(.white.opacity(0.35))
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 40)
+        .padding(.top, 36)
         .padding(.bottom, 20)
     }
-    
+
     // MARK: - Comment Input Section
-    
+
     private var commentInputSection: some View {
-        HStack(alignment: .bottom, spacing: 12) {
-            // User avatar
-//            if let user = userStore.user {
-//                AsyncImage(url: URL(string: user.profilePicture)) { image in
-//                    image
-//                        .resizable()
-//                        .scaledToFill()
-//                        .frame(width: 32, height: 32)
-//                        .clipShape(Circle())
-//                } placeholder: {
-//                    Circle()
-//                        .fill(Color.gray.opacity(0.3))
-//                        .frame(width: 32, height: 32)
-//                }
-//            }
-            
-            TextField("Add a comment...", text: $newCommentText, axis: .vertical)
+        HStack(alignment: .bottom, spacing: 10) {
+            TextField("Add a comment…", text: $newCommentText, axis: .vertical)
                 .textFieldStyle(.plain)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 11)
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(.ultraThinMaterial)
+                    Capsule()
+                        .fill(.white.opacity(0.08))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(.white.opacity(0.1), lineWidth: 1)
+                            Capsule()
+                                .stroke(
+                                    isTextFieldFocused
+                                        ? .white.opacity(0.2)
+                                        : .white.opacity(0.08),
+                                    lineWidth: 1
+                                )
                         }
                 )
                 .foregroundColor(.white)
                 .focused($isTextFieldFocused)
                 .lineLimit(1...5)
-            
+
             Button {
-                Task {
-                    await sendComment()
-                }
+                Task { await sendComment() }
             } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(
-                        newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                            ? AnyShapeStyle(Color.white.opacity(0.3))
-                            : AnyShapeStyle(
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background(
+                        Group {
+                            if isSendDisabled {
+                                Color.white.opacity(0.12)
+                            } else {
                                 LinearGradient(
                                     colors: [
                                         Color(red: 0.6, green: 0.4, blue: 0.9),
                                         Color(red: 0.8, green: 0.4, blue: 0.7)
                                     ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                            )
+                            }
+                        }
                     )
+                    .clipShape(Circle())
             }
-            .disabled(newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
+            .disabled(isSendDisabled)
+            .animation(.easeInOut(duration: 0.15), value: isSendDisabled)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(isTextFieldFocused ? AnyShapeStyle(Color.clear) : AnyShapeStyle(.ultraThinMaterial))
-        .animation(.easeInOut(duration: 0.2), value: isTextFieldFocused)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(.white.opacity(0.06))
+                .frame(height: 1)
+        }
     }
-    
+
+    private var isSendDisabled: Bool {
+        newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending
+    }
+
     // MARK: - Methods
 
     private func isOwnComment(_ comment: CommentResponse) -> Bool {
         userStore.user?.id == comment.user.id
     }
 
-    private func loadData() async {
-        // Load cover image
-        if let url = URL(string: post.backImage) {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                if let uiImage = UIImage(data: data) {
-                    coverUIImage = uiImage
-                }
-            } catch {
-                print("Error loading cover:", error)
-            }
-        }
-        
-        await commentViewModel.getComments(post: post, highlightedCommentId: highlightedCommentId)
-    }
-    
     private func sendComment() async {
         guard userStore.user != nil else { return }
-        
+
         let trimmedText = newCommentText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else { return }
-        
-        isLoading = true
-        defer { isLoading = false }
-        
+
+        isSending = true
+        defer { isSending = false }
+
         do {
             _ = try await commentViewModel.sendComment(postId: post.id, content: trimmedText)
-            
-            // Reset text field
             newCommentText = ""
             isTextFieldFocused = false
         } catch {
             print("❌ Failed to send comment: \(error)")
         }
     }
-    
+
+    private var isCurrentTrackPlaying: Bool {
+        musicManager.isPlaying && musicManager.currentSongId == post.track.songId
+    }
+
     private func togglePlayPause() async {
-        if isPlaying {
+        if isCurrentTrackPlaying {
             musicManager.pause()
-            isPlaying = false
         } else {
-            await musicManager.play()
-            isPlaying = true
+            await musicManager.playPreview(songId: post.track.songId)
         }
     }
 }
-

@@ -27,27 +27,34 @@ final class DiscoverViewModel: ObservableObject {
 
     /// Charge la première page du feed public et remplace l'état courant.
     func getFeedPublic() {
-        Task {
-            isLoading = true
-            errorMessage = nil
+        Task { await loadFirstPage() }
+    }
 
-            do {
-                let response = try await FeedAction.getPublicFeed(page: 1)
+    /// Variante asynchrone pour pull-to-refresh.
+    func refresh() async {
+        await loadFirstPage()
+    }
 
-                switch response.statusCode {
-                case 200:
-                    posts = response.value
-                    currentPage = 1
-                    hasMorePosts = !response.value.isEmpty
-                default:
-                    errorMessage = "Une erreur est survenue."
-                }
-            } catch {
-                errorMessage = "Impossible de charger le feed public."
+    private func loadFirstPage() async {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await FeedAction.getPublicFeed(page: 1)
+
+            switch response.statusCode {
+            case 200:
+                posts = response.value
+                currentPage = 1
+                hasMorePosts = !response.value.isEmpty
+            default:
+                errorMessage = "Une erreur est survenue."
             }
-
-            isLoading = false
+        } catch {
+            errorMessage = "Impossible de charger le feed public."
         }
+
+        isLoading = false
     }
 
     /// Charge la page suivante du feed public (infinite scroll).
