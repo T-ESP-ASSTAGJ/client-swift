@@ -44,7 +44,7 @@ private struct PickerRowBackground: ViewModifier {
         content.background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(isSelected ? Color.white.opacity(0.15) : Color.gray.opacity(0.1))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(isSelected ? Color.purple : Color.clear, lineWidth: 2))
         )
     }
 }

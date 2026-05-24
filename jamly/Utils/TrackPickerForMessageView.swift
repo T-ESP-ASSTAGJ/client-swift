@@ -40,12 +40,22 @@ struct TrackPickerForMessageView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }.foregroundColor(.pink)
+                    Button("Cancel") { dismiss() }.foregroundColor(.white)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Send") { Task { await shareSelectedTrack() } }
                         .disabled(selectedSong == nil || isSharing)
-                        .foregroundColor(selectedSong == nil ? .gray : .pink)
+                        .foregroundStyle(
+                            selectedSong == nil
+                                ? AnyShapeStyle(Color.gray)
+                                : AnyShapeStyle(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.6, green: 0.4, blue: 0.9), Color(red: 0.8, green: 0.4, blue: 0.7)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
                 }
             }
             .shareErrorAlert($shareError)
@@ -154,7 +164,7 @@ struct TrackPickerRow: View {
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.pink).font(.title2)
+                    Image(systemName: "checkmark.circle.fill").foregroundColor(.purple).font(.title2)
                 }
             }
             .padding()

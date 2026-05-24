@@ -49,12 +49,22 @@ struct PlaylistPickerForMessageView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }.foregroundColor(.pink)
+                    Button("Cancel") { dismiss() }.foregroundColor(.white)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Send") { Task { await shareSelectedPlaylist() } }
                         .disabled(selectedPlaylist == nil || isSharing)
-                        .foregroundColor(selectedPlaylist == nil ? .gray : .pink)
+                        .foregroundStyle(
+                            selectedPlaylist == nil
+                                ? AnyShapeStyle(Color.gray)
+                                : AnyShapeStyle(
+                                    LinearGradient(
+                                        colors: [Color(red: 0.6, green: 0.4, blue: 0.9), Color(red: 0.8, green: 0.4, blue: 0.7)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
                 }
             }
             .task {
@@ -100,7 +110,7 @@ struct PlaylistPickerForMessageView: View {
 
     private var unauthorizedView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "music.note.list").font(.system(size: 60)).foregroundColor(.pink)
+            Image(systemName: "music.note.list").font(.system(size: 60)).foregroundColor(.purple)
             Text("Access to Apple Music").font(.headline).foregroundColor(.white)
             Text("Authorize access to share your playlists")
                 .font(.subheadline).foregroundColor(.secondary).multilineTextAlignment(.center)
@@ -166,7 +176,7 @@ struct PlaylistPickerRow: View {
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.pink).font(.title2)
+                    Image(systemName: "checkmark.circle.fill").foregroundColor(.purple).font(.title2)
                 }
             }
             .padding()

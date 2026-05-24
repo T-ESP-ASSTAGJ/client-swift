@@ -252,10 +252,13 @@ struct SharedPostBubble: View {
     }
 
     private func loadPost() async {
+        guard post == nil, !failed else { return }
         isLoading = true
         do {
             let response = try await PostActions.fetchPost(id: postId)
             post = response.value
+        } catch is CancellationError {
+            return
         } catch {
             failed = true
         }
@@ -363,7 +366,7 @@ struct MusicMessageView: View {
         }
         .background(
             LinearGradient(
-                colors: [Color.pink.opacity(0.7), Color.pink.opacity(0.5)],
+                colors: [Color.purple.opacity(0.6), Color.blue.opacity(0.5)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -393,7 +396,8 @@ struct MusicMessageView: View {
     }
 
     private func loadSongData() async {
-        guard let songID = catalogSongID, !songID.isEmpty,
+        guard artwork == nil,
+              let songID = catalogSongID, !songID.isEmpty,
               MusicAuthorization.currentStatus == .authorized else { return }
         do {
             let request = MusicCatalogResourceRequest<Song>(
