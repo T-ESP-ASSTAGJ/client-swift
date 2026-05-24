@@ -118,7 +118,6 @@ struct SharePostToConversationView: View {
                 .zIndex(1)
             }
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Subviews

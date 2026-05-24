@@ -67,7 +67,6 @@ struct PlaylistPickerForMessageView: View {
                 if isSharing { SharingOverlay(label: "Sharing playlist...") }
             }
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Subviews

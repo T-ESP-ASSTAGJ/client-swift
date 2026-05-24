@@ -161,5 +161,4 @@ struct BrandingView: View {
 
 #Preview("Branding") {
     BrandingView()
-        .preferredColorScheme(.dark)
 }

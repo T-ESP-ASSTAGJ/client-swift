@@ -102,7 +102,6 @@ struct OnboardingView: View {
             }
             .padding(.horizontal, 24)
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Background

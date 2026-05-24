@@ -57,8 +57,6 @@ struct ProfileHeaderView: View {
     }
 
     private var profilePicture: some View {
-        // `displayProfilePictureURL` renvoie la photo de l'utilisateur ou l'avatar
-        // par défaut ; `fullImageURL` préfixe `Config.baseURL` si le chemin est relatif.
         let pictureURL = fullImageURL(user?.displayProfilePictureURL ?? Config.defaultProfilePictureURL)
 
         return CachedAsyncImage(
@@ -67,7 +65,11 @@ struct ProfileHeaderView: View {
         ) {
             Circle()
                 .fill(Color.gray.opacity(0.3))
-                .overlay { ProgressView() }
+                .overlay {
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 34))
+                }
         }
         .frame(width: 85, height: 85)
         .clipShape(Circle())

@@ -163,27 +163,8 @@ struct AccountSettingsView: View {
                         .scaledToFill()
                         .frame(width: 100, height: 100)
                         .clipShape(Circle())
-                } else if let urlString = profilePictureURL,
-                          let url = URL(string: urlString) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 100, height: 100)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                        case .failure:
-                            placeholderImage
-                        @unknown default:
-                            placeholderImage
-                        }
-                    }
                 } else {
-                    placeholderImage
+                    AvatarView(profilePicture: profilePictureURL, size: 100)
                 }
                 
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
@@ -200,16 +181,6 @@ struct AccountSettingsView: View {
         }
     }
     
-    private var placeholderImage: some View {
-        Circle()
-            .fill(Color.white.opacity(0.1))
-            .frame(width: 100, height: 100)
-            .overlay(
-                Image(systemName: "person.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(.gray)
-            )
-    }
     
     // MARK: - Editable Fields
     

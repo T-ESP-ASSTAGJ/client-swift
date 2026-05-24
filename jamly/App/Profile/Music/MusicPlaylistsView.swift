@@ -264,5 +264,4 @@ struct PlaylistContextMenu: View {
     NavigationStack {
         MusicPlaylistsView()
     }
-    .preferredColorScheme(.dark)
 }

@@ -100,41 +100,9 @@ struct ConversationRow: View {
     @ViewBuilder
     private var avatarView: some View {
         if conversation.isGroup {
-            // Avatar pour les groupes
-            Circle()
-                .fill(Color.green.opacity(0.2))
-                .frame(width: 44, height: 44)
-                .overlay(
-                    Image(systemName: "person.3.fill")
-                        .foregroundColor(.green)
-                )
-        } else if let otherUser = otherUser,
-                  let profilePicture = otherUser.profilePicture,
-                  !profilePicture.isEmpty {
-            // Photo de profil de l'autre utilisateur dans une conversation directe
-            AsyncImage(url: URL(string: profilePicture)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .foregroundColor(.gray)
-                    )
-            }
-            .frame(width: 44, height: 44)
-            .clipShape(Circle())
+            GroupAvatarView(size: 44)
         } else {
-            // Avatar par défaut
-            Circle()
-                .fill(Color.blue.opacity(0.2))
-                .frame(width: 44, height: 44)
-                .overlay(
-                    Image(systemName: "person.fill")
-                        .foregroundColor(.blue)
-                )
+            AvatarView(profilePicture: otherUser?.profilePicture, size: 44)
         }
     }
     
@@ -513,20 +481,7 @@ struct SelectedUserChip: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            if let profilePicture = user.profilePicture, !profilePicture.isEmpty {
-                AsyncImage(url: URL(string: profilePicture)) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    Circle().fill(Color.gray.opacity(0.3))
-                }
-                .frame(width: 22, height: 22)
-                .clipShape(Circle())
-            } else {
-                Circle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(width: 22, height: 22)
-                    .overlay(Image(systemName: "person.fill").font(.caption2).foregroundColor(.white))
-            }
+            AvatarView(profilePicture: user.profilePicture, size: 22)
 
             Text(user.username)
                 .font(.subheadline)
@@ -552,21 +507,7 @@ struct FollowerRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            if let profilePicture = follower.profilePicture, !profilePicture.isEmpty {
-                AsyncImage(url: URL(string: profilePicture)) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    Circle().fill(Color.gray.opacity(0.3))
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(Circle())
-            } else {
-                Circle()
-                    .fill(Color.blue.opacity(0.2))
-                    .frame(width: 44, height: 44)
-                    .overlay(Image(systemName: "person.fill").foregroundColor(.blue))
-            }
+            AvatarView(profilePicture: follower.profilePicture, size: 44)
 
             Text(follower.username)
                 .font(.headline)

@@ -140,19 +140,7 @@ struct PostCard: View {
 
     private var userHeader: some View {
         HStack {
-            CachedAsyncImage(
-                url: URL(string: User.displayProfilePictureURL(from: post.user.profilePicture)),
-                targetSize: CGSize(width: 40, height: 40)
-            ) {
-                Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .overlay {
-                        Image(systemName: "person.fill")
-                            .foregroundColor(.gray)
-                    }
-            }
-            .frame(width: 40, height: 40)
-            .clipShape(Circle())
+            AvatarView(profilePicture: post.user.profilePicture, size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(post.user.username)
