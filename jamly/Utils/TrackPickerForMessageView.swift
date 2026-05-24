@@ -53,7 +53,6 @@ struct TrackPickerForMessageView: View {
                 if isSharing { SharingOverlay(label: "Sharing track...") }
             }
         }
-        .preferredColorScheme(.dark)
         .onChange(of: searchText) {
             Task { await search(term: searchText) }
         }

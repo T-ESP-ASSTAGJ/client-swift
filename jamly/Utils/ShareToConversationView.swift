@@ -112,7 +112,6 @@ struct ShareToConversationView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
     
     // MARK: - Subviews

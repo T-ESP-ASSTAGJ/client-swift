@@ -78,6 +78,7 @@
 		7933238A2EF80A230040755F /* CommentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* CommentRow.swift */; };
 		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
 		794070352FA383EF00CCE9F6 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */; };
+		83A8C38F522349E8B8BC5B53 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A8C38F522349E8B8BC5B52 /* AvatarView.swift */; };
 		794070372FA3843600CCE9F6 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794070362FA3843600CCE9F6 /* ImageCache.swift */; };
 		796367362F360183000BA493 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367352F360181000BA493 /* Conversation.swift */; };
 		796367382F3603C3000BA493 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367372F3603BD000BA493 /* Message.swift */; };
@@ -238,6 +239,7 @@
 		793323892EF80A230040755F /* CommentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRow.swift; sourceTree = "<group>"; };
 		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
 		794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
+		83A8C38F522349E8B8BC5B52 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		794070362FA3843600CCE9F6 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		796367352F360181000BA493 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		796367372F3603BD000BA493 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
@@ -477,6 +479,7 @@
 		761C504C2EE3ACA20053AD1F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				83A8C38F522349E8B8BC5B52 /* AvatarView.swift */,
 				794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */,
 				796A842B2F097A9C0099766F /* Search */,
 				7918D9F22F095F0F00F33AB2 /* Profile */,
@@ -1212,6 +1215,7 @@
 				7918D9F12F095C6A00F33AB2 /* UserRow.swift in Sources */,
 				9A794C9040DE4685B14F937B /* ProfileFollowButton.swift in Sources */,
 				794070352FA383EF00CCE9F6 /* CachedAsyncImage.swift in Sources */,
+				83A8C38F522349E8B8BC5B53 /* AvatarView.swift in Sources */,
 				1BA5EA8958C34A21B98911B6 /* ProfileHeaderView.swift in Sources */,
 				C5D93653D9654282BCDD367A /* ProfileStatsView.swift in Sources */,
 				A0EEE1090BFB4E678E0743A1 /* ProfileTabButton.swift in Sources */,

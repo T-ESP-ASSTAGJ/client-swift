@@ -136,5 +136,4 @@ struct DiscoverView: View {
 
 #Preview {
     DiscoverView()
-        .preferredColorScheme(.dark)
 }

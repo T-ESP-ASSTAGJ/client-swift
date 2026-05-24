@@ -23,27 +23,9 @@ struct UserRow<User: UserRowRepresentable>: View {
     
     var body: some View {
         HStack(spacing: 8) {
-            // Image
             HStack(spacing: 15) {
-                AsyncImage(url: URL(string: user.profilePicture?.isEmpty == false ? user.profilePicture! : Config.defaultProfilePictureURL)) { phase in
-                    Group {
-                        if let image = phase.image {
-                            image.resizable().scaledToFill()
-                        } else {
-                            Circle()
-                                .fill(Color.gray.opacity(0.2))
-                                .overlay(
-                                    phase.error != nil ?
-                                    Image(systemName: "person.fill").foregroundColor(.gray) as! ProgressView<EmptyView, EmptyView> :
-                                        ProgressView()
-                                )
-                        }
-                    }
-                    .frame(width: 44, height: 44)
-                    .clipShape(Circle())
-                }
+                AvatarView(profilePicture: user.profilePicture, size: 44)
 
-                // Infos
                 VStack(alignment: .leading, spacing: 4) {
                     Text(user.username)
                         .font(.headline)

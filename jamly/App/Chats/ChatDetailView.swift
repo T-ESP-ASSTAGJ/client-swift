@@ -36,14 +36,7 @@ struct MessageBubble: View {
                 Button {
                     onAuthorTap?(message.author.id)
                 } label: {
-                    CachedAsyncImage(
-                        url: URL(string: message.author.profilePicture ?? ""),
-                        targetSize: CGSize(width: 32, height: 32)
-                    ) {
-                        defaultAvatar
-                    }
-                    .frame(width: 32, height: 32)
-                    .clipShape(Circle())
+                    AvatarView(profilePicture: message.author.profilePicture, size: 32)
                 }
                 .buttonStyle(.plain)
             }
@@ -120,16 +113,6 @@ struct MessageBubble: View {
 
     // MARK: - Helper Methods
 
-    /// Avatar par défaut affiché quand l'utilisateur n'a pas de photo de profil
-    /// ou pendant que l'image se charge.
-    private var defaultAvatar: some View {
-        Circle()
-            .fill(Color.gray.opacity(0.3))
-            .overlay {
-                Image(systemName: "person.fill")
-                    .foregroundColor(.gray)
-            }
-    }
 
     private static let sharedPostPrefix = Config.baseURL + MessageEndpoint.sharedPostPath
 
@@ -584,31 +567,13 @@ struct ChatDetailView: View {
             : conversation.otherParticipant(currentUserId: currentUserId)?.id
 
         return HStack(spacing: 12) {
-            // Photo de profil (pour les conversations directes)
-            if let profilePicture = conversation.displayProfilePicture(currentUserId: currentUserId) {
-                CachedAsyncImage(
-                    url: URL(string: profilePicture),
-                    targetSize: CGSize(width: 32, height: 32)
-                ) {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay {
-                            Image(systemName: "person.fill")
-                                .foregroundColor(.gray)
-                        }
-                }
-                .frame(width: 32, height: 32)
-                .clipShape(Circle())
-            } else if conversation.isGroup {
-                // Icône pour les groupes
-                Circle()
-                    .fill(Color.blue.opacity(0.2))
-                    .frame(width: 32, height: 32)
-                    .overlay {
-                        Image(systemName: "person.3.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.blue)
-                    }
+            if conversation.isGroup {
+                GroupAvatarView(size: 32)
+            } else {
+                AvatarView(
+                    profilePicture: conversation.displayProfilePicture(currentUserId: currentUserId),
+                    size: 32
+                )
             }
 
             // Nom

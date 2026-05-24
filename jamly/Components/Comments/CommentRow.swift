@@ -17,27 +17,7 @@ struct CommentRow: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Circle()
-                .fill(Color.blue.gradient)
-                .frame(width: 40, height: 40)
-                .overlay {
-                    if let avatarURL = comment.user.profilePicture {
-                        AsyncImage(url: URL(string: avatarURL)) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } placeholder: {
-                            Text(comment.user.username.prefix(1))
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                        }
-                        .clipShape(Circle())
-                    } else {
-                        Text(comment.user.username.prefix(1))
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                    }
-                }
+            AvatarView(profilePicture: comment.user.profilePicture, size: 40)
             
             VStack(alignment: .leading, spacing: 9) {
                 HStack {

@@ -101,7 +101,6 @@ struct PlaylistShareSheetView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
 }
 

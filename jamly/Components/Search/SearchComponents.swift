@@ -155,26 +155,7 @@ struct UserSearchResultCard: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Profile picture
-            if let profilePicture = user.profilePicture, !profilePicture.isEmpty {
-                AsyncImage(url: URL(string: profilePicture)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    placeholderView
-                }
-                .frame(width: imageSize, height: imageSize)
-                .clipShape(imageShape)
-            } else {
-                placeholderView
-                    .frame(width: imageSize, height: imageSize)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .foregroundColor(.gray)
-                            .font(.system(size: iconSize))
-                    )
-            }
+            AvatarView(profilePicture: user.profilePicture, size: imageSize)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(usernameText)
@@ -221,26 +202,6 @@ struct UserSearchResultCard: View {
         style == .default ? 44 : 60
     }
     
-    private var iconSize: CGFloat {
-        style == .default ? 20 : 24
-    }
-    
-    private var imageShape: some Shape {
-        style == .default ? AnyShape(Circle()) : AnyShape(RoundedRectangle(cornerRadius: 8))
-    }
-    
-    private var placeholderView: some View {
-        Group {
-            if style == .default {
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-            } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.gray.opacity(0.2))
-            }
-        }
-    }
-    
     private var usernameText: String {
         style == .default ? user.username : "@\(user.username)"
     }
@@ -261,22 +222,6 @@ struct UserSearchResultCard: View {
         style == .default ? 0 : 12
     }
 }
-
-// Helper for shape type erasure
-struct AnyShape: Shape {
-    private let _path: (CGRect) -> Path
-    
-    init<S: Shape>(_ shape: S) {
-        _path = { rect in
-            shape.path(in: rect)
-        }
-    }
-    
-    func path(in rect: CGRect) -> Path {
-        _path(rect)
-    }
-}
-
 // MARK: - Loading State View
 struct LoadingStateView: View {
     var body: some View {
