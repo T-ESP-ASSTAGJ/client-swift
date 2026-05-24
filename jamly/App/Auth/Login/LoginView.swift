@@ -86,6 +86,7 @@ struct LoginView: View {
                             
                             TextField("", text: $email, prompt: Text("\("john@doe.com")")
                                 .foregroundColor(.white.opacity(0.3)))
+                            .accessibilityIdentifier("login.emailField")
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .keyboardType(.emailAddress)
@@ -158,6 +159,7 @@ struct LoginView: View {
                             )
                         }
                         .disabled(viewModel.isLoading || !email.isValidEmail)
+                        .accessibilityIdentifier("login.continueButton")
                     }
                     .padding(10)
                 }

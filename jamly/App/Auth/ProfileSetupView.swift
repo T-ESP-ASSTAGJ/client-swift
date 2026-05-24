@@ -3,6 +3,7 @@ import PhotosUI
 
 struct ProfileSetupView: View {
     @EnvironmentObject private var userStore: UserStore
+    @EnvironmentObject private var authManager: AuthManager
 
     @State private var step: SetupStep = .username
     @State private var username: String = ""
@@ -58,6 +59,7 @@ struct ProfileSetupView: View {
                                 .font(.custom("Poppins-Medium", size: 15))
                                 .foregroundColor(.white.opacity(0.7))
                         }
+                        .accessibilityIdentifier("profileSetup.skipButton")
                         .disabled(isSaving)
                     }
                 }
@@ -145,6 +147,7 @@ struct ProfileSetupView: View {
 
                     TextField("", text: $username, prompt: Text("johndoe")
                         .foregroundColor(.white.opacity(0.3)))
+                        .accessibilityIdentifier("profileSetup.usernameField")
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .textContentType(.username)
@@ -166,6 +169,7 @@ struct ProfileSetupView: View {
                 errorBanner
 
                 continueButton(isEnabled: !trimmedUsername.isEmpty, action: goToPhotoStep)
+                    .accessibilityIdentifier("profileSetup.continueButton")
             }
             .padding(10)
         }
@@ -390,7 +394,10 @@ struct ProfileSetupView: View {
                 profilePicture: profilePictureURI
             )
 
-            if !success {
+            if success {
+                // Signup terminé : déclenche le tutoriel pour la prochaine arrivée sur MainTabView.
+                authManager.triggerTutorial()
+            } else {
                 errorMessage = userStore.error?.errorDescription ?? "An error occurred."
             }
 

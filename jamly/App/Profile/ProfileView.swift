@@ -179,6 +179,7 @@ struct ProfileView: View {
                                 .font(.system(size: 15))
                                 .foregroundColor(.white)
                         }
+                        .accessibilityIdentifier("profile.settingsButton")
                         .padding(.trailing, 3)
 
                         Button {

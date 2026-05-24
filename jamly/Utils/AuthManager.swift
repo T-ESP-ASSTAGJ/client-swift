@@ -17,6 +17,9 @@ import Combine
 final class AuthManager: ObservableObject {
     /// Indique si l'utilisateur a déjà parcouru l'onboarding (persisté dans `UserDefaults`).
     @Published var completedOnboarding: Bool = false
+    /// Demande explicite d'afficher le tutoriel in-app. Activée uniquement lors d'un
+    /// nouveau signup ou via "Replay tutorial" depuis Settings. Désactivée à la fin du tuto.
+    @Published var shouldShowTutorial: Bool = false
     /// État d'authentification miroir de ``UserStore/isAuthenticated``.
     @Published var isAuthenticated: Bool = false {
         didSet {
@@ -56,6 +59,7 @@ final class AuthManager: ObservableObject {
 
         // Restaurer l'état onboarding depuis UserDefaults
         self.completedOnboarding = UserDefaults.standard.bool(forKey: "jamly.hasSeenOnboarding")
+        self.shouldShowTutorial = UserDefaults.standard.bool(forKey: "jamly.shouldShowTutorial")
         // Vérifier si un token existe déjà dans SecureStore
         if secureStore.retrieve() != nil {
             isAuthenticated = true
@@ -110,5 +114,18 @@ final class AuthManager: ObservableObject {
     func completeOnboarding() {
         completedOnboarding = true
         UserDefaults.standard.set(true, forKey: "jamly.hasSeenOnboarding")
+    }
+
+    /// Active l'affichage du tutoriel. Appelé après un signup réussi (fin de `ProfileSetupView`)
+    /// ou depuis le bouton "Replay tutorial" dans Settings.
+    func triggerTutorial() {
+        shouldShowTutorial = true
+        UserDefaults.standard.set(true, forKey: "jamly.shouldShowTutorial")
+    }
+
+    /// Marque le tutoriel comme terminé / passé.
+    func dismissTutorial() {
+        shouldShowTutorial = false
+        UserDefaults.standard.set(false, forKey: "jamly.shouldShowTutorial")
     }
 }

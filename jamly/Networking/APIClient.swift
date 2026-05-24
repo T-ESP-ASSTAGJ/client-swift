@@ -70,6 +70,11 @@ final class APIClient {
             "Content-Type": "application/json",
             "Accept": "application/json"
         ]
+        // En tests UI, on injecte MockURLProtocol pour intercepter toutes les requêtes
+        // sans toucher au réseau. Activé via le launch arg `-UITEST-MOCK-API`.
+        if CommandLine.arguments.contains("-UITEST-MOCK-API") {
+            config.protocolClasses = [MockURLProtocol.self] + (config.protocolClasses ?? [])
+        }
         self.session = URLSession(configuration: config)
     }
 
@@ -229,5 +234,90 @@ private struct AnyEncodable: Encodable {
 
     func encode(to encoder: Encoder) throws {
         try encodeFunc(encoder)
+    }
+}
+
+// MARK: - MockURLProtocol (UI tests)
+
+/// Intercepte toutes les requêtes HTTP en tests UI pour renvoyer des fixtures
+/// déterministes sans dépendance réseau.
+///
+/// Activé en injectant `MockURLProtocol.self` dans `URLSessionConfiguration.protocolClasses`
+/// (voir `APIClient.init` sous le launch arg `-UITEST-MOCK-API`).
+///
+/// Route par préfixe de path. Étendre `route(for:)` pour ajouter un endpoint.
+final class MockURLProtocol: URLProtocol {
+
+    /// Username retourné par `GET /users/me`. Vide pour forcer le ProfileSetup.
+    static var stubUsername: String = "uitest_user"
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        let path = request.url?.path ?? ""
+        let method = request.httpMethod ?? "GET"
+        let (status, body) = Self.route(method: method, path: path)
+
+        let response = HTTPURLResponse(
+            url: request.url!,
+            statusCode: status,
+            httpVersion: "HTTP/1.1",
+            headerFields: ["Content-Type": "application/json"]
+        )!
+
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: body)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+
+    // MARK: - Routes
+
+    private static func route(method: String, path: String) -> (Int, Data) {
+        switch (method, path) {
+        case ("POST", "/api/auth/request"):
+            return (201, json(["message": "Code envoyé"]))
+
+        case ("POST", "/api/auth/verify"):
+            return (201, json([
+                "message": "OK",
+                "token": "mock-token-uitest"
+            ]))
+
+        case ("GET", "/api/users/me"):
+            return (200, json(userPayload()))
+
+        case ("PATCH", "/api/users/me"):
+            // Renvoie le profil avec un username non vide pour sortir du ProfileSetup.
+            stubUsername = "uitest_user"
+            return (200, json(userPayload()))
+
+        case ("GET", "/api/feed/public"),
+             ("GET", "/api/feed/private"):
+            return (200, json([] as [String]))
+
+        default:
+            return (200, json([] as [String]))
+        }
+    }
+
+    private static func userPayload() -> [String: Any?] {
+        [
+            "id": 1,
+            "username": stubUsername,
+            "email": "uitest@jamly.com",
+            "profilePicture": nil,
+            "phoneNumber": nil,
+            "bio": nil,
+            "followingCount": 0,
+            "followersCount": 0,
+            "parameters": nil
+        ]
+    }
+
+    private static func json(_ value: Any) -> Data {
+        (try? JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed])) ?? Data()
     }
 }

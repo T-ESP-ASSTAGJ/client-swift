@@ -109,6 +109,7 @@ struct OtpLoginView: View {
                                     onFocusGained: { focusedField = index },
                                     onBackspaceOnEmpty: { handleBackspaceOnEmpty(at: index) }
                                 )
+                                .accessibilityIdentifier("otp.digit.\(index)")
                                 .onChange(of: otpDigits[index]) { oldValue, newValue in
                                     handleDigitChange(at: index, oldValue: oldValue, newValue: newValue)
                                 }
@@ -180,6 +181,7 @@ struct OtpLoginView: View {
                             )
                         }
                         .disabled(viewModel.isLoading || !fullCode.isValidOTP)
+                        .accessibilityIdentifier("otp.verifyButton")
                     }
                     .padding(28)
                     .opacity(animateContent ? 1 : 0)

@@ -18,6 +18,10 @@ struct jamlyApp: App {
     @Environment(\.scenePhase) private var scenePhase
     
     init() {
+        // Doit s'exécuter AVANT la création de UserStore/AuthManager qui lisent UserDefaults
+        // et SecureStore au démarrage.
+        Self.applyUITestLaunchArgsIfNeeded()
+
         let userStore = UserStore()
         _userStore = StateObject(wrappedValue: userStore)
         _authManager = StateObject(wrappedValue: AuthManager(userStore: userStore))
@@ -25,6 +29,41 @@ struct jamlyApp: App {
         // ✅ Supprime les warnings de contraintes AutoLayout (bug iOS)
         UserDefaults.standard.set(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
     }
+
+    /// Applique l'état initial demandé par les tests UI via launch arguments.
+    /// Permet de partir d'un état déterministe sans réinstaller l'app.
+    private static func applyUITestLaunchArgsIfNeeded() {
+        let args = CommandLine.arguments
+        guard args.contains("-UITEST") else { return }
+
+        let defaults = UserDefaults.standard
+
+        if args.contains("-UITEST-RESET-ONBOARDING") {
+            defaults.set(false, forKey: "jamly.hasSeenOnboarding")
+        }
+        if args.contains("-UITEST-SKIP-ONBOARDING") {
+            defaults.set(true, forKey: "jamly.hasSeenOnboarding")
+        }
+        if args.contains("-UITEST-RESET-TUTORIAL") {
+            defaults.set(false, forKey: "jamly.shouldShowTutorial")
+        }
+        if args.contains("-UITEST-TRIGGER-TUTORIAL") {
+            defaults.set(true, forKey: "jamly.shouldShowTutorial")
+        }
+        if args.contains("-UITEST-LOGGED-OUT") {
+            SecureStore.shared.delete()
+            defaults.set(true, forKey: "jamly.hasLaunchedBefore")
+        }
+        if args.contains("-UITEST-AUTH") {
+            SecureStore.shared.save(token: "mock-token-uitest")
+            defaults.set(true, forKey: "jamly.hasLaunchedBefore")
+            defaults.set(true, forKey: "jamly.hasSeenOnboarding")
+        }
+        if args.contains("-UITEST-NEEDS-PROFILE-SETUP") {
+            MockURLProtocol.stubUsername = ""
+        }
+    }
+
 
     var body: some Scene {
         WindowGroup {

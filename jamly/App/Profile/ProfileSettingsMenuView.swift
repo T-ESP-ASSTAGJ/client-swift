@@ -40,6 +40,16 @@ struct ProfileSettingsMenuView: View {
                 ) {
                     showAccountVisibility = true
                 }
+
+                SettingsRow(
+                    icon: "questionmark.circle.fill",
+                    title: "Replay tutorial",
+                    subtitle: "Revoir la visite guidée de l'app",
+                    color: .orange
+                ) {
+                    authManager.triggerTutorial()
+                }
+                .accessibilityIdentifier("settings.replayTutorialButton")
             }
             .padding(.horizontal, 20)
             .padding(.top, 24)
