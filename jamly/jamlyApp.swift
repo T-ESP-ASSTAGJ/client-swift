@@ -21,11 +21,11 @@ struct jamlyApp: App {
         let userStore = UserStore()
         _userStore = StateObject(wrappedValue: userStore)
         _authManager = StateObject(wrappedValue: AuthManager(userStore: userStore))
-        
+
         // ✅ Supprime les warnings de contraintes AutoLayout (bug iOS)
         UserDefaults.standard.set(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -115,15 +115,15 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if !authManager.isAuthenticated {
+            if !authManager.completedOnboarding && !authManager.isAuthenticated {
+                OnboardingView()
+                    .environmentObject(authManager)
+            } else if !authManager.isAuthenticated {
                 NavigationStack {
                     LoginView()
                 }
             } else if needsProfileSetup {
                 ProfileSetupView()
-            } else if !authManager.completedOnboarding {
-                OnboardingView()
-                    .environmentObject(authManager)
             } else {
                 MainTabView()
             }
