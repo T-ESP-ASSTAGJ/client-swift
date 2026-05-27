@@ -8,6 +8,7 @@ struct MusicService: Identifiable {
     let icon: String
     let color: Color
     var isConnected: Bool
+    var isAvailable: Bool = true
 }
 
 struct MusicSettingsView: View {
@@ -15,10 +16,10 @@ struct MusicSettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var services: [MusicService] = [
-        MusicService(name: "Spotify", icon: "waveform", color: .green, isConnected: false),
         MusicService(name: "Apple Music", icon: "music.note", color: .pink, isConnected: false),
-        MusicService(name: "SoundCloud", icon: "cloud", color: .orange, isConnected: false),
-        MusicService(name: "Deezer", icon: "headphones", color: .purple, isConnected: false)
+        MusicService(name: "Spotify", icon: "waveform", color: .green, isConnected: false, isAvailable: false),
+        MusicService(name: "SoundCloud", icon: "cloud", color: .orange, isConnected: false, isAvailable: false),
+        MusicService(name: "Deezer", icon: "headphones", color: .purple, isConnected: false, isAvailable: false)
     ]
     
     @State private var showingAuthorizationAlert = false
@@ -39,34 +40,46 @@ struct MusicSettingsView: View {
                             Text(service.name)
                                 .foregroundColor(.white)
                             Spacer()
-                            Button {
-                                handleServiceConnection(service: $service)
-                            } label: {
-                                if isRequestingAuthorization && service.name == "Apple Music" {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .frame(width: 80)
-                                } else {
-                                    Text(service.isConnected ? "Disconnect" : "Connect")
-                                        .font(.subheadline.weight(.medium))
-                                        .foregroundColor(service.isConnected ? .red : .black)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            Capsule()
-                                                .fill(service.isConnected ? Color.clear : Color.white)
-                                        )
-                                        .overlay(
-                                            Capsule()
-                                                .stroke(
-                                                    service.isConnected ? Color.red.opacity(0.5) : Color.clear,
-                                                    lineWidth: 1
-                                                )
-                                        )
+                            if service.isAvailable {
+                                Button {
+                                    handleServiceConnection(service: $service)
+                                } label: {
+                                    if isRequestingAuthorization && service.name == "Apple Music" {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                            .frame(width: 80)
+                                    } else {
+                                        Text(service.isConnected ? "Disconnect" : "Connect")
+                                            .font(.subheadline.weight(.medium))
+                                            .foregroundColor(service.isConnected ? .red : .black)
+                                            .padding(.horizontal, 14)
+                                            .padding(.vertical, 6)
+                                            .background(
+                                                Capsule()
+                                                    .fill(service.isConnected ? Color.clear : Color.white)
+                                            )
+                                            .overlay(
+                                                Capsule()
+                                                    .stroke(
+                                                        service.isConnected ? Color.red.opacity(0.5) : Color.clear,
+                                                        lineWidth: 1
+                                                    )
+                                            )
+                                    }
                                 }
+                                .buttonStyle(.plain)
+                                .disabled(isRequestingAuthorization)
+                            } else {
+                                Text("Coming Soon")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    )
                             }
-                            .buttonStyle(.plain)
-                            .disabled(isRequestingAuthorization)
                         }
                         .padding(.vertical, 4)
                         .listRowBackground(Color.white.opacity(0.05))
@@ -158,14 +171,11 @@ struct MusicSettingsView: View {
     // MARK: - Helper Functions
     
     private func handleServiceConnection(service: Binding<MusicService>) {
+        guard service.wrappedValue.isAvailable else { return }
         if service.wrappedValue.name == "Apple Music" {
             Task {
                 await handleAppleMusicConnection(service: service)
             }
-        } else {
-            // For other services (Spotify, SoundCloud, Deezer)
-            // Implement OAuth or other connection logic here
-            service.wrappedValue.isConnected.toggle()
         }
     }
     
