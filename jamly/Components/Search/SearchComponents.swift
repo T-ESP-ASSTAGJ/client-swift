@@ -262,19 +262,12 @@ struct ErrorStateView: View {
 // MARK: - Empty Results View
 struct EmptyResultsView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundColor(.gray.opacity(0.5))
-            Text("No content found")
-                .font(.headline)
-                .foregroundColor(.white)
-            Text("Try searching for something else")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-        }
+        EmptyStateView(
+            icon: "magnifyingglass",
+            title: "No matches found",
+            subtitle: "Try a different name, track, or artist."
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
     }
 }
 

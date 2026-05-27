@@ -280,35 +280,24 @@ struct ChatsView: View {
     // MARK: - Empty State
     
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            
-            Text(viewModel.searchText.isEmpty ? "Any chats" : "Any results")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-            
-            Text(viewModel.searchText.isEmpty 
-                 ? "Start new chat"
-                 : "Try another search")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-            
+        Group {
             if viewModel.searchText.isEmpty {
-                Button {
-                    showNewConversation = true
-                } label: {
-                    Label("New chat", systemImage: "plus.circle.fill")
-                        .font(.headline)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .cornerRadius(10)
-                }
-                .padding(.top, 8)
-                .buttonStyle(.glass)
+                EmptyStateView(
+                    icon: "bubble.left.and.bubble.right.fill",
+                    title: "No chats yet",
+                    subtitle: "Start a conversation with someone you follow.",
+                    action: .init(
+                        label: "New chat",
+                        icon: "plus",
+                        handler: { showNewConversation = true }
+                    )
+                )
+            } else {
+                EmptyStateView(
+                    icon: "magnifyingglass",
+                    title: "No conversations match",
+                    subtitle: "Try searching for a different name."
+                )
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -454,19 +443,13 @@ struct NewConversationView: View {
     // MARK: - Empty State
 
     private var emptyFollowersView: some View {
-        VStack(spacing: 16) {
+        VStack {
             Spacer()
-            Image(systemName: "person.2.slash")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            Text("No followers")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-            Text("Follow people to start conversations")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
+            EmptyStateView(
+                icon: "person.2.slash",
+                title: "No followers yet",
+                subtitle: "Follow people first — then you can start chats with them."
+            )
             Spacer()
         }
         .frame(maxWidth: .infinity)

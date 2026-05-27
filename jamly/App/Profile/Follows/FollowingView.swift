@@ -98,19 +98,22 @@ struct FollowingView: View {
                 }
             }
             else if filteredFollowings.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "person.2.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.gray)
-                    if searchText.isEmpty {
-                        Text(isOwnProfile ? "You follow no one yet." : "This user follows no one.")
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("No user found with the name '\(searchText)'")
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
+                if searchText.isEmpty {
+                    EmptyStateView(
+                        icon: "person.crop.circle.badge.plus",
+                        title: isOwnProfile ? "Not following anyone yet" : "Following no one",
+                        subtitle: isOwnProfile
+                            ? "Find people in Discover or Search. They'll show up here."
+                            : "This user isn't following anyone."
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    EmptyStateView(
+                        icon: "magnifyingglass",
+                        title: "No matches",
+                        subtitle: "Nothing matches \"\(searchText)\"."
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
                 List(filteredFollowings) { following in

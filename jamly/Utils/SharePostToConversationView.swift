@@ -213,7 +213,19 @@ struct SharePostToConversationView: View {
             ProgressView().tint(.white)
             Spacer()
         } else if filteredConversations.isEmpty {
-            emptyView(message: searchText.isEmpty ? "No conversations" : "No results found")
+            if searchText.isEmpty {
+                emptyView(
+                    icon: "bubble.left.and.bubble.right.fill",
+                    title: "No conversations yet",
+                    subtitle: "Switch to People to find someone, or start a chat first."
+                )
+            } else {
+                emptyView(
+                    icon: "magnifyingglass",
+                    title: "No conversation matches",
+                    subtitle: "Nothing matches \"\(searchText)\"."
+                )
+            }
         } else {
             ScrollView {
                 LazyVStack(spacing: 8) {
@@ -239,9 +251,17 @@ struct SharePostToConversationView: View {
             ProgressView().tint(.white)
             Spacer()
         } else if searchText.isEmpty {
-            emptyView(message: "Search for a user")
+            emptyView(
+                icon: "magnifyingglass",
+                title: "Find someone",
+                subtitle: "Search by username to send this post directly."
+            )
         } else if searchedUsers.isEmpty {
-            emptyView(message: "No users found")
+            emptyView(
+                icon: "person.crop.circle.badge.questionmark",
+                title: "No users found",
+                subtitle: "Nothing matches \"\(searchText)\"."
+            )
         } else {
             ScrollView {
                 LazyVStack(spacing: 8) {
@@ -258,15 +278,9 @@ struct SharePostToConversationView: View {
         }
     }
 
-    private func emptyView(message: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: activeTab == .conversations ? "message.slash" : "person.slash")
-                .font(.system(size: 50))
-                .foregroundColor(.gray)
-            Text(message)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxHeight: .infinity)
+    private func emptyView(icon: String, title: String, subtitle: String) -> some View {
+        EmptyStateView(icon: icon, title: title, subtitle: subtitle)
+            .frame(maxHeight: .infinity)
     }
 
     // MARK: - Actions

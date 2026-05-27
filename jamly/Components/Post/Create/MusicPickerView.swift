@@ -181,8 +181,14 @@ struct MusicPickerView: View {
                             .padding(.bottom, 4)
 
                         ForEach(tracks, id: \.id) { track in
-                            LibraryTrackRow(track: track) {
-                                Task { await handleLibraryTrackSelection(track) }
+                            MusicPickerRow(
+                                title: track.title,
+                                artistName: track.artistName,
+                                artwork: track.artwork,
+                                hasFrontImage: frontImage != nil,
+                                hasBackImage: backImage != nil
+                            ) { placement in
+                                Task { await handleLibraryTrackSelection(track, placement: placement) }
                             }
                         }
                     }
@@ -196,8 +202,10 @@ struct MusicPickerView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(searchResults, id: \.id) { song in
-                    CatalogSongRow(
-                        song: song,
+                    MusicPickerRow(
+                        title: song.title,
+                        artistName: song.artistName,
+                        artwork: song.artwork,
                         hasFrontImage: frontImage != nil,
                         hasBackImage: backImage != nil
                     ) { placement in
@@ -220,15 +228,13 @@ struct MusicPickerView: View {
     }
 
     /// Résout un morceau de playlist vers un `Song` catalogue puis le sélectionne.
-    private func handleLibraryTrackSelection(_ track: Track) async {
+    private func handleLibraryTrackSelection(_ track: Track, placement: CoverPlacement?) async {
         isResolving = true
         defer { isResolving = false }
 
         guard let song = await musicManager.resolveCatalogSong(for: track) else { return }
 
-        selectedCatalogID = song.id.rawValue
-        selectedSong = song
-        dismiss()
+        await handleSongSelection(song: song, placement: placement)
     }
 
     private func debouncedSearch(query: String) {
@@ -283,9 +289,15 @@ struct MusicPickerView: View {
     }
 }
 
-// MARK: - Catalog Song Row
-struct CatalogSongRow: View {
-    let song: Song
+// MARK: - Track Picker Row (shared)
+
+/// Ligne unique factorisée pour les morceaux catalogue (Song) et bibliothèque (Track).
+/// Affiche la pochette, le titre/artiste et propose un confirmationDialog pour utiliser
+/// la cover comme front/back image du post.
+struct MusicPickerRow: View {
+    let title: String
+    let artistName: String
+    let artwork: Artwork?
     let hasFrontImage: Bool
     let hasBackImage: Bool
     let onSelect: (CoverPlacement?) async -> Void
@@ -294,14 +306,14 @@ struct CatalogSongRow: View {
 
     var body: some View {
         Button(action: {
-            if song.artwork != nil {
+            if artwork != nil {
                 showCoverAlert = true
             } else {
                 Task { await onSelect(nil) }
             }
         }) {
             HStack(spacing: 12) {
-                if let artwork = song.artwork {
+                if let artwork {
                     ArtworkImage(artwork, width: 60, height: 60)
                         .cornerRadius(8)
                 } else {
@@ -315,12 +327,12 @@ struct CatalogSongRow: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(song.title)
+                    Text(title)
                         .font(.custom("Poppins-SemiBold", size: 15))
                         .foregroundColor(.white)
                         .lineLimit(1)
 
-                    Text(song.artistName)
+                    Text(artistName)
                         .font(.custom("Poppins-Regular", size: 13))
                         .foregroundColor(.gray)
                         .lineLimit(1)
@@ -354,57 +366,12 @@ struct CatalogSongRow: View {
                 Task { await onSelect(nil) }
             }
 
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("You can use the cover of \"\(song.title)\" for your post")
-        }
-    }
-}
-
-// MARK: - Library Track Row
-struct LibraryTrackRow: View {
-    let track: Track
-    let onSelect: () -> Void
-
-    var body: some View {
-        Button(action: onSelect) {
-            HStack(spacing: 12) {
-                if let artwork = track.artwork {
-                    ArtworkImage(artwork, width: 60, height: 60)
-                        .cornerRadius(8)
-                } else {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(width: 60, height: 60)
-                        .overlay(
-                            Image(systemName: "music.note")
-                                .foregroundColor(.gray)
-                        )
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(track.title)
-                        .font(.custom("Poppins-SemiBold", size: 15))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    Text(track.artistName)
-                        .font(.custom("Poppins-Regular", size: 13))
-                        .foregroundColor(.gray)
-                        .lineLimit(1)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-                    .font(.system(size: 14, weight: .semibold))
+            Button("Cancel", role: .cancel) {
+                // No-op : SwiftUI ferme automatiquement le confirmationDialog pour les boutons .cancel.
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-            .contentShape(Rectangle())
+        } message: {
+            Text("You can use the cover of \"\(title)\" for your post")
         }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 

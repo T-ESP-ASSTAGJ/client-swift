@@ -295,7 +295,7 @@ struct ProfileView: View {
             if viewModel.isLoadingPosts && !viewModel.hasLoadedPosts {
                 loadingState()
             } else if viewModel.posts.isEmpty {
-                emptyState(message: "No posts yet.")
+                postsEmptyState
             } else {
                 LazyVGrid(columns: columns, spacing: 2) {
                     ForEach(viewModel.posts, id: \.id) { post in
@@ -349,7 +349,7 @@ struct ProfileView: View {
             } else if viewModel.isLoadingLikes && !viewModel.hasLoadedLikes {
                 loadingState()
             } else if viewModel.likedPosts.isEmpty {
-                emptyState(message: "No liked posts yet")
+                likesEmptyState
             } else {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 2) {
@@ -406,10 +406,62 @@ struct ProfileView: View {
     // MARK: - Helpers
 
 
-    private func emptyState(message: String) -> some View {
-        VStack(spacing: 12) {
-            Spacer().frame(height: 80)
-            Text(message).foregroundColor(.secondary)
+    private var postsEmptyState: some View {
+        emptyTabState(
+            icon: "camera.aperture",
+            title: isOwnProfile ? "Share your first jam" : "Nothing posted yet",
+            subtitle: isOwnProfile
+                ? "Drop a track to kick off your profile. Your posts will appear here."
+                : "@\(displayedUser?.username ?? "this user") hasn't shared a track yet."
+        )
+    }
+
+    private var likesEmptyState: some View {
+        emptyTabState(
+            icon: "heart.slash",
+            title: isOwnProfile ? "No likes yet" : "Nothing liked yet",
+            subtitle: isOwnProfile
+                ? "Tap the heart on a post and it'll show up here."
+                : "@\(displayedUser?.username ?? "this user") hasn't liked anything yet."
+        )
+    }
+
+    private func emptyTabState(icon: String, title: String, subtitle: String) -> some View {
+        VStack(spacing: 18) {
+            Spacer().frame(height: 60)
+
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 88, height: 88)
+                    .overlay {
+                        Circle().stroke(.white.opacity(0.12), lineWidth: 1)
+                    }
+                Image(systemName: icon)
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.6, green: 0.4, blue: 0.9),
+                                Color(red: 0.8, green: 0.4, blue: 0.7)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+
+            VStack(spacing: 6) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+
             Spacer()
         }
         .frame(maxWidth: .infinity)

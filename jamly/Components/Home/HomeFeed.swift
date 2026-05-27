@@ -85,14 +85,115 @@ struct HomeFeed: View {
             .frame(width: geometry.size.width, height: geometry.size.height)
     }
     
+    @ViewBuilder
     private func emptyStateView(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "music.note.list")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
-            Text("No post found for now. Try creating a new one!")
-                .font(.headline)
-                .foregroundColor(.gray)
+        if selectedSegment == .friends {
+            friendsEmptyState(geometry: geometry)
+        } else {
+            discoveryEmptyState(geometry: geometry)
+        }
+    }
+
+    private func friendsEmptyState(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 96, height: 96)
+                    .overlay {
+                        Circle().stroke(.white.opacity(0.12), lineWidth: 1)
+                    }
+                Image(systemName: "person.2.wave.2.fill")
+                    .font(.system(size: 38, weight: .semibold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.6, green: 0.4, blue: 0.9),
+                                Color(red: 0.8, green: 0.4, blue: 0.7)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+
+            VStack(spacing: 8) {
+                Text("Your friends are quiet")
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(.white)
+                Text("Follow people to hear what they're listening to. Their posts will land here.")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedSegment = .discovery
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.footnote.weight(.semibold))
+                    Text("Explore Discovery")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.6, green: 0.4, blue: 0.9),
+                                    Color(red: 0.8, green: 0.4, blue: 0.7)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+            }
+            .padding(.top, 4)
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height)
+    }
+
+    private func discoveryEmptyState(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 96, height: 96)
+                    .overlay {
+                        Circle().stroke(.white.opacity(0.12), lineWidth: 1)
+                    }
+                Image(systemName: "music.note")
+                    .font(.system(size: 40, weight: .semibold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.6, green: 0.4, blue: 0.9),
+                                Color(red: 0.8, green: 0.4, blue: 0.7)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+
+            VStack(spacing: 8) {
+                Text("Silence on the airwaves")
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(.white)
+                Text("Be the first to drop a track today. Pull down to refresh.")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
     }
