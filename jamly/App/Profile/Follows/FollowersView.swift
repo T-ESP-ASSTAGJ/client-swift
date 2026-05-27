@@ -94,19 +94,22 @@ struct FollowersView: View {
                 }
             }
             else if filteredFollowers.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "person.2.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.gray)
-                    if searchText.isEmpty {
-                        Text(isOwnProfile ? "You have no followers" : "This user has no followers")
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("No user found with the name '\(searchText)'")
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
+                if searchText.isEmpty {
+                    EmptyStateView(
+                        icon: "person.2.fill",
+                        title: isOwnProfile ? "No followers yet" : "No followers",
+                        subtitle: isOwnProfile
+                            ? "Share your posts to attract listeners. They'll appear here."
+                            : "This user doesn't have any followers yet."
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    EmptyStateView(
+                        icon: "magnifyingglass",
+                        title: "No matches",
+                        subtitle: "Nothing matches \"\(searchText)\"."
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
                 List(filteredFollowers) { follower in

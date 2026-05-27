@@ -78,7 +78,6 @@
 		7933238A2EF80A230040755F /* CommentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323892EF80A230040755F /* CommentRow.swift */; };
 		793323952EF840D80040755F /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793323942EF840D80040755F /* PostView.swift */; };
 		794070352FA383EF00CCE9F6 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */; };
-		83A8C38F522349E8B8BC5B53 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A8C38F522349E8B8BC5B52 /* AvatarView.swift */; };
 		794070372FA3843600CCE9F6 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794070362FA3843600CCE9F6 /* ImageCache.swift */; };
 		796367362F360183000BA493 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367352F360181000BA493 /* Conversation.swift */; };
 		796367382F3603C3000BA493 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796367372F3603BD000BA493 /* Message.swift */; };
@@ -97,6 +96,7 @@
 		79FC691A2F3E286E00AD716C /* ChatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC69192F3E286E00AD716C /* ChatsViewModel.swift */; };
 		7B11000000000000C0DEFEE2 /* View+Keyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B11000000000000C0DEFEE1 /* View+Keyboard.swift */; };
 		7B11000000000000C0DEFEE4 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B11000000000000C0DEFEE3 /* LocationService.swift */; };
+		83A8C38F522349E8B8BC5B53 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A8C38F522349E8B8BC5B52 /* AvatarView.swift */; };
 		9A794C9040DE4685B14F937B /* ProfileFollowButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB03C1DB17B945078A59FCCE /* ProfileFollowButton.swift */; };
 		A0EEE1090BFB4E678E0743A1 /* ProfileTabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C7E4AEF38A447A983F4F2CE /* ProfileTabButton.swift */; };
 		AA000001000000000000AA01 /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA00 /* OnBoardingView.swift */; };
@@ -239,7 +239,6 @@
 		793323892EF80A230040755F /* CommentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRow.swift; sourceTree = "<group>"; };
 		793323942EF840D80040755F /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
 		794070342FA383EF00CCE9F6 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
-		83A8C38F522349E8B8BC5B52 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		794070362FA3843600CCE9F6 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		796367352F360181000BA493 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		796367372F3603BD000BA493 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
@@ -259,6 +258,7 @@
 		7A475A6944A447BFBFC25055 /* MusicStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicStats.swift; sourceTree = "<group>"; };
 		7B11000000000000C0DEFEE1 /* View+Keyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Keyboard.swift"; sourceTree = "<group>"; };
 		7B11000000000000C0DEFEE3 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		83A8C38F522349E8B8BC5B52 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		AA000001000000000000AA00 /* OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnBoardingView.swift; sourceTree = "<group>"; };
 		AA100001AA10000100AA0001 /* ReportPostSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportPostSheetView.swift; sourceTree = "<group>"; };
 		AA100003AA10000300AA0003 /* Report.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Report.swift; sourceTree = "<group>"; };
@@ -1104,7 +1104,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "jamly" */;
+			buildConfigurationList = 761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "Jamly" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1457,20 +1457,21 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Jamly;
-				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Jamly need access to Apple Music so you can add music to your posts.";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Jamly needs access to your Apple Music library to play and share music.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Jamly need access to your camera to take photos for your post.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jamly would like to display your location on your posts.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jamly uses your location to tag your posts with the city you're posting from.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Jamly need access to your photo library to select photos for your posts.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1503,20 +1504,21 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = jamly/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Jamly;
-				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Jamly need access to Apple Music so you can add music to your posts.";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Jamly needs access to your Apple Music library to play and share music.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Jamly need access to your camera to take photos for your post.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jamly would like to display your location on your posts.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jamly uses your location to tag your posts with the city you're posting from.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Jamly need access to your photo library to select photos for your posts.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.reverss.jamly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1682,7 +1684,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "jamly" */ = {
+		761C4FE72EE392D60053AD1F /* Build configuration list for PBXProject "Jamly" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				761C500D2EE392D70053AD1F /* Debug */,

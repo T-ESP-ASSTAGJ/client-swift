@@ -177,15 +177,11 @@ struct RecentSearchesView: View {
                 .padding(.bottom, 8)
                 
                 if searchHistory.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 48))
-                            .foregroundColor(.gray.opacity(0.5))
-                        Text("No recent searches")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    .frame(maxWidth: .infinity)
+                    EmptyStateView(
+                        icon: "magnifyingglass",
+                        title: "Search Jamly",
+                        subtitle: "Find people, tracks, and artists. Your recent searches will appear here."
+                    )
                     .padding(.top, 60)
                 } else {
                     ForEach(searchHistory, id: \.self) { query in

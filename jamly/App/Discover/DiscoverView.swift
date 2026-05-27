@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct DiscoverView: View {
+    @EnvironmentObject private var userStore: UserStore
     @StateObject private var viewModel = DiscoverViewModel()
 
     @State private var search: String = ""
@@ -8,10 +9,15 @@ struct DiscoverView: View {
 
     private let spacing: CGFloat = 2
 
+    private var visiblePosts: [Post] {
+        guard let currentUserId = userStore.user?.id else { return viewModel.posts }
+        return viewModel.posts.filter { $0.user.id != currentUserId }
+    }
+
     private var filteredPosts: [Post] {
-        guard !search.isEmpty else { return viewModel.posts }
+        guard !search.isEmpty else { return visiblePosts }
         let query = search
-        return viewModel.posts.filter {
+        return visiblePosts.filter {
             $0.user.username.localizedCaseInsensitiveContains(query) ||
             $0.caption.localizedCaseInsensitiveContains(query) ||
             $0.track.title.localizedCaseInsensitiveContains(query) ||
@@ -58,13 +64,21 @@ struct DiscoverView: View {
                 } else if let error = viewModel.errorMessage, viewModel.posts.isEmpty {
                     errorState(message: error)
                 } else if filteredPosts.isEmpty {
-                    emptyState(
-                        message: search.isEmpty
-                            ? "No posts yet."
-                            : "No results for \"\(search)\"."
-                    )
-                } else if search.isEmpty {
-                    mosaic(posts: filteredPosts)
+                    if search.isEmpty {
+                        EmptyStateView(
+                            icon: "sparkles",
+                            title: "Nothing to discover yet",
+                            subtitle: "Posts from across Jamly will land here. Pull down to refresh."
+                        )
+                        .padding(.top, 80)
+                    } else {
+                        EmptyStateView(
+                            icon: "magnifyingglass",
+                            title: "No results",
+                            subtitle: "Nothing matches \"\(search)\". Try a different keyword."
+                        )
+                        .padding(.top, 80)
+                    }
                 } else {
                     simpleGrid(posts: filteredPosts)
                 }
@@ -79,88 +93,7 @@ struct DiscoverView: View {
         }
     }
 
-    // MARK: - Instagram-style Mosaic
-
-    /// Pattern par cycle de 6 posts:
-    /// - 3 premiers : 1 tile large (2x2) + 2 small empilés (côté alterné)
-    /// - 3 suivants : ligne classique de 3 small
-    @ViewBuilder
-    private func mosaic(posts: [Post]) -> some View {
-        let totalWidth = UIScreen.main.bounds.width
-        let smallSize = (totalWidth - 2 * spacing) / 3
-        let largeSize = smallSize * 2 + spacing
-
-        let chunks = posts.chunked(into: 6)
-
-        ForEach(Array(chunks.enumerated()), id: \.offset) { index, chunk in
-            let leftFeatured = index % 2 == 0
-
-            featuredRow(
-                chunk: chunk,
-                leftFeatured: leftFeatured,
-                smallSize: smallSize,
-                largeSize: largeSize
-            )
-
-            if chunk.count > 3 {
-                normalRow(
-                    posts: Array(chunk.dropFirst(3)),
-                    smallSize: smallSize
-                )
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func featuredRow(
-        chunk: [Post],
-        leftFeatured: Bool,
-        smallSize: CGFloat,
-        largeSize: CGFloat
-    ) -> some View {
-        let large = chunk.first
-        let small1 = chunk.count > 1 ? chunk[1] : nil
-        let small2 = chunk.count > 2 ? chunk[2] : nil
-
-        HStack(spacing: spacing) {
-            if leftFeatured {
-                if let large {
-                    tile(post: large, size: largeSize)
-                }
-                VStack(spacing: spacing) {
-                    if let small1 {
-                        tile(post: small1, size: smallSize)
-                    }
-                    if let small2 {
-                        tile(post: small2, size: smallSize)
-                    }
-                }
-            } else {
-                VStack(spacing: spacing) {
-                    if let small1 {
-                        tile(post: small1, size: smallSize)
-                    }
-                    if let small2 {
-                        tile(post: small2, size: smallSize)
-                    }
-                }
-                if let large {
-                    tile(post: large, size: largeSize)
-                }
-            }
-        }
-        .frame(height: largeSize)
-    }
-
-    private func normalRow(posts: [Post], smallSize: CGFloat) -> some View {
-        HStack(spacing: spacing) {
-            ForEach(posts, id: \.id) { post in
-                tile(post: post, size: smallSize)
-            }
-        }
-    }
-
-    // MARK: - Simple grid (search results)
+    // MARK: - Instagram-style grid
 
     private func simpleGrid(posts: [Post]) -> some View {
         let smallSize = (UIScreen.main.bounds.width - 2 * spacing) / 3
@@ -225,21 +158,6 @@ struct DiscoverView: View {
             .frame(maxWidth: .infinity)
     }
 
-    private func emptyState(message: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "music.note.list")
-                .font(.system(size: 36, weight: .light))
-                .foregroundStyle(.secondary)
-            Text(message)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.top, 80)
-        .padding(.horizontal, 32)
-        .frame(maxWidth: .infinity)
-    }
-
     private func errorState(message: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
@@ -257,15 +175,6 @@ struct DiscoverView: View {
         .padding(.top, 80)
         .padding(.horizontal, 32)
         .frame(maxWidth: .infinity)
-    }
-}
-
-private extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        guard size > 0 else { return [] }
-        return stride(from: 0, to: count, by: size).map {
-            Array(self[$0..<Swift.min($0 + size, count)])
-        }
     }
 }
 

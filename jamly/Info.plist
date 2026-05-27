@@ -2,8 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>INSendMessageIntent</string>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Poppins-Light.ttf</string>
@@ -16,18 +18,10 @@
 		<string>Poppins-BoldItalic.ttf</string>
 		<string>Poppins-ExtraBoldItalic.ttf</string>
 	</array>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Jamly needs access to your Apple Music library to play and share music.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Jamly uses your location to tag your posts with the city you're posting from.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
 		<string>remote-notification</string>
-	</array>
-	<key>NSUserActivityTypes</key>
-	<array>
-		<string>INSendMessageIntent</string>
 	</array>
 </dict>
 </plist>

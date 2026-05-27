@@ -19,7 +19,7 @@
                BlueprintIdentifier = "792F52A22F92630300E29094"
                BuildableName = "NotificationServiceExtension.appex"
                BlueprintName = "NotificationServiceExtension"
-               ReferencedContainer = "container:jamly.xcodeproj">
+               ReferencedContainer = "container:Jamly.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -33,7 +33,7 @@
                BlueprintIdentifier = "761C4FEB2EE392D60053AD1F"
                BuildableName = "jamly.app"
                BlueprintName = "jamly"
-               ReferencedContainer = "container:jamly.xcodeproj">
+               ReferencedContainer = "container:Jamly.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "761C4FEB2EE392D60053AD1F"
             BuildableName = "jamly.app"
             BlueprintName = "jamly"
-            ReferencedContainer = "container:jamly.xcodeproj">
+            ReferencedContainer = "container:Jamly.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -83,7 +83,7 @@
             BlueprintIdentifier = "761C4FEB2EE392D60053AD1F"
             BuildableName = "jamly.app"
             BlueprintName = "jamly"
-            ReferencedContainer = "container:jamly.xcodeproj">
+            ReferencedContainer = "container:Jamly.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

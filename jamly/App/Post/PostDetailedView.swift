@@ -46,6 +46,9 @@ struct PostDetailView: View {
                         // No-op : les commentaires sont affichés inline plus bas, pas dans une sheet.
                     },
                     onDeleted: { navigateToProfile = post.user.id },
+                    onTogglePlayback: {
+                        togglePlayPause()
+                    },
                     showPostDetail: .constant(true),
                     musicManager: musicManager
                 )
@@ -203,7 +206,7 @@ struct PostDetailView: View {
             Spacer()
 
             Button {
-                Task { await togglePlayPause() }
+                togglePlayPause()
             } label: {
                 Image(systemName: isCurrentTrackPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 16, weight: .semibold))
@@ -366,11 +369,11 @@ struct PostDetailView: View {
         musicManager.isPlaying && musicManager.currentSongId == post.track.songId
     }
 
-    private func togglePlayPause() async {
+    private func togglePlayPause() {
         if isCurrentTrackPlaying {
             musicManager.pause()
         } else {
-            await musicManager.playPreview(songId: post.track.songId)
+            Task { await musicManager.playPreview(songId: post.track.songId) }
         }
     }
 }

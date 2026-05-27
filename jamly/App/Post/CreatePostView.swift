@@ -190,18 +190,39 @@ struct CreatePostView: View {
                         HStack {
                             if viewModel.isPublishing {
                                 ProgressView()
-                                    .tint(.black)
+                                    .tint(.white)
                             } else {
                                 Text("Publish")
                                     .font(.custom("Poppins-SemiBold", size: 17))
-                                    .foregroundColor(viewModel.canPublish ? .black : .white)
+                                    .foregroundColor(.white)
+                                    .opacity(viewModel.canPublish ? 1 : 0.6)
                             }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(viewModel.canPublish ? .white : Color.gray.opacity(0.35))
+                        .background(
+                            Group {
+                                if viewModel.canPublish {
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.6, green: 0.4, blue: 0.9),
+                                            Color(red: 0.8, green: 0.4, blue: 0.7)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                } else {
+                                    Color.white.opacity(0.12)
+                                }
+                            }
+                        )
                         .cornerRadius(16)
-                        .shadow(color: viewModel.canPublish ? .white.opacity(0.3) : .clear, radius: 20, y: 10)
+                        .shadow(
+                            color: viewModel.canPublish
+                                ? Color(red: 0.7, green: 0.4, blue: 0.8).opacity(0.4)
+                                : .clear,
+                            radius: 20, y: 10
+                        )
                     }
                     .disabled(!viewModel.canPublish || viewModel.isPublishing)
                     .padding(.horizontal)

@@ -185,13 +185,20 @@ struct ShareToConversationView: View {
     }
     
     private var emptyView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "message.slash")
-                .font(.system(size: 50))
-                .foregroundColor(.gray)
-            
-            Text(searchText.isEmpty ? "No conversations" : "No results found")
-                .foregroundColor(.secondary)
+        Group {
+            if searchText.isEmpty {
+                EmptyStateView(
+                    icon: "bubble.left.and.bubble.right.fill",
+                    title: "No conversations yet",
+                    subtitle: "Start a chat to share this here."
+                )
+            } else {
+                EmptyStateView(
+                    icon: "magnifyingglass",
+                    title: "No matches",
+                    subtitle: "Nothing matches \"\(searchText)\"."
+                )
+            }
         }
         .frame(maxHeight: .infinity)
     }
